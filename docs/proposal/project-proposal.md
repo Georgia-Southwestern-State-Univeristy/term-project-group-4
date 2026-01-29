@@ -52,7 +52,7 @@ The prototype will intentionally exclude:
 - Live weather or forecast API integration.
 - Airline baggage rules or compliance checks.
 - Shopping or purchasing integrations.
-- Physical inventory tracking or barcode scanning.
+- Physical inventory tracking, barcode scanning, or inventory ownership tracking.
 - Machine learning or adaptive recommendation systems.
 
 ### Assumptions and Constraints
