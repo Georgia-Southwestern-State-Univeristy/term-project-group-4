@@ -1,4 +1,4 @@
-# Project Proposal  
+# Project Proposal
 ## Smart Packing Checklist Generator
 
 ### Problem Statement
