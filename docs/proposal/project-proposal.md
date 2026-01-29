@@ -7,10 +7,10 @@ Packing for trips is often informal and time-constrained. People rely on memory 
 
 ### Target Users
 
-- Business and leisure travelers  
-- Campers and outdoor enthusiasts  
-- Conference and event attendees  
-- Parents packing for children  
+- Business and leisure travelers
+- Campers and outdoor enthusiasts
+- Conference and event attendees
+- Parents packing for children
 
 ### Core Use Cases
 
@@ -49,11 +49,11 @@ Users can create a trip by specifying:
 ### Non-Goals
 
 The prototype will intentionally exclude:
-- Live weather or forecast API integration
-- Airline baggage rules or compliance checks
-- Shopping or purchasing integrations
-- Physical inventory tracking or barcode scanning
-- Machine learning or adaptive recommendation systems
+- Live weather or forecast API integration.
+- Airline baggage rules or compliance checks.
+- Shopping or purchasing integrations.
+- Physical inventory tracking or barcode scanning.
+- Machine learning or adaptive recommendation systems.
 
 ### Assumptions and Constraints
 
