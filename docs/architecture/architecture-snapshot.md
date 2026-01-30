@@ -5,6 +5,10 @@
 
 The system uses a simple, modular architecture designed to support rapid iteration and clarity. It prioritizes maintainability and explicit logic over automation or predictive complexity.
 
+## Architecture Diagram (Placeholder)
+
+A high-level architecture diagram will be included to visually represent the system’s major components and primary data flows.
+
 ## Major Components
 
 - **User (Web Browser)**  
@@ -13,7 +17,7 @@ The system uses a simple, modular architecture designed to support rapid iterati
 - **Frontend Application**  
   Collects trip inputs, displays checklists, and tracks progress.
 
-- **Checklist Generation Logic**  
+- **Checklist Generation Logic**
   Applies predefined rules and templates to generate packing lists based on trip context.
 
 - **Data Storage**  
