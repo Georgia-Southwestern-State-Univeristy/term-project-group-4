@@ -17,19 +17,22 @@ A high-level architecture diagram will be included to visually represent the sys
 - **Frontend Application**  
   Collects trip inputs, displays checklists, and tracks progress.
 
-- **Checklist Generation Logic**
-  Applies predefined rules and templates to generate packing lists based on trip context.
+- **Persistence Interface / Backend API (TBD)**
+  This component is used by the frontend to save/load trips, checklists, and templates (TBD: local storage for early prototype or an API service later).
 
-- **Data Storage**  
-  Persists trips, checklists, and reusable templates.
+- **Checklist Generation Logic**
+  Runs in frontend and applies predefined rules and templates to generate packing lists based on trip context.
+
+- **Data Storage (TBD)**  
+  Persists trips, checklists, and reusable templates (Implementation might be local during prototyping phase or a database behind the backend service).
 
 ## Data Flow
 
 1. User inputs trip details via the UI.
-2. Inputs are passed to the checklist generation logic.
+2. The frontend passes inputs to the checklist generation logic.
 3. A checklist is generated and returned to the UI.
-4. User updates (packed items, custom edits) are persisted.
-5. Templates can be reused for future trips.
+4. When the user makes modifications (packed items, custom edits), the frontend saves updates via a persistence interface (TBD: API or local storage).
+5. When starting a new trip, the frontend loads saved templates (and optionally prior trips) through the same persistence interface and reuses them.
 
 ## Design Intent
 
