@@ -5,9 +5,12 @@
 
 The system uses a simple, modular architecture designed to support rapid iteration and clarity. It prioritizes maintainability and explicit logic over automation or predictive complexity.
 
-## Architecture Diagram (Placeholder)
+## Architecture Diagram
 
-A high-level architecture diagram will be included to visually represent the system’s major components and primary data flows.
+![Smart Packing Checklist Generator Architecture](./diagrams/architecture-snapshot-1-small.png)
+
+*Image 1: A high-level architecture of the system’s major components and primary data flows.*
+*Source diagram:* [`architecture-snapshot.drawio`](./diagrams/architecture-snapshot-1.drawio)
 
 ## Major Components
 
