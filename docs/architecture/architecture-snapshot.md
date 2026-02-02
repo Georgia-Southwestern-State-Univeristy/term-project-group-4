@@ -44,10 +44,14 @@ This architecture is intentionally simple and rule-driven. It avoids unnecessary
 ## Trade-Offs
 
 - **Pros**
-  - Easy to understand and test
-  - Predictable behavior
-  - Fast to iterate
+  - Easy to understand and test.
+  - Predictable behavior.
+  - Fast to iterate.
 
 - **Cons**
-  - Limited flexibility compared to AI-driven systems
-  - Manual rule updates required as scenarios expand
+  - Limited flexibility compared to AI-driven systems.
+  - Manual rule updates required as scenarios expand.
+
+## Design Intent & Trade-Off
+
+    This architecture keeps the checklist generation rule-based and close to the UI so the team can iterate quickly   and keep behavior predictable during early development. The main trade-off is that this simplicity limits scalability and future flexibility: as rules grow, client-side logic can become harder to manage and reuse, and moving persistence behind an API later may require refactoring boundaries that are intentionally “TBD” in the prototype.
