@@ -43,7 +43,10 @@
 
 - **Primary communication channel:** Microsoft Teams  
 - **Weekly meeting:** Weekly Teams call on Mondays  
-- Additional meetings are scheduled as needed  
+- **Ongoing technical communication:**
+    - GitHub pull request comments are the primary method for code review discussion
+    - Architectural or design-impacting discussions are typically summarized in PR comments
+    - Decisions made in chat that affect implementation should be reflected in PR descriptions or documentation
 
 ### Definition of “Done”
 
@@ -60,7 +63,7 @@ Work is considered **done** only when:
 
 - Day-to-day implementation decisions are made by the contributor closest to the work  
 - Decisions that affect architecture, scope, or long-term maintainability are discussed as a team  
-- Architecturally significant decisions are documented using Architecture Decision Records (ADRs)  
+- Significant architectural decisions should be documented using Architecture Decision Records (ADRs) before or alongside implementation when possible
 - If consensus cannot be reached:
     1. The team references documented goals, constraints, and ADRs  
     2. The Lead Developer / Architect makes the final decision  
@@ -72,6 +75,7 @@ Work is considered **done** only when:
 - Work should be shared early to avoid last-minute integration risks  
 - Code ownership is shared. No portion of the system belongs permanently to a single individual  
 - If a team member anticipates missing a deadline or becoming unavailable, they must communicate early  
+- Significant work should be visible through GitHub issues, pull requests, or documented updates so progress is transparent to the team
 - Repeated failure to communicate blockers or meet expectations will be treated as an engineering risk and addressed by the team.
 
 ### Team Values
