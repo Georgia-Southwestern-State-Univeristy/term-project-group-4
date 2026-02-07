@@ -7,10 +7,10 @@ The system uses a simple, modular architecture designed to support rapid iterati
 
 ## Architecture Diagram
 
-![Smart Packing Checklist Generator Architecture](./diagrams/architecture-snapshot-1-small.png)
+![Smart Packing Checklist Generator Architecture](./diagrams/architecture-snapshot-2-small.png)
 
 *Image 1: A high-level architecture of the system’s major components and primary data flows.*
-*Source diagram:* [`architecture-snapshot.drawio`](./diagrams/architecture-snapshot-1.drawio)
+*Source diagram:* [`architecture-snapshot.drawio`](./diagrams/architecture-snapshot-2.drawio)
 
 ## Major Components
 
