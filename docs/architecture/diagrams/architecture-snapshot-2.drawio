@@ -13,23 +13,23 @@
         <mxCell id="pUroKKAZp-Nj88IeVpbN-5" edge="1" parent="1" source="OW0WClP2wUrKccrantcj-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="OW0WClP2wUrKccrantcj-4">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="OW0WClP2wUrKccrantcj-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;" value="Frontend Application&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- UI&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- Checklist Logic&lt;br&gt;- Progress Tracking&lt;/span&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="OW0WClP2wUrKccrantcj-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=6;verticalAlign=top;" value="Frontend Application&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- UI&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- Checklist Logic&lt;br&gt;- Progress Tracking&lt;/span&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="65" width="180" x="150" y="157" as="geometry" />
         </mxCell>
         <mxCell id="pUroKKAZp-Nj88IeVpbN-7" edge="1" parent="1" source="OW0WClP2wUrKccrantcj-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="OW0WClP2wUrKccrantcj-7">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="OW0WClP2wUrKccrantcj-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;" value="Persistence Interface (client side)&lt;br&gt;-Persistence Interface - local storage adapter / storage service" vertex="1">
+        <mxCell id="OW0WClP2wUrKccrantcj-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=6;verticalAlign=top;" value="Persistence Interface (client side)&lt;br&gt;- Local storage adapter / storage service" vertex="1">
           <mxGeometry height="65" width="192" x="370" y="156.5" as="geometry" />
         </mxCell>
-        <mxCell id="OW0WClP2wUrKccrantcj-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;" value="Browser Storage&lt;br&gt;- Local storage - trips, templates, progress etc." vertex="1">
+        <mxCell id="OW0WClP2wUrKccrantcj-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=6;verticalAlign=top;" value="Browser Storage&lt;br&gt;- Local storage - trips, templates, progress etc." vertex="1">
           <mxGeometry height="65" width="190" x="600" y="157" as="geometry" />
         </mxCell>
         <mxCell id="OW0WClP2wUrKccrantcj-11" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=default;labelBackgroundColor=default;" value="&lt;h2 tabindex=&quot;-1&quot; class=&quot;heading-element&quot; dir=&quot;auto&quot; style=&quot;box-sizing: border-box; margin-top: 24px; margin-bottom: 16px; line-height: 1.25; padding-bottom: 0.3em; border-bottom: 1px solid rgba(61, 68, 77, 0.7); font-family: -apple-system, BlinkMacSystemFont, &amp;quot;Segoe UI&amp;quot;, &amp;quot;Noto Sans&amp;quot;, Helvetica, Arial, sans-serif, &amp;quot;Apple Color Emoji&amp;quot;, &amp;quot;Segoe UI Emoji&amp;quot;; text-align: start;&quot;&gt;Smart Packing Checklist Generator&lt;/h2&gt;" vertex="1">
           <mxGeometry height="30" width="60" x="392" y="60" as="geometry" />
         </mxCell>
-        <mxCell id="pUroKKAZp-Nj88IeVpbN-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=default;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Note: “Provides the option to easily swap implementation to Backend API”" vertex="1">
-          <mxGeometry height="40" width="192" x="370" y="249" as="geometry" />
+        <mxCell id="pUroKKAZp-Nj88IeVpbN-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=default;fillColor=none;align=left;verticalAlign=top;rounded=0;spacingLeft=6;" value="Note: “Provides the option to easily swap implementation to Backend API”" vertex="1">
+          <mxGeometry height="40" width="240" x="370" y="249" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
