@@ -1,0 +1,29 @@
+{
+  "name": "term-project-group-4",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "eslint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues"
+  },
+  "homepage": "https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4#readme",
+  "devDependencies": {
+    "eslint": "^10.0.0",
+    "vitest": "^4.0.18"
+  }
+}
