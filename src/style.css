@@ -1,0 +1,58 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #333;
+}
+
+h1 { margin-bottom: 1.5rem; }
+h2 { margin: 1.5rem 0 0.75rem; }
+h3 { margin: 1rem 0 0.5rem; color: #555; }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+label { font-weight: 600; }
+
+select,
+input[type="number"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+ul { list-style: none; padding-left: 0; }
+
+li {
+  padding: 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+#progress-text {
+  margin-top: 1rem;
+  font-weight: 600;
+  color: #2a7;
+}
