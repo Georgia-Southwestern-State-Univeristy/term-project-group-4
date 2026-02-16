@@ -7,7 +7,7 @@ A change is considered **DONE** only when it meets **all** requirements below.
 
 ## 1. Branching + PR Discipline
 - Work is done on a short-lived branch (no direct commits to `main`)
-- Branch name follows the team pattern (`week5/feature-name`)
+- Branch name follows the team pattern (`week<NUM>/<short-description>`)
 - A pull request is opened early (as soon as there is a reviewable slice), not at the end
 - PR includes a clear description of:
   - what changed
