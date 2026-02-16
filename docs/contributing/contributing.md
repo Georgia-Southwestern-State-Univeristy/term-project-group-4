@@ -76,7 +76,6 @@ A PR should include:
 Run the same checks locally that CI runs before requesting review.
 
 ### Option A: Use the repo scripts (preferred)
-If the repo includes scripts like these, use them:
 - `npm run eslint`
 - `npm run test`
 
