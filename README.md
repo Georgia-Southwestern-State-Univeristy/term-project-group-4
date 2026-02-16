@@ -23,14 +23,32 @@ This project requires Node.js v24 LTS (Long Term Support). Download and install 
    npm install
    ```
 
+## Running Locally
+
+Start the Vite development server:
+```bash
+npm run dev
+```
+This launches the app at `http://localhost:5173` with hot reloading.
+
 ## Development Commands
 
 - **Lint Code**: Check for code quality issues
   ```bash
-  npm run eslint
+  npm run lint
   ```
 
 - **Run Tests**: Execute the test suite
   ```bash
   npm run test
+  ```
+
+- **Build for Production**: Create an optimized build in the `dist/` folder
+  ```bash
+  npm run build
+  ```
+
+- **Preview Production Build**: Serve the production build locally
+  ```bash
+  npm run preview
   ```

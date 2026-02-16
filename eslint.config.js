@@ -1,12 +1,32 @@
+import globals from 'globals';
+
 export default [
   {
+    files: ['src/**/*.js'],
     languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+      },
     },
     rules: {
-      "no-unused-vars": "warn", // Warns you if you create variables you don't use
-      "no-undef": "error",      // Errors if you use a variable that isn't defined
-    }
-  }
+      'no-unused-vars': 'warn',
+      'no-undef': 'error',
+    },
+  },
+  {
+    files: ['**/*.test.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-unused-vars': 'warn',
+      'no-undef': 'error',
+    },
+  },
 ];
