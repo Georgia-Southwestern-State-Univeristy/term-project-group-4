@@ -31,6 +31,19 @@ npm run dev
 ```
 This launches the app at `http://localhost:5173` with hot reloading.
 
+### Backend (Express API Server)
+Start the Express server to enable trip storage and data persistence:
+```bash
+npm run server
+```
+The API will run at `http://localhost:3000` with the following endpoints:
+- `GET /api/trips` - List all saved trips
+- `POST /api/saveTrip` - Create/save a new trip with checklist
+- `PUT /api/trips/{tripId}` - Update an existing trip
+- `GET /health` - Health check endpoint
+
+Data is persisted to `data/trips.json`.
+
 ## Development Commands
 
 - **Lint Code**: Check for code quality issues
@@ -52,3 +65,10 @@ This launches the app at `http://localhost:5173` with hot reloading.
   ```bash
   npm run preview
   ```
+
+### Reinstall Dependencies
+If you encounter dependency issues, reinstall:
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
