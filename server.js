@@ -60,14 +60,17 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Trip Manager API running on http://localhost:${PORT}`);
-  console.log('Endpoints:');
-  console.log('  GET    /api/trips');
-  console.log('  POST   /api/saveTrip');
-  console.log('  PUT    /api/trips/{tripId}');
-  console.log(`  API docs: http://localhost:${PORT}/docs`);
-});
+// Export app for testing
+export { app };
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Trip Manager API running on http://localhost:${PORT}`);
+    console.log('Endpoints:');
+    console.log('  GET    /api/trips');
+    console.log('  POST   /api/saveTrip');
+    console.log('  PUT    /api/trips/{tripId}');
+  });
 
 // Swagger UI - serve API documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
