@@ -24,7 +24,7 @@ app.get('/api/trips', async (req, res) => {
   }
 });
 
-// POST /api/trips - Create new trip with checklist
+// POST /api/saveTrip - Create new trip with checklist
 app.post('/api/saveTrip', async (req, res) => {
   try {
     const { name, destinationType, duration, checklist } = req.body;
