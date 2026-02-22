@@ -1,6 +1,6 @@
 import { generateChecklist } from './checklistGenerator.js';
 import { renderChecklist, setOnChecklistChange } from './checklistRenderer.js';
-import { saveState, saveTripToServer, updateTripOnServer } from './storage.js';
+import { saveState, loadState, saveTripToServer, updateTripOnServer } from './storage.js';
 
 /**
  * Initializes the trip form and wires up submission.
@@ -10,8 +10,14 @@ export function initTripForm() {
   const checklistSection = document.getElementById('checklist-section');
   const saveTripBtn = document.getElementById('save-trip-btn');
 
-  let currentChecklist = null;
-  let savedTripId = null;
+  // Restore state from localStorage so reload preserves checklist and server link
+  const restored = loadState();
+  let currentChecklist = restored?.checklist || null;
+  let savedTripId = restored?.savedTripId || null;
+
+  if (savedTripId) {
+    saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
+  }
 
   // When a checkbox changes and the trip has been saved, sync to server
   setOnChecklistChange((checklist) => {
@@ -34,7 +40,7 @@ export function initTripForm() {
 
     currentChecklist = generateChecklist(tripParams);
     savedTripId = null;
-    saveState({ tripParams, checklist: currentChecklist });
+    saveState({ tripParams, checklist: currentChecklist, savedTripId: null });
     checklistSection.hidden = false;
     renderChecklist(currentChecklist);
     saveTripBtn.disabled = false;
@@ -47,24 +53,29 @@ export function initTripForm() {
     saveTripBtn.disabled = true;
     saveTripBtn.textContent = 'Saving…';
 
+    const tripData = {
+      name: formData.get('tripName'),
+      destinationType: formData.get('destinationType'),
+      duration: parseInt(formData.get('duration'), 10),
+      checklist: currentChecklist || [],
+    };
+
     try {
       if (savedTripId) {
-        // Update existing trip
-        await updateTripOnServer(savedTripId, {
-          checklist: currentChecklist || [],
-        });
+        // Update existing trip with all current form fields
+        await updateTripOnServer(savedTripId, tripData);
         saveTripBtn.textContent = 'Saved!';
       } else {
         // Create new trip
-        const tripData = {
-          name: formData.get('tripName'),
-          destinationType: formData.get('destinationType'),
-          duration: parseInt(formData.get('duration'), 10),
-          checklist: currentChecklist || [],
-        };
         const saved = await saveTripToServer(tripData);
         savedTripId = saved.id;
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
+      }
+      // Persist savedTripId so reload can resume syncing
+      const state = loadState();
+      if (state) {
+        state.savedTripId = savedTripId;
+        saveState(state);
       }
       saveTripBtn.disabled = false;
     } catch (err) {
