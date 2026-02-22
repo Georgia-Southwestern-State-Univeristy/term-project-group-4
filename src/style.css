@@ -10,49 +10,112 @@ body {
   margin: 2rem auto;
   padding: 0 1rem;
   color: #333;
+  background: #f5f7fa;
 }
 
-h1 { margin-bottom: 1.5rem; }
-h2 { margin: 1.5rem 0 0.75rem; }
+h1 {
+  margin-bottom: 1.5rem;
+  color: #1a1a2e;
+}
+
+h2 {
+  margin: 0 0 0.75rem;
+  color: #1a1a2e;
+}
+
 h3 { margin: 1rem 0 0.5rem; color: #555; }
+
+section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 
 form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-width: 400px;
 }
 
-label { font-weight: 600; }
+label { font-weight: 600; font-size: 0.9rem; }
 
 select,
-input[type="number"] {
-  padding: 0.5rem;
+input[type="number"],
+input[type="text"] {
+  padding: 0.5rem 0.75rem;
   font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+
+select:focus,
+input[type="number"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 button {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+button[type="submit"] {
+  background: #3b82f6;
+  color: #fff;
+}
+
+button[type="submit"]:hover {
+  background: #2563eb;
+}
+
+#save-trip-btn {
+  background: #10b981;
+  color: #fff;
+}
+
+#save-trip-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+#save-trip-btn:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
 ul { list-style: none; padding-left: 0; }
 
 li {
-  padding: 0.25rem 0;
+  padding: 0.5rem 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+li:last-child {
+  border-bottom: none;
 }
 
 input[type="checkbox"] {
   width: 1.2rem;
   height: 1.2rem;
+  accent-color: #3b82f6;
 }
 
 #progress-text {
   margin-top: 1rem;
   font-weight: 600;
-  color: #2a7;
+  color: #10b981;
 }
