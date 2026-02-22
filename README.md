@@ -44,6 +44,12 @@ The API will run at `http://localhost:3000` with the following endpoints:
 
 Data is persisted to `data/trips.json`.
 
+### API Documentation (Swagger UI)
+After installing the server (`npm run server`), the OpenAPI documentation is available at:
+
+- http://localhost:3000/docs
+
+
 ## Development Commands
 
 - **Lint Code**: Check for code quality issues

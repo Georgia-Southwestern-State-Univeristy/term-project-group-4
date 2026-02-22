@@ -4,6 +4,10 @@ import {
   createTrip,
   updateTrip
 } from './server/storageFile.js';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
+const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -60,4 +64,8 @@ app.listen(PORT, () => {
   console.log('  GET    /api/trips');
   console.log('  POST   /api/saveTrip');
   console.log('  PUT    /api/trips/{tripId}');
+  console.log(`  API docs: http://localhost:${PORT}/docs`);
 });
+
+// Swagger UI - serve API documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
