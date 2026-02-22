@@ -24,14 +24,15 @@ app.get('/api/trips', async (req, res) => {
   }
 });
 
-// POST /api/trips - Create new trip with checklist
+// POST /api/saveTrip - Create new trip with checklist
 app.post('/api/saveTrip', async (req, res) => {
   try {
-    const { destinationType, duration, checklist } = req.body;
-    if (!destinationType || !duration) {
-      return res.status(400).json({ error: 'Missing required fields: destinationType, duration' });
+    const { name, destinationType, duration, checklist } = req.body;
+    if (!name || !destinationType || !duration) {
+      return res.status(400).json({ error: 'Missing required fields: name, destinationType, duration' });
     }
     const trip = await createTrip({
+      name,
       destinationType,
       duration,
       checklist: checklist || []
@@ -45,8 +46,9 @@ app.post('/api/saveTrip', async (req, res) => {
 // PUT /api/trips/{tripId} - Update trip with checklist
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
-    const { destinationType, duration, checklist } = req.body;
+    const { name, destinationType, duration, checklist } = req.body;
     const updates = {};
+    if (name !== undefined) updates.name = name;
     if (destinationType !== undefined) updates.destinationType = destinationType;
     if (duration !== undefined) updates.duration = duration;
     if (checklist !== undefined) updates.checklist = checklist;
