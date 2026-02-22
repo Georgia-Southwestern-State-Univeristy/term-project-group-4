@@ -71,6 +71,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('  POST   /api/saveTrip');
     console.log('  PUT    /api/trips/{tripId}');
   });
+}
 
 // Swagger UI - serve API documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
