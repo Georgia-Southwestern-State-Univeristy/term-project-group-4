@@ -1,5 +1,15 @@
 import { saveState, loadState } from './storage.js';
 
+let onChangeCallback = null;
+
+/**
+ * Register a callback that fires whenever a checklist item is toggled.
+ * @param {function(Array): void} cb
+ */
+export function setOnChecklistChange(cb) {
+  onChangeCallback = cb;
+}
+
 /**
  * Renders a checklist array into the DOM with checkboxes and progress tracking.
  * @param {Array<{ id: string, name: string, category: string, packed: boolean }>} checklist
@@ -38,6 +48,9 @@ export function renderChecklist(checklist) {
         if (state) {
           state.checklist = checklist;
           saveState(state);
+        }
+        if (onChangeCallback) {
+          onChangeCallback(checklist);
         }
       });
 
