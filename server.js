@@ -27,11 +27,12 @@ app.get('/api/trips', async (req, res) => {
 // POST /api/trips - Create new trip with checklist
 app.post('/api/saveTrip', async (req, res) => {
   try {
-    const { destinationType, duration, checklist } = req.body;
-    if (!destinationType || !duration) {
-      return res.status(400).json({ error: 'Missing required fields: destinationType, duration' });
+    const { name, destinationType, duration, checklist } = req.body;
+    if (!name || !destinationType || !duration) {
+      return res.status(400).json({ error: 'Missing required fields: name, destinationType, duration' });
     }
     const trip = await createTrip({
+      name,
       destinationType,
       duration,
       checklist: checklist || []
@@ -45,8 +46,9 @@ app.post('/api/saveTrip', async (req, res) => {
 // PUT /api/trips/{tripId} - Update trip with checklist
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
-    const { destinationType, duration, checklist } = req.body;
+    const { name, destinationType, duration, checklist } = req.body;
     const updates = {};
+    if (name !== undefined) updates.name = name;
     if (destinationType !== undefined) updates.destinationType = destinationType;
     if (duration !== undefined) updates.duration = duration;
     if (checklist !== undefined) updates.checklist = checklist;
@@ -58,14 +60,17 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Trip Manager API running on http://localhost:${PORT}`);
-  console.log('Endpoints:');
-  console.log('  GET    /api/trips');
-  console.log('  POST   /api/saveTrip');
-  console.log('  PUT    /api/trips/{tripId}');
-  console.log(`  API docs: http://localhost:${PORT}/docs`);
-});
+// Export app for testing
+export { app };
 
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Trip Manager API running on http://localhost:${PORT}`);
+    console.log('Endpoints:');
+    console.log('  GET    /api/trips');
+    console.log('  POST   /api/saveTrip');
+    console.log('  PUT    /api/trips/{tripId}');
+  });
+}
 // Swagger UI - serve API documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
