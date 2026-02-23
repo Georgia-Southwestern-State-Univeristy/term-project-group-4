@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: SmartChecklist APIs
+  version: 0.1.0
+  description: APIs to save, update and retrieving the trip/s data.
+servers:
+  - url: /
+components:
+  securitySchemes:
+    # Server currently does not enforce auth; this documents a future approach.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "MVP: no authentication enforced by the server. In future replace with JWT/OAuth2."
+paths:
+  /api/trips:
+    get:
+      summary: List all trips
+      description: Returns all saved trips
+      responses:
+        '200':
+          description: Array of Trip
+          content:
+            application/json:
+              schema:
+                type: array
+              example:
+                - id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                  name: "My Beach Trip"
+                  destinationType: "beach"
+                  duration: 5
+                  checklist:
+                    - label: "Sunscreen"
+                      completed: false
+                    - label: "Passport"
+                      completed: false
+                  createdAt: "2026-02-22T12:34:56.789Z"
+
+  /api/saveTrip:
+    post:
+      summary: Create a new trip with optional checklist
+      description: Creates a new trip with the specified destination type, duration, and an optional checklist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                    type: string
+                destinationType:
+                  type: string
+                duration:
+                  type: integer
+                checklist:
+                  type: array
+              required: [name, destinationType, duration]
+              example:
+                name: "My Beach Trip"
+                destinationType: "beach"
+                duration: 5
+                checklist:
+                  - label: "Sunscreen"
+                    completed: false
+                  - label: "Passport"
+                    completed: false
+      responses:
+        '201':
+          description: Created Trip
+          content:
+            application/json:
+              example:
+                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                name: "My Beach Trip"
+                destinationType: "beach"
+                duration: 5
+                checklist:
+                  - label: "Sunscreen"
+                    completed: false
+                createdAt: "2026-02-22T12:34:56.789Z"
+
+  /api/trips/{tripId}:
+    put:
+      summary: Update an existing trip
+      description: Partial updates supported.
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                destinationType:
+                  type: string
+                duration:
+                  type: integer
+                checklist:
+                  type: array
+            example:
+              duration: 7
+              checklist:
+                - label: "Updated item"
+                  completed: true
+      responses:
+        '200':
+          description: Updated Trip
+          content:
+            application/json:
+              example:
+                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                destinationType: "mountains"
+                duration: 7
+                checklist:
+                  - label: "Updated item"
+                    completed: true
+                createdAt: "2026-02-22T12:34:56.789Z"
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Trip f47ac10b-58cc-4372-a567-0e02b2c3d479 not found"
