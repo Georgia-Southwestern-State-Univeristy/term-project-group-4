@@ -60,6 +60,9 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
+// Swagger UI - serve API documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Export app for testing
 export { app };
 
@@ -73,5 +76,3 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-// Swagger UI - serve API documentation
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

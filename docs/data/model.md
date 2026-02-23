@@ -8,7 +8,7 @@
 	"destinationType": "",
 	"duration": null,
 	"checklist": [
-		{ "label": "", "completed": }
+		{ "label": "", "completed": false}
 	],
 	"createdAt": ""
 }
@@ -25,8 +25,6 @@ Field explanations:
 	- `completed` (boolean): whether the item is done.
 - `createdAt` (string): timestamp for when the trip was created.
 
-**Key fields**
-- destinationType, durantion and name are required fields.
 
 **Key fields**
 - `name`, `destinationType`, and `duration` are required for creating a Trip.
