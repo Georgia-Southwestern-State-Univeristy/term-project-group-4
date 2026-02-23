@@ -27,6 +27,9 @@ app.post('/api/saveTrip', async (req, res) => {
     if (!name || !destinationType || !duration) {
       return res.status(400).json({ error: 'Missing required fields: name, destinationType, duration' });
     }
+    if (!Number.isInteger(duration) || duration < 1) {
+      return res.status(400).json({ error: 'duration must be a positive integer' });
+    }
     const trip = await createTrip({
       name,
       destinationType,
@@ -43,15 +46,23 @@ app.post('/api/saveTrip', async (req, res) => {
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
     const { name, destinationType, duration, checklist } = req.body;
+
+    if (duration !== undefined && (!Number.isInteger(duration) || duration < 1)) {
+      return res.status(400).json({ error: 'duration must be a positive integer' });
+    }
+
     const updates = {};
     if (name !== undefined) updates.name = name;
     if (destinationType !== undefined) updates.destinationType = destinationType;
     if (duration !== undefined) updates.duration = duration;
     if (checklist !== undefined) updates.checklist = checklist;
-    
+
     const trip = await updateTrip(req.params.tripId, updates);
     res.json(trip);
   } catch (error) {
+    if (error.code === 'TRIP_NOT_FOUND') {
+      return res.status(404).json({ error: 'Trip not found', message: error.message });
+    }
     res.status(500).json({ error: 'Failed to update trip', message: error.message });
   }
 });

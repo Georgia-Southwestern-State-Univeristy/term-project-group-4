@@ -7,8 +7,8 @@ const saved = loadState();
 if (saved) {
   const form = document.getElementById('trip-form');
   if (saved.tripParams) {
-    if (saved.tripParams.tripName) {
-      form.elements['tripName'].value = saved.tripParams.tripName;
+    if (saved.tripParams.name) {
+      form.elements['name'].value = saved.tripParams.name;
     }
     if (saved.tripParams.destinationType) {
       form.elements['destinationType'].value = saved.tripParams.destinationType;

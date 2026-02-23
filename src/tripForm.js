@@ -33,7 +33,7 @@ export function initTripForm() {
 
     const formData = new FormData(form);
     const tripParams = {
-      tripName: formData.get('tripName'),
+      name: formData.get('name'),
       destinationType: formData.get('destinationType'),
       duration: parseInt(formData.get('duration'), 10),
     };
@@ -54,7 +54,7 @@ export function initTripForm() {
     saveTripBtn.textContent = 'Saving…';
 
     const tripData = {
-      name: formData.get('tripName'),
+      name: formData.get('name'),
       destinationType: formData.get('destinationType'),
       duration: parseInt(formData.get('duration'), 10),
       checklist: currentChecklist || [],
