@@ -69,6 +69,12 @@ Trip data is persisted to `data/trips.json`.
 6. Confirm the button shows "Saved!" with a trip ID
 7. Check `data/trips.json` to verify the trip was written to disk
 
+### API Documentation (Swagger UI)
+After installing the server (`npm run server`), the OpenAPI documentation is available at:
+
+- http://localhost:3000/docs
+
+
 ## Development Commands
 
 - **Lint Code**: Check for code quality issues

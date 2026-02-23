@@ -4,6 +4,10 @@ import {
   createTrip,
   updateTrip
 } from './server/storageFile.js';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+
+const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,6 +71,9 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
+// Swagger UI - serve API documentation
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Export app for testing
 export { app };
 
@@ -79,3 +86,4 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('  PUT    /api/trips/{tripId}');
   });
 }
+
