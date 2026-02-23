@@ -47,6 +47,30 @@ describe('POST /api/saveTrip', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/Missing required fields/);
   });
+
+  it('returns 400 when duration is not a positive integer', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Bad Duration Trip',
+      destinationType: 'beach',
+      duration: -3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/);
+  });
+
+  it('returns 400 when duration is zero', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Zero Duration Trip',
+      destinationType: 'beach',
+      duration: 0,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/);
+  });
 });
 
 describe('GET /api/trips', () => {
@@ -90,5 +114,30 @@ describe('PUT /api/trips/:tripId', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.checklist[0].packed).toBe(true);
+  });
+
+  it('returns 404 for a non-existent trip id', async () => {
+    const res = await request(app)
+      .put('/api/trips/does-not-exist')
+      .send({ duration: 5 });
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Trip not found');
+  });
+
+  it('returns 400 when duration is not a positive integer', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Validation Trip',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await request(app)
+      .put(`/api/trips/${create.body.id}`)
+      .send({ duration: -1 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/);
   });
 });

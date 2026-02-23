@@ -84,7 +84,11 @@ export async function createTrip(tripParams) {
 export async function updateTrip(tripId, updates) {
   const data = await readFile();
   const trip = (data.trips || []).find(t => t.id === tripId);
-  if (!trip) throw new Error(`Trip ${tripId} not found`);
+  if (!trip) {
+    const err = new Error(`Trip ${tripId} not found`);
+    err.code = 'TRIP_NOT_FOUND';
+    throw err;
+  }
   Object.assign(trip, updates);
   await writeFile(data);
   return trip;
