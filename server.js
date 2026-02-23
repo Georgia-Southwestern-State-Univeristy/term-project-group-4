@@ -24,7 +24,7 @@ app.get('/api/trips', async (req, res) => {
 app.post('/api/saveTrip', async (req, res) => {
   try {
     const { name, destinationType, duration, checklist } = req.body;
-    if (!name || !destinationType || !duration) {
+    if (!name || !destinationType || duration === undefined || duration === null) {
       return res.status(400).json({ error: 'Missing required fields: name, destinationType, duration' });
     }
     if (!Number.isInteger(duration) || duration < 1) {

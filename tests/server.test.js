@@ -47,6 +47,30 @@ describe('POST /api/saveTrip', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/Missing required fields/);
   });
+
+  it('returns 400 when duration is not a positive integer', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Bad Duration Trip',
+      destinationType: 'beach',
+      duration: -3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/);
+  });
+
+  it('returns 400 when duration is zero', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Zero Duration Trip',
+      destinationType: 'beach',
+      duration: 0,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/positive integer/);
+  });
 });
 
 describe('GET /api/trips', () => {
