@@ -1,19 +1,19 @@
 import { generateChecklist } from './checklistGenerator.js';
 import { renderChecklist, setOnChecklistChange } from './checklistRenderer.js';
-import { saveState, loadState, saveTripToServer, updateTripOnServer } from './storage.js';
+import { saveTripToServer, updateTripOnServer } from './storage.js';
 
 /**
  * Initializes the trip form and wires up submission.
+ * @param {string|null} initialTripId - ID of a previously saved trip, or null
+ * @param {Array|null} initialChecklist - Restored checklist from server, or null
  */
-export function initTripForm() {
+export function initTripForm(initialTripId = null, initialChecklist = null) {
   const form = document.getElementById('trip-form');
   const checklistSection = document.getElementById('checklist-section');
   const saveTripBtn = document.getElementById('save-trip-btn');
 
-  // Restore state from localStorage so reload preserves checklist and server link
-  const restored = loadState();
-  let currentChecklist = restored?.checklist || null;
-  let savedTripId = restored?.savedTripId || null;
+  let currentChecklist = initialChecklist;
+  let savedTripId = initialTripId;
 
   if (savedTripId) {
     saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
@@ -40,7 +40,6 @@ export function initTripForm() {
 
     currentChecklist = generateChecklist(tripParams);
     savedTripId = null;
-    saveState({ tripParams, checklist: currentChecklist, savedTripId: null });
     checklistSection.hidden = false;
     renderChecklist(currentChecklist);
     saveTripBtn.disabled = false;
@@ -62,20 +61,12 @@ export function initTripForm() {
 
     try {
       if (savedTripId) {
-        // Update existing trip with all current form fields
         await updateTripOnServer(savedTripId, tripData);
         saveTripBtn.textContent = 'Saved!';
       } else {
-        // Create new trip
         const saved = await saveTripToServer(tripData);
         savedTripId = saved.id;
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
-      }
-      // Persist savedTripId so reload can resume syncing
-      const state = loadState();
-      if (state) {
-        state.savedTripId = savedTripId;
-        saveState(state);
       }
       saveTripBtn.disabled = false;
     } catch (err) {
