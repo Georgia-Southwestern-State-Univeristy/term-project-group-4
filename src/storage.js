@@ -1,25 +1,28 @@
-const STORAGE_KEY = 'smart-packing-checklist';
+import { getTrips, saveTrip, updateTrip } from './apiClient.js';
 
 /**
- * Save the current trip and checklist state to localStorage.
- * @param {{ tripParams: object, checklist: Array }} state
+ * Load all trips from the server.
+ * @returns {Promise<Array>}
  */
-export function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+export async function loadTripsFromServer() {
+  return getTrips();
 }
 
 /**
- * Load saved state from localStorage.
- * @returns {{ tripParams: object, checklist: Array } | null}
+ * Save a trip to the server.
+ * @param {{ name: string, destinationType: string, duration: number, checklist: Array }} tripData
+ * @returns {Promise<object>} The saved trip with server-assigned ID
  */
-export function loadState() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : null;
+export async function saveTripToServer(tripData) {
+  return saveTrip(tripData);
 }
 
 /**
- * Clear saved state from localStorage.
+ * Update a trip on the server.
+ * @param {string} tripId
+ * @param {object} updates
+ * @returns {Promise<object>}
  */
-export function clearState() {
-  localStorage.removeItem(STORAGE_KEY);
+export async function updateTripOnServer(tripId, updates) {
+  return updateTrip(tripId, updates);
 }

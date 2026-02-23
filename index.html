@@ -13,6 +13,9 @@
     <section id="trip-form-section">
       <h2>Create a Trip</h2>
       <form id="trip-form">
+        <label for="trip-name">Trip Name</label>
+        <input type="text" id="trip-name" name="name" placeholder="e.g. Spring Break 2026" required />
+
         <label for="destination-type">Destination Type</label>
         <select id="destination-type" name="destinationType" required>
           <option value="">-- Select --</option>
@@ -25,6 +28,7 @@
         <input type="number" id="duration" name="duration" min="1" max="30" required />
 
         <button type="submit">Generate Checklist</button>
+        <button type="button" id="save-trip-btn" disabled>Save Trip</button>
       </form>
     </section>
 
