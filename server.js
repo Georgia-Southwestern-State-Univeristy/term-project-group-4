@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getAllTrips,
+  getTripById,
   createTrip,
   updateTrip
 } from './server/storageFile.js';
@@ -21,6 +22,19 @@ app.get('/api/trips', async (req, res) => {
     res.json(trips);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch trips', message: error.message });
+  }
+});
+
+// GET /api/trips/:tripId - Get a single trip by ID
+app.get('/api/trips/:tripId', async (req, res) => {
+  try {
+    const trip = await getTripById(req.params.tripId);
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+    res.json(trip);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch trip', message: error.message });
   }
 });
 
@@ -82,6 +96,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
     console.log('Endpoints:');
     console.log('  GET    /api/trips');
+    console.log('  GET    /api/trips/{tripId}');
     console.log('  POST   /api/saveTrip');
     console.log('  PUT    /api/trips/{tripId}');
   });

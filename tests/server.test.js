@@ -91,6 +91,33 @@ describe('GET /api/trips', () => {
   });
 });
 
+describe('GET /api/trips/:tripId', () => {
+  it('returns a single trip by ID', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Beach Getaway',
+      destinationType: 'beach',
+      duration: 4,
+      checklist: [
+        { id: 'item-0', name: 'Sunscreen', category: 'Beach', packed: false },
+      ],
+    });
+
+    const res = await request(app).get(`/api/trips/${create.body.id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(create.body.id);
+    expect(res.body.name).toBe('Beach Getaway');
+    expect(res.body.checklist).toHaveLength(1);
+  });
+
+  it('returns 404 for a non-existent trip id', async () => {
+    const res = await request(app).get('/api/trips/does-not-exist');
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Trip not found');
+  });
+});
+
 describe('PUT /api/trips/:tripId', () => {
   it('updates checklist on an existing trip', async () => {
     // Create a trip

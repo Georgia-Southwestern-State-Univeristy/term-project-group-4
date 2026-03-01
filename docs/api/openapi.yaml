@@ -82,6 +82,42 @@ paths:
                 createdAt: "2026-02-22T12:34:56.789Z"
 
   /api/trips/{tripId}:
+    get:
+      summary: Get a single trip by ID
+      description: Returns a single trip identified by its UUID.
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trip object
+          content:
+            application/json:
+              example:
+                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                name: "My Beach Trip"
+                destinationType: "beach"
+                duration: 5
+                checklist:
+                  - id: "item-0"
+                    name: "Sunscreen"
+                    category: "Beach"
+                    packed: false
+                createdAt: "2026-02-22T12:34:56.789Z"
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Trip not found"
     put:
       summary: Update an existing trip
       description: Partial updates supported.
