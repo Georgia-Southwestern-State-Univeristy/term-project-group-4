@@ -27,19 +27,3 @@ export async function updateTripOnServer(tripId, updates) {
   return updateTrip(tripId, updates);
 }
 
-/**
- * Save local state to browser localStorage (e.g., draft checklist).
- * @param {object} state
- */
-export function saveState(state) {
-  localStorage.setItem('tripState', JSON.stringify(state));
-}
-
-/**
- * Load local state from browser localStorage.
- * @returns {object|null}
- */
-export function loadState() {
-  const stored = localStorage.getItem('tripState');
-  return stored ? JSON.parse(stored) : null;
-}
