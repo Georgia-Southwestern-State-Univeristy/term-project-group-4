@@ -34,6 +34,19 @@ app.post('/api/saveTrip', async (req, res) => {
     if (!Number.isInteger(duration) || duration < 1) {
       return res.status(400).json({ error: 'duration must be a positive integer' });
     }
+    
+    // Validate checklist payload structure if provided
+    if (checklist && Array.isArray(checklist)) {
+      for (const item of checklist) {
+        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "packed" boolean field' 
+          });
+        }
+      }
+    }
+    
     const trip = await createTrip({
       name,
       destinationType,
@@ -53,6 +66,18 @@ app.put('/api/trips/:tripId', async (req, res) => {
 
     if (duration !== undefined && (!Number.isInteger(duration) || duration < 1)) {
       return res.status(400).json({ error: 'duration must be a positive integer' });
+    }
+    
+    // Validate checklist payload structure if provided
+    if (checklist && Array.isArray(checklist)) {
+      for (const item of checklist) {
+        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "packed" boolean field' 
+          });
+        }
+      }
     }
 
     const updates = {};

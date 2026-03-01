@@ -49,8 +49,8 @@ export async function getAllTrips() {
  *   destinationType: 'beach',
  *   duration: 5,
  *   checklist: [
- *     { label: 'Sunscreen', completed: false },
- *     { label: 'Passport', completed: false }
+ *     { label: 'Sunscreen', packed: false },
+ *     { label: 'Passport', packed: false }
  *   ]
  * });
  */
@@ -77,7 +77,7 @@ export async function createTrip(tripParams) {
  * const updated = await updateTrip(tripId, {
  *   duration: 7,
  *   checklist: [
- *     { label: 'Updated item', completed: true }
+ *     { label: 'Updated item', packed: true }
  *   ]
  * });
  */
