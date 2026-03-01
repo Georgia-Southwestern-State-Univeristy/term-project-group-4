@@ -25,6 +25,8 @@ app.get('/api/trips', async (req, res) => {
 });
 
 // POST /api/saveTrip - Create new trip with checklist
+// Request: { name, destinationType, duration, checklist[] }
+// Checklist items must have: { id, name, category, packed }
 app.post('/api/saveTrip', async (req, res) => {
   try {
     const { name, destinationType, duration, checklist } = req.body;
@@ -34,6 +36,37 @@ app.post('/api/saveTrip', async (req, res) => {
     if (!Number.isInteger(duration) || duration < 1) {
       return res.status(400).json({ error: 'duration must be a positive integer' });
     }
+    
+    // Validate checklist payload structure if provided
+    if (checklist && Array.isArray(checklist)) {
+      for (const item of checklist) {
+        if (!item.hasOwnProperty('id') || typeof item.id !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have an "id" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('name') || typeof item.name !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "name" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('category') || typeof item.category !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "category" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "packed" boolean field' 
+          });
+        }
+      }
+    }
+    
     const trip = await createTrip({
       name,
       destinationType,
@@ -47,12 +80,43 @@ app.post('/api/saveTrip', async (req, res) => {
 });
 
 // PUT /api/trips/{tripId} - Update trip with checklist
+// Checklist items must have: { id, name, category, packed }
 app.put('/api/trips/:tripId', async (req, res) => {
   try {
     const { name, destinationType, duration, checklist } = req.body;
 
     if (duration !== undefined && (!Number.isInteger(duration) || duration < 1)) {
       return res.status(400).json({ error: 'duration must be a positive integer' });
+    }
+    
+    // Validate checklist payload structure if provided
+    if (checklist && Array.isArray(checklist)) {
+      for (const item of checklist) {
+        if (!item.hasOwnProperty('id') || typeof item.id !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have an "id" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('name') || typeof item.name !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "name" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('category') || typeof item.category !== 'string') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "category" string field' 
+          });
+        }
+        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+          return res.status(400).json({ 
+            error: 'Invalid checklist payload', 
+            message: 'Each checklist item must have a "packed" boolean field' 
+          });
+        }
+      }
     }
 
     const updates = {};

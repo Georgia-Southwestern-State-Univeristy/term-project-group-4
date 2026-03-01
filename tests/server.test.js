@@ -71,6 +71,51 @@ describe('POST /api/saveTrip', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/positive integer/);
   });
+
+  it('returns 400 when checklist item missing packed field', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Invalid Checklist Trip',
+      destinationType: 'beach',
+      duration: 5,
+      checklist: [
+        { id: 'item-0', name: 'Sunscreen', category: 'Beach', completed: true },
+      ],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid checklist payload');
+    expect(res.body.message).toMatch(/packed.*boolean/);
+  });
+
+  it('returns 400 when checklist item missing id field', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Invalid Checklist Trip',
+      destinationType: 'beach',
+      duration: 5,
+      checklist: [
+        { name: 'Sunscreen', category: 'Beach', packed: false },
+      ],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid checklist payload');
+    expect(res.body.message).toMatch(/id.*string/);
+  });
+
+  it('returns 400 when checklist item missing category field', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Invalid Checklist Trip',
+      destinationType: 'beach',
+      duration: 5,
+      checklist: [
+        { id: 'item-0', name: 'Sunscreen', packed: false },
+      ],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid checklist payload');
+    expect(res.body.message).toMatch(/category.*string/);
+  });
 });
 
 describe('GET /api/trips', () => {
