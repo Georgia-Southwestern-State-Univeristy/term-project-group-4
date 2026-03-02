@@ -1,5 +1,3 @@
-import { saveState, loadState } from './storage.js';
-
 let onChangeCallback = null;
 
 /**
@@ -44,11 +42,6 @@ export function renderChecklist(checklist) {
       checkbox.addEventListener('change', () => {
         item.packed = checkbox.checked;
         updateProgress(checklist);
-        const state = loadState();
-        if (state) {
-          state.checklist = checklist;
-          saveState(state);
-        }
         if (onChangeCallback) {
           onChangeCallback(checklist);
         }

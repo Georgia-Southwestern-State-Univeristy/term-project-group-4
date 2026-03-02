@@ -4,20 +4,16 @@ import { saveTripToServer, updateTripOnServer } from './storage.js';
 
 /**
  * Initializes the trip form and wires up submission.
- * @param {string|null} initialTripId - ID of a previously saved trip, or null
- * @param {Array|null} initialChecklist - Restored checklist from server, or null
+ * @param {{ onTripSaved?: function(): void }} [options]
+ * @returns {{ loadTrip: function }} Controls for loading a trip into the form
  */
-export function initTripForm(initialTripId = null, initialChecklist = null) {
+export function initTripForm({ onTripSaved } = {}) {
   const form = document.getElementById('trip-form');
   const checklistSection = document.getElementById('checklist-section');
   const saveTripBtn = document.getElementById('save-trip-btn');
 
-  let currentChecklist = initialChecklist;
-  let savedTripId = initialTripId;
-
-  if (savedTripId) {
-    saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
-  }
+  let currentChecklist = null;
+  let savedTripId = null;
 
   // When a checkbox changes and the trip has been saved, sync to server
   setOnChecklistChange((checklist) => {
@@ -27,6 +23,29 @@ export function initTripForm(initialTripId = null, initialChecklist = null) {
       );
     }
   });
+
+  /**
+   * Load a saved trip into the form and render its checklist.
+   * @param {{ id: string, name: string, destinationType: string, duration: number, checklist: Array }} trip
+   */
+  function loadTrip(trip) {
+    form.elements['name'].value = trip.name || '';
+    form.elements['destinationType'].value = trip.destinationType || '';
+    form.elements['duration'].value = trip.duration || '';
+
+    savedTripId = trip.id;
+    currentChecklist = trip.checklist || [];
+
+    if (currentChecklist.length > 0) {
+      checklistSection.hidden = false;
+      renderChecklist(currentChecklist);
+      saveTripBtn.disabled = false;
+    } else {
+      checklistSection.hidden = true;
+      saveTripBtn.disabled = true;
+    }
+    saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
+  }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -69,10 +88,13 @@ export function initTripForm(initialTripId = null, initialChecklist = null) {
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
       }
       saveTripBtn.disabled = false;
+      if (onTripSaved) onTripSaved();
     } catch (err) {
       console.error('Failed to save trip:', err);
       saveTripBtn.textContent = 'Save failed – retry?';
       saveTripBtn.disabled = false;
     }
   });
+
+  return { loadTrip };
 }

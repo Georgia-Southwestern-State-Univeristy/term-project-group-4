@@ -114,6 +114,31 @@ input[type="checkbox"] {
   accent-color: #3b82f6;
 }
 
+#trip-search {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+#saved-trips-list li {
+  justify-content: space-between;
+}
+
+#saved-trips-list button {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  background: #3b82f6;
+  color: #fff;
+}
+
+#saved-trips-list button:hover {
+  background: #2563eb;
+}
+
+#no-trips-message {
+  color: #9ca3af;
+  font-style: italic;
+}
+
 #progress-text {
   margin-top: 1rem;
   font-weight: 600;

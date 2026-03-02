@@ -1,36 +1,61 @@
 import { initTripForm } from './tripForm.js';
 import { loadTripsFromServer } from './storage.js';
-import { renderChecklist } from './checklistRenderer.js';
 
-async function init() {
-  let savedTripId = null;
-  let restoredChecklist = null;
+function renderSavedTrips(trips, loadTrip) {
+  const list = document.getElementById('saved-trips-list');
+  const noTripsMsg = document.getElementById('no-trips-message');
 
-  try {
-    const trips = await loadTripsFromServer();
-    if (trips.length > 0) {
-      // Load the most recently created trip
-      const latest = trips[trips.length - 1];
-      const form = document.getElementById('trip-form');
+  list.innerHTML = '';
 
-      if (latest.name) form.elements['name'].value = latest.name;
-      if (latest.destinationType) form.elements['destinationType'].value = latest.destinationType;
-      if (latest.duration) form.elements['duration'].value = latest.duration;
-
-      if (latest.checklist && latest.checklist.length > 0) {
-        document.getElementById('checklist-section').hidden = false;
-        document.getElementById('save-trip-btn').disabled = false;
-        renderChecklist(latest.checklist);
-        restoredChecklist = latest.checklist;
-      }
-
-      savedTripId = latest.id;
-    }
-  } catch (err) {
-    console.error('Failed to load trips from server:', err);
+  if (trips.length === 0) {
+    noTripsMsg.hidden = false;
+    return;
   }
 
-  initTripForm(savedTripId, restoredChecklist);
+  noTripsMsg.hidden = true;
+
+  for (const trip of trips) {
+    const li = document.createElement('li');
+
+    const info = document.createElement('span');
+    info.textContent = `${trip.name} — ${trip.destinationType}, ${trip.duration} day${trip.duration === 1 ? '' : 's'}`;
+
+    const btn = document.createElement('button');
+    btn.textContent = 'Load';
+    btn.addEventListener('click', () => loadTrip(trip));
+
+    li.appendChild(info);
+    li.appendChild(btn);
+    list.appendChild(li);
+  }
+}
+
+async function init() {
+  const searchInput = document.getElementById('trip-search');
+  let allTrips = [];
+
+  async function refreshTripList() {
+    try {
+      const trips = await loadTripsFromServer();
+      allTrips = trips.reverse();
+      renderSavedTrips(allTrips, loadTrip);
+      searchInput.value = '';
+    } catch (err) {
+      console.error('Failed to load trips from server:', err);
+    }
+  }
+
+  const { loadTrip } = initTripForm({ onTripSaved: refreshTripList });
+
+  await refreshTripList();
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = allTrips.filter((trip) =>
+      trip.name.toLowerCase().includes(query),
+    );
+    renderSavedTrips(filtered, loadTrip);
+  });
 }
 
 init();
