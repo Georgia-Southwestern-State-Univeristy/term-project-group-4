@@ -69,6 +69,16 @@ export async function createTrip(tripParams) {
 }
 
 /**
+ * Retrieve a single trip by ID
+ * @param {string} tripId - UUID of the trip to retrieve
+ * @returns {Promise<Trip|null>} The trip object, or null if not found
+ */
+export async function getTripById(tripId) {
+  const data = await readFile();
+  return (data.trips || []).find(t => t.id === tripId) || null;
+}
+
+/**
  * Update an existing trip by ID
  * @param {string} tripId - UUID of the trip to update
  * @param {Partial<Trip>} updates - Partial trip object with fields to update
