@@ -139,9 +139,18 @@ This ensures a predictable demo environment.
 
 **Option B — Pre-Seeded Data**
 
-1. Manually create one trip before demo begins.
-2. Confirm it loads correctly.
-3. Then begin formal demo.
+1. Run the seed script (before starting the server):
+
+    ```bash
+    npm run seed
+    ```
+2. Then start the server using:
+
+    ```bash
+    npm run dev:full
+    ```
+
+This generates a sample data/trips.json file for a consistent demo dataset.
 
 ---
 
