@@ -172,10 +172,11 @@ describe('GET /api/trips/:tripId', () => {
         { id: 'item-0', name: 'Hiking boots', category: 'Gear', packed: false },
       ],
     });
+    expect(create.status).toBe(201);
     const tripId = create.body.id;
 
     // Update the trip — mark item packed and change duration
-    await request(app)
+    const update = await request(app)
       .put(`/api/trips/${tripId}`)
       .send({
         duration: 5,
@@ -183,6 +184,7 @@ describe('GET /api/trips/:tripId', () => {
           { id: 'item-0', name: 'Hiking boots', category: 'Gear', packed: true },
         ],
       });
+    expect(update.status).toBe(200);
 
     // Retrieve and verify the update is persisted
     const res = await request(app).get(`/api/trips/${tripId}`);
@@ -194,7 +196,7 @@ describe('GET /api/trips/:tripId', () => {
 });
 
 describe('GET /api/trips/:tripId (boundary)', () => {
-  it('getTripById returns null when data file has no trips', async () => {
+  it('getTripById returns null when data file is absent', async () => {
     const { getTripById } = await import('../server/storageFile.js');
 
     const result = await getTripById('any-id-that-does-not-exist');
