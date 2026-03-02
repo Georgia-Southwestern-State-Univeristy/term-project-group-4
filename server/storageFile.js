@@ -42,15 +42,16 @@ export async function getAllTrips() {
 
 /**
  * Create a new trip with checklist items
- * @param {TripParams} tripParams - Trip parameters including destinationType, duration, and optional checklist
+ * @param {TripParams} tripParams - Trip parameters including name, destinationType, duration, and optional checklist
  * @returns {Promise<Trip>} The created trip object with generated ID and timestamp
  * @example
  * const trip = await createTrip({
+ *   name: 'Beach Vacation',
  *   destinationType: 'beach',
  *   duration: 5,
  *   checklist: [
- *     { label: 'Sunscreen', completed: false },
- *     { label: 'Passport', completed: false }
+ *     { id: 'item-0', name: 'Sunscreen', category: 'Beach', packed: false },
+ *     { id: 'item-1', name: 'Passport', category: 'Essentials', packed: false }
  *   ]
  * });
  */
@@ -87,7 +88,7 @@ export async function getTripById(tripId) {
  * const updated = await updateTrip(tripId, {
  *   duration: 7,
  *   checklist: [
- *     { label: 'Updated item', completed: true }
+ *     { id: 'item-0', name: 'Updated item', category: 'Essentials', packed: true }
  *   ]
  * });
  */

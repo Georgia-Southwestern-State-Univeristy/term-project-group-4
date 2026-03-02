@@ -26,3 +26,4 @@ export async function saveTripToServer(tripData) {
 export async function updateTripOnServer(tripId, updates) {
   return updateTrip(tripId, updates);
 }
+

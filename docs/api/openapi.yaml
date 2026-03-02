@@ -31,10 +31,14 @@ paths:
                   destinationType: "beach"
                   duration: 5
                   checklist:
-                    - label: "Sunscreen"
-                      completed: false
-                    - label: "Passport"
-                      completed: false
+                    - id: "item-0"
+                      name: "Sunscreen"
+                      category: "Beach"
+                      packed: false
+                    - id: "item-1"
+                      name: "Passport"
+                      category: "Essentials"
+                      packed: false
                   createdAt: "2026-02-22T12:34:56.789Z"
 
   /api/saveTrip:
@@ -62,10 +66,14 @@ paths:
                 destinationType: "beach"
                 duration: 5
                 checklist:
-                  - label: "Sunscreen"
-                    completed: false
-                  - label: "Passport"
-                    completed: false
+                  - id: "item-0"
+                    name: "Sunscreen"
+                    category: "Beach"
+                    packed: false
+                  - id: "item-1"
+                    name: "Passport"
+                    category: "Essentials"
+                    packed: false
       responses:
         '201':
           description: Created Trip
@@ -77,8 +85,10 @@ paths:
                 destinationType: "beach"
                 duration: 5
                 checklist:
-                  - label: "Sunscreen"
-                    completed: false
+                  - id: "item-0"
+                    name: "Sunscreen"
+                    category: "Beach"
+                    packed: false
                 createdAt: "2026-02-22T12:34:56.789Z"
 
   /api/trips/{tripId}:
