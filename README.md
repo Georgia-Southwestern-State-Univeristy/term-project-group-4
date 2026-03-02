@@ -54,6 +54,7 @@ Starts the UI at `http://localhost:5173` with hot reloading. API requests are au
 ### API Endpoints
 
 - `GET /api/trips` - List all saved trips
+- `GET /api/trips/{tripId}` - Retrieve a single trip by ID
 - `POST /api/saveTrip` - Create/save a new trip with checklist
 - `PUT /api/trips/{tripId}` - Update an existing trip
 
@@ -67,7 +68,9 @@ Trip data is persisted to `data/trips.json`.
 4. Click **Generate Checklist** to create a packing list
 5. Click **Save Trip** to persist the trip to the server
 6. Confirm the button shows "Saved!" with a trip ID
-7. Check `data/trips.json` to verify the trip was written to disk
+7. The trip appears in the **Saved Trips** list below the form
+8. Use the filter input to search trips by name
+9. Click **Load** on a saved trip to restore it into the form with its checklist
 
 ### API Documentation (Swagger UI)
 After installing the server (`npm run server`), the OpenAPI documentation is available at:
