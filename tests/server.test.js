@@ -161,6 +161,46 @@ describe('GET /api/trips/:tripId', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
+
+  it('returns updated data after a PUT modification', async () => {
+    // Create a trip
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Mountain Hike',
+      destinationType: 'outdoors',
+      duration: 3,
+      checklist: [
+        { id: 'item-0', name: 'Hiking boots', category: 'Gear', packed: false },
+      ],
+    });
+    const tripId = create.body.id;
+
+    // Update the trip — mark item packed and change duration
+    await request(app)
+      .put(`/api/trips/${tripId}`)
+      .send({
+        duration: 5,
+        checklist: [
+          { id: 'item-0', name: 'Hiking boots', category: 'Gear', packed: true },
+        ],
+      });
+
+    // Retrieve and verify the update is persisted
+    const res = await request(app).get(`/api/trips/${tripId}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.duration).toBe(5);
+    expect(res.body.checklist[0].packed).toBe(true);
+  });
+});
+
+describe('GET /api/trips/:tripId (boundary)', () => {
+  it('getTripById returns null when data file has no trips', async () => {
+    const { getTripById } = await import('../server/storageFile.js');
+
+    const result = await getTripById('any-id-that-does-not-exist');
+
+    expect(result).toBeNull();
+  });
 });
 
 describe('PUT /api/trips/:tripId', () => {
