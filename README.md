@@ -100,6 +100,12 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
   npm run preview
   ```
 
+- **Seed Sample Data**: Populate the database with demo trips and checklists
+  ```bash
+  npm run seed
+  ```
+  This creates sample data at `data/trips.json` with 3 realistic trips (beach, mountain, city) ready for testing.
+
 ### Reinstall Dependencies
 If you encounter dependency issues, reinstall:
 ```bash
