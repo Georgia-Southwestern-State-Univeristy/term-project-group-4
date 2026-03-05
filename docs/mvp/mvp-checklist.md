@@ -5,6 +5,16 @@ This document summarizes the current completion status of all locked MVP user st
 
 ---
 
+## Board Evidence
+
+GitHub Project Board:  
+https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
+
+All story statuses below reflect the current state of the repository and project board.  
+“Done” means merged to main via PR, reviewed, CI passing, and runnable.
+
+---
+
 # 1. MVP Story Status
 
 | MVP Story | Status | Notes |
