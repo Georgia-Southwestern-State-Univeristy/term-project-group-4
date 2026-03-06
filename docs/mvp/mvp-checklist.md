@@ -75,7 +75,7 @@ Items are grouped by category when rendered.
 **Notes**
 
 Persistence is handled through the Express API endpoint:
-`GET /api/trips`
+`POST /api/saveTrip`
 
 
 Trips are stored in a JSON file via the server storage module.
