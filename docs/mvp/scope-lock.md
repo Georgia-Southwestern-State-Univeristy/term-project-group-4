@@ -1,4 +1,4 @@
-# MVP Scope Lock
+# MVP Scope Lock (Midterm)
 ## Smart Packing Checklist Generator
 
 This document defines the locked MVP scope for midterm.  
