@@ -2,3 +2,4 @@ node_modules/
 dist/
 data/
 !/docs/data/
+project-activity-report.md
