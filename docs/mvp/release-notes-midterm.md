@@ -7,16 +7,13 @@ This document summarizes the contents of the **midterm MVP build**, known limita
 
 # Release Information
 
-**Release Version:** `v0.1.0-midterm` *(placeholder)*
-**Release Tag:** `TBD`
-**Release Date:** TBD
+**Release Version:** `midterm-v1.0.0`
+**Release Date:** 5 March 2026
 
 **Evidence:**
-Link to GitHub release/tag (to be added once the tag is created):
 
-```
-TBD — GitHub Release/Tag will be added here
-```
+GitHub Release:  
+https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/releases/tag/midterm-v1.0.0
 
 ---
 
