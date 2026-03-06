@@ -1,4 +1,4 @@
-# MVP Scope Lock (Midterm)
+# MVP Scope Lock
 ## Smart Packing Checklist Generator
 
 This document defines the locked MVP scope for midterm.  
@@ -44,14 +44,16 @@ All story statuses below reflect the current state of the repository and project
 |----------|--------|------------------|
 | Trip Creation | Done | FE captures trip inputs; backend `POST /api/saveTrip` validates required fields and returns `201` with `id`; merged to `main` with CI green |
 | Checklist Generation | Done | Rule-based generator implemented and covered by unit tests (`tests/checklistGenerator.test.js`); merged to `main` with CI green |
-| Trip Persistence | Done | Trips are persisted to `data/trips.json` via server storage module; verified via Save → Refresh → Load demo path; merged to `main` with CI green |
+| Trip Persistence | Done | `POST /api/saveTrip` persists trips to `data/trips.json` via the server storage module. Verified through Save → Refresh → Load demo path with CI tests passing |
 | Progress Tracking | Done | Checklist item state (`packed`) can be toggled and saved via `PUT /api/trips/{tripId}`; changes persist after refresh; merged to `main` with CI green |
 | Checklist Synchronization | Done | End-to-end sync verified: toggle packed item → refresh → state retained from server JSON persistence; merged to `main` with CI green |
-| Trip Retrieval | Done | `GET /api/trips` returns list of trips; `GET /api/trips/{tripId}` returns a single trip by ID; merged to `main` with CI green |
+| Trip Retrieval | Done | `GET /api/trips` returns all saved trips and populates the **Saved Trips list** in the UI. `GET /api/trips/{tripId}` retrieves a single trip by ID. Users can load saved trips and filter them by name in the frontend. Merged to `main` with CI green. |
 
 Notes:
 - “Done” means merged into `main` with passing CI checks.
-- All tests run via `npm test` in CI.
+- Automated tests run in CI via GitHub Actions (`npm run lint` and `npm run test`).
+- The repository currently includes **23 automated tests** covering checklist generation and API endpoints.
+- Supporting tooling such as the `npm run seed` script and Swagger API documentation improves demo reliability but does not expand the MVP feature scope.
 - Project board status matches repository reality (see Board Evidence link above).
 
 ---
