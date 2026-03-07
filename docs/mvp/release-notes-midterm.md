@@ -89,6 +89,10 @@ Some error conditions (such as network failures) may only appear in the console 
 
 The current implementation assumes only one active user interacting with the application.
 
+### Session-Limited Persistence
+
+Trips persist only for the duration of a server session. If the server is stopped and restarted later, previously created trips do not remain available because the application relies on local JSON storage.
+
 ---
 
 # How to Reproduce the Demo Path
