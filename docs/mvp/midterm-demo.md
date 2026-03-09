@@ -8,7 +8,7 @@ This document contains the recorded demo of the Midterm MVP.
 ## Demo Video
 
 **Video Link:**  
-https://canes-my.sharepoint.com/:v:/g/personal/hhawn_radar_gsw_edu/IQAAvC8vnxa0Qpe4LuQUTKo0AScN3nzoy5gijkp8pFcqs-M?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=BLExcB
+https://youtu.be/R89p3rNDIIQ
 
 ---
 
@@ -78,7 +78,9 @@ This demonstrates that the current `main` branch build is stable and passing all
 Trips persist only for the duration of a server session.  
 If the server is stopped and restarted later, previously created trips do not remain available 
 
-This limitation exists because the MVP uses local JSON file storage (`data/trips.json`) rather than a database with durable persistence. For the midterm MVP, the system is designed for a single-user demo environment, so this limitation is accepted within the current project scope.
+This limitation exists because the application currently relies on a local JSON file (`data/trips.json`) for storage rather than a database with durable persistence.
+
+This limitation is acceptable for the MVP demo environment but will be addressed in a future database-backed implementation.
 
 ---
 
