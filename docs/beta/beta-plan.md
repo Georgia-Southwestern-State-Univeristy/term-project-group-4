@@ -77,8 +77,8 @@ critical/serious violations, document results.
 - Touches every read/write path in the application.
 - Requires replacing `storageFile.js` with a new database-backed module behind the
   same interface so the Express routes stay unchanged.
-- Risk of data-loss bugs during migration; mitigated by keeping the old JSON driver
-  as a fallback behind an env flag during Sprint 1.
+- A database layer will also give us true persistence across environment restarts —
+  currently JSON data does not survive when the dev environment is torn down.
 - Scheduled for **Sprint 1** so issues surface early while there is still time to
   course-correct.
 
@@ -88,11 +88,11 @@ critical/serious violations, document results.
 
 | Midterm Lesson | How It Shapes This Plan |
 |----------------|------------------------|
-| JSON file persistence is fragile under concurrent writes | Database migration is #1 priority |
+| JSON data doesn't persist across environment restarts | Database migration is #1 priority |
 | Scope lock kept MVP focused and on-time | Each sprint has a fixed scope; stretch items move to next sprint |
 | CI + 23 tests caught regressions early | Every sprint includes a dedicated quality item to keep coverage growing |
 | Demo-readiness docs prevented last-minute scramble | Week 12 hardening sprint includes demo prep and release notes |
-| Atomic writes mitigated but didn't solve concurrency | Optimistic locking scheduled after database is in place |
+| Concurrent writes remain unsolved with flat-file storage | Optimistic locking scheduled after database is in place |
 
 ---
 
