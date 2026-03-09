@@ -11,7 +11,7 @@
 |---|------|----------|------|
 | 1 | Migrate persistence to a database (engine TBD) | Architecture | **HIGH** — blocks multi-user, deletion, and locking |
 | 2 | User authentication | Feature | **HIGH** — depends on database; enables multi-user isolation |
-| 3 | Trip deletion endpoint (`DELETE /api/trips/:id`) | Feature | Medium |
+| 3 | Trip deletion endpoint (`DELETE /api/trips/:tripId`) | Feature | Medium |
 | 4 | Custom checklist items (add / remove / rename) | Feature | Medium |
 | 5 | Optimistic locking (ETag / version field on PUT) | Reliability | Medium |
 | 6 | Toast notification system for UI errors | UX | Low |
@@ -36,6 +36,8 @@
 | #3 Trip deletion | TBD | 3 |
 | #6 Toast notifications | TBD | 2 |
 
+**Ordering gate:** Auth (#2) cannot start until the DB layer is merged and passing CI.
+
 **Quality sprint item:** Expand test coverage for the new database storage layer (unit + integration).
 
 **Why database first?** Midterm showed that JSON-file persistence is the single biggest
@@ -51,6 +53,7 @@ storage layer. Scheduling it first de-risks the rest of the plan.
 | #4 Custom checklist items | TBD | 5 |
 | #5 Optimistic locking | TBD | 3 |
 | #7 Edit trip metadata | TBD | 3 |
+| #10 Integration test suite | TBD | 3 |
 
 **Quality sprint item:** Integration test suite — full round-trip tests covering
 create -> generate -> pack -> update -> delete flow.
