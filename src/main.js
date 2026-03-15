@@ -1,5 +1,6 @@
 import { initTripForm } from './tripForm.js';
 import { loadTripsFromServer } from './storage.js';
+import { showToast } from './toast.js';
 
 function renderSavedTrips(trips, loadTrip) {
   const list = document.getElementById('saved-trips-list');
@@ -20,12 +21,12 @@ function renderSavedTrips(trips, loadTrip) {
     const info = document.createElement('span');
     info.textContent = `${trip.name} — ${trip.destinationType}, ${trip.duration} day${trip.duration === 1 ? '' : 's'}`;
 
-    const btn = document.createElement('button');
-    btn.textContent = 'Load';
-    btn.addEventListener('click', () => loadTrip(trip));
+    const loadBtn = document.createElement('button');
+    loadBtn.textContent = 'Load';
+    loadBtn.addEventListener('click', () => loadTrip(trip));
 
     li.appendChild(info);
-    li.appendChild(btn);
+    li.appendChild(loadBtn);
     list.appendChild(li);
   }
 }
@@ -41,6 +42,7 @@ async function init() {
       renderSavedTrips(allTrips, loadTrip);
       searchInput.value = '';
     } catch (err) {
+      showToast('Failed to load trips (network error)', 'error');
       console.error('Failed to load trips from server:', err);
     }
   }
