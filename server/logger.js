@@ -1,8 +1,12 @@
+import fs from 'fs';
 import winston from 'winston';
 import path from 'path';
 
 const LOGS_DIR = path.resolve(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOGS_DIR, 'app.log');
+
+// Ensure log directory exists before Winston tries to write files
+fs.mkdirSync(LOGS_DIR, { recursive: true });
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
