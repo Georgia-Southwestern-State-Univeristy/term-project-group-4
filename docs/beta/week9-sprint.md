@@ -12,7 +12,7 @@ Items are ranked by priority. Only committed items consume sprint time this week
 
 | Rank | Item | Source | Owner | Why This Week |
 |------|------|--------|-------|---------------|
-| 1 | **Database migration (SQLite)** | Beta Sprint 1 | TBD | Riskiest item —  Unblocks auth, deletion, and locking. |
+| 1 | **Database migration (SQLite)** | Beta Sprint 1 | TBD | Riskiest item — Unblocks auth, deletion, and locking. |
 | 2 | **Trip deletion** | Beta Sprint 1 | TBD | Small feature, depends on DB but can ship same week. |
 | 3 | **Toast notifications** | Beta Sprint 1 | TBD | Addresses error handling. |
 | 4 | **Integration test suite** | Beta backlog | TBD | Regression protection. |
