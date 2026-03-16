@@ -1,22 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
-import { promises as fs } from 'fs';
-import path from 'path';
 
 // Set test env before importing app
 process.env.NODE_ENV = 'test';
+import { migrateLatest, destroyDb, db } from '../server/storage.js';
 const { app } = await import('../server.js');
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const FILE = path.join(DATA_DIR, 'trips.json');
+// Run migrations once, then clean tables before each test
+beforeAll(async () => {
+  await migrateLatest();
+});
 
-// Clean up test data before each test
 beforeEach(async () => {
-  try {
-    await fs.unlink(FILE);
-  } catch {
-    // file may not exist, that's fine
-  }
+  await db('checklist_items').del();
+  await db('trips').del();
+});
+
+afterAll(async () => {
+  await destroyDb();
 });
 
 describe('POST /api/saveTrip', () => {
@@ -100,6 +101,30 @@ describe('POST /api/saveTrip', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Invalid checklist payload');
     expect(res.body.message).toMatch(/id.*string/);
+  });
+
+  it('returns 400 when name is whitespace-only', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: '   ',
+      destinationType: 'beach',
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Missing required fields/);
+  });
+
+  it('returns 400 when destinationType is whitespace-only', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Valid Name',
+      destinationType: '   ',
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Missing required fields/);
   });
 
   it('returns 400 when checklist item missing category field', async () => {
@@ -196,8 +221,8 @@ describe('GET /api/trips/:tripId', () => {
 });
 
 describe('GET /api/trips/:tripId (boundary)', () => {
-  it('getTripById returns null when data file is absent', async () => {
-    const { getTripById } = await import('../server/storageFile.js');
+  it('getTripById returns null when trip does not exist', async () => {
+    const { getTripById } = await import('../server/storage.js');
 
     const result = await getTripById('any-id-that-does-not-exist');
 
@@ -253,5 +278,108 @@ describe('PUT /api/trips/:tripId', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/positive integer/);
+  });
+
+  it('returns 400 when name update is whitespace-only', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Whitespace Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await request(app)
+      .put(`/api/trips/${create.body.id}`)
+      .send({ name: '   ' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name must not be blank/);
+  });
+
+  it('returns 400 when destinationType update is whitespace-only', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Whitespace Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await request(app)
+      .put(`/api/trips/${create.body.id}`)
+      .send({ destinationType: '   ' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/destinationType must not be blank/);
+  });
+});
+
+describe('DELETE /api/trips/:tripId', () => {
+  it('deletes an existing trip and returns 204', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Doomed Trip',
+      destinationType: 'beach',
+      duration: 2,
+      checklist: [
+        { id: 'item-0', name: 'Sunscreen', category: 'Beach', packed: false },
+      ],
+    });
+    const tripId = create.body.id;
+
+    const res = await request(app).delete(`/api/trips/${tripId}`);
+    expect(res.status).toBe(204);
+
+    // Verify it's gone
+    const get = await request(app).get(`/api/trips/${tripId}`);
+    expect(get.status).toBe(404);
+  });
+
+  it('returns 404 for a non-existent trip id', async () => {
+    const res = await request(app).delete('/api/trips/does-not-exist');
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Trip not found');
+  });
+
+  it('deleted trips no longer appear in GET /api/trips', async () => {
+    const create1 = await request(app).post('/api/saveTrip').send({
+      name: 'Trip One',
+      destinationType: 'city',
+      duration: 2,
+      checklist: [],
+    });
+
+    await request(app).post('/api/saveTrip').send({
+      name: 'Trip Two',
+      destinationType: 'beach',
+      duration: 4,
+      checklist: [],
+    });
+
+    await request(app).delete(`/api/trips/${create1.body.id}`);
+
+    const list = await request(app).get('/api/trips');
+
+    expect(list.status).toBe(200);
+    expect(list.body).toHaveLength(1);
+    expect(list.body[0].name).toBe('Trip Two');
+  });
+
+  it('cascade-deletes checklist items', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Cascade Test',
+      destinationType: 'city',
+      duration: 1,
+      checklist: [
+        { id: 'item-0', name: 'Item A', category: 'Test', packed: false },
+        { id: 'item-1', name: 'Item B', category: 'Test', packed: false },
+      ],
+    });
+
+    await request(app).delete(`/api/trips/${create.body.id}`);
+
+    // Verify checklist items are also removed
+    const remaining = await db('checklist_items')
+      .where('trip_id', create.body.id);
+    expect(remaining).toHaveLength(0);
   });
 });

@@ -1,7 +1,8 @@
 import { initTripForm } from './tripForm.js';
-import { loadTripsFromServer } from './storage.js';
+import { loadTripsFromServer, deleteTripFromServer } from './storage.js';
+import { showToast } from './toast.js';
 
-function renderSavedTrips(trips, loadTrip) {
+function renderSavedTrips(trips, loadTrip, deleteTrip) {
   const list = document.getElementById('saved-trips-list');
   const noTripsMsg = document.getElementById('no-trips-message');
 
@@ -20,12 +21,29 @@ function renderSavedTrips(trips, loadTrip) {
     const info = document.createElement('span');
     info.textContent = `${trip.name} — ${trip.destinationType}, ${trip.duration} day${trip.duration === 1 ? '' : 's'}`;
 
-    const btn = document.createElement('button');
-    btn.textContent = 'Load';
-    btn.addEventListener('click', () => loadTrip(trip));
+    const actions = document.createElement('div');
+
+    const loadBtn = document.createElement('button');
+    loadBtn.textContent = 'Load';
+    loadBtn.addEventListener('click', () => loadTrip(trip));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.addEventListener('click', () => {
+      const confirmed = window.confirm(`Delete trip "${trip.name}"? This cannot be undone.`);
+      if (confirmed) {
+        deleteTrip(trip.id);
+      }
+    });
+
+
+    actions.appendChild(loadBtn);
+    actions.appendChild(deleteBtn);
 
     li.appendChild(info);
-    li.appendChild(btn);
+    li.appendChild(actions);
+
     list.appendChild(li);
   }
 }
@@ -38,9 +56,10 @@ async function init() {
     try {
       const trips = await loadTripsFromServer();
       allTrips = trips.reverse();
-      renderSavedTrips(allTrips, loadTrip);
+      renderSavedTrips(allTrips, loadTrip, handleDeleteTrip);
       searchInput.value = '';
     } catch (err) {
+      showToast('Failed to load trips (network error)', 'error');
       console.error('Failed to load trips from server:', err);
     }
   }
@@ -54,8 +73,17 @@ async function init() {
     const filtered = allTrips.filter((trip) =>
       trip.name.toLowerCase().includes(query),
     );
-    renderSavedTrips(filtered, loadTrip);
+    renderSavedTrips(filtered, loadTrip, handleDeleteTrip);
   });
+
+  async function handleDeleteTrip(tripId) {
+    try {
+      await deleteTripFromServer(tripId);
+      await refreshTripList();
+    } catch (err) {
+      console.error('Failed to delete trip:', err);
+    }
+  }
 }
 
 init();
