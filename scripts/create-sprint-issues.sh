@@ -40,7 +40,7 @@ for item in "${items[@]}"; do
     --title "$title" \
     --label "$LABEL" \
     --body "$(echo -e "$body")" \
-    2>&1)
+    --json url -q .url)
 
   echo "  Created: $issue_url"
 
