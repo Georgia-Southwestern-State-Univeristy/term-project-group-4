@@ -181,15 +181,31 @@ The trip creation form allows whitespace-only values in required text fields, su
 Whitespace-only values should be treated as empty and rejected by validation.
 
 **Actual Behavior:**  
-The form accepts whitespace-only input and allows checklist generation.
+Whitespace-only input was accepted, allowing trips with blank names to be generated and saved.
+
+**Technical Cause:**
+Server-side validation checked only for truthy values and did not trim input before validation. As a result, strings containing only whitespace passed validation.
 
 **Impact:**  
-Invalid trip data can be created, reducing data quality and making saved trips confusing or less useful.
+- Invalid trip data could be created.
+- Trips with blank names could appear in the saved trip list.
+- Data quality and usability were reduced.
 
-**Fix Status:** TBD  
-**Regression Test:** Add validation test confirming trimmed-empty values are rejected  
-**Issue Link:** TBD  
-**PR Link:** TBD
+**Fix Implemented:**
+- Input values are now trimmed before validation in both the `POST /api/saveTrip` and `PUT /api/trips/:tripId` endpoints.
+- Whitespace-only values are rejected as invalid.
+- The frontend also trims the trip name before checklist generation and saving.
+
+**Fix Status:** Fixed
+**Regression Test:** Automated regression tests added in `tests/server.test.js` to verify that whitespace-only values are rejected for:
+
+    POST /api/saveTrip — name
+    POST /api/saveTrip — destinationType
+    PUT /api/trips/:tripId — name
+    PUT /api/trips/:tripId — destinationType
+
+**Issue Link:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/64
+**PR Link:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/67
 
 ---
 
@@ -261,10 +277,10 @@ The following issues must be fixed during this deliverable, with regression test
 
 ---
 
-## Issue TBD
+## Issue 5: Required text fields accept whitespace-only input
 
-**Fix PR:** TBD  
-**Regression Test:** TBD
+**Fix PR:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/67
+**Regression Test:** Automated regression tests added in `tests/server.test.js` to confirm whitespace-only values are rejected for required text fields.
 
 ---
 
