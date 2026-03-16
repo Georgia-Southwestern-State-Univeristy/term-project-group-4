@@ -1,6 +1,7 @@
 import { generateChecklist } from './checklistGenerator.js';
 import { renderChecklist, setOnChecklistChange } from './checklistRenderer.js';
 import { saveTripToServer, updateTripOnServer } from './storage.js';
+import { showToast } from './toast.js';
 
 /**
  * Initializes the trip form and wires up submission.
@@ -15,12 +16,30 @@ export function initTripForm({ onTripSaved } = {}) {
   let currentChecklist = null;
   let savedTripId = null;
 
+  function debounce(fn, delay) {
+    let timer = null;
+    return (...args) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  const autoSaveChecklist = debounce(async (checklist) => {
+    if (!savedTripId) return;
+
+    try {
+      await updateTripOnServer(savedTripId, { checklist });
+      showToast('Checklist saved.', 'success');
+    } catch (err) {
+      showToast('Failed to sync checklist (network error)', 'error');
+      console.error('Failed to sync checklist:', err);
+    }
+  }, 600);
+
   // When a checkbox changes and the trip has been saved, sync to server
   setOnChecklistChange((checklist) => {
     if (savedTripId) {
-      updateTripOnServer(savedTripId, { checklist }).catch((err) =>
-        console.error('Failed to sync checklist:', err),
-      );
+      autoSaveChecklist(checklist);
     }
   });
 
@@ -82,14 +101,17 @@ export function initTripForm({ onTripSaved } = {}) {
       if (savedTripId) {
         await updateTripOnServer(savedTripId, tripData);
         saveTripBtn.textContent = 'Saved!';
+        showToast('Trip updated successfully.', 'success');
       } else {
         const saved = await saveTripToServer(tripData);
         savedTripId = saved.id;
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
+        showToast('Trip saved successfully.', 'success');
       }
       saveTripBtn.disabled = false;
       if (onTripSaved) onTripSaved();
     } catch (err) {
+      showToast('Failed to save trip (network error)', 'error');
       console.error('Failed to save trip:', err);
       saveTripBtn.textContent = 'Save failed – retry?';
       saveTripBtn.disabled = false;
