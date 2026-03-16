@@ -28,11 +28,10 @@ export async function updateTripOnServer(tripId, updates) {
 }
 
 /**
- * Delete a trip on the server.
+ * Delete a trip from the server
  * @param {string} tripId
  * @returns {Promise<void>}
  */
-export async function deleteTripOnServer(tripId) {
+export async function deleteTripFromServer(tripId) {
   return deleteTrip(tripId);
 }
-
