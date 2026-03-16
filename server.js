@@ -4,8 +4,9 @@ import {
   getTripById,
   createTrip,
   updateTrip,
-  deleteTrip
-} from './server/storageFile.js';
+  deleteTrip,
+  migrateLatest,
+} from './server/storage.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { log } from './server/logger.js';
@@ -255,16 +256,15 @@ app.put('/api/trips/:tripId', async (req, res) => {
   }
 });
 
-// DELETE /api/trips/:tripId - Delete trip
+// DELETE /api/trips/:tripId - Delete a trip
 app.delete('/api/trips/:tripId', async (req, res) => {
   try {
     await deleteTrip(req.params.tripId);
-    res.status(204).send();
+    res.status(204).end();
   } catch (error) {
     if (error.code === 'TRIP_NOT_FOUND') {
       return res.status(404).json({ error: 'Trip not found', message: error.message });
     }
-
     res.status(500).json({ error: 'Failed to delete trip', message: error.message });
   }
 });
@@ -276,6 +276,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 export { app };
 
 if (process.env.NODE_ENV !== 'test') {
+  await migrateLatest();
   app.listen(PORT, () => {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
     console.log('Endpoints:');
@@ -283,6 +284,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('  GET    /api/trips/{tripId}');
     console.log('  POST   /api/saveTrip');
     console.log('  PUT    /api/trips/{tripId}');
+    console.log('  DELETE /api/trips/{tripId}');
   });
 }
 

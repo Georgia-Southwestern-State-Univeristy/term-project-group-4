@@ -128,6 +128,29 @@ paths:
                     type: string
               example:
                 error: "Trip not found"
+    delete:
+      summary: Delete a trip
+      description: Deletes a trip and its associated checklist items (cascade).
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Trip deleted successfully
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Trip not found"
     put:
       summary: Update an existing trip
       description: Partial updates supported.
