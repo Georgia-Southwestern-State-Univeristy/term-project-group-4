@@ -255,3 +255,52 @@ describe('PUT /api/trips/:tripId', () => {
     expect(res.body.error).toMatch(/positive integer/);
   });
 });
+
+describe('DELETE /api/trips/:tripId', () => {
+  it('returns 204 when deleting an existing trip', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Delete Me',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const del = await request(app).delete(`/api/trips/${create.body.id}`);
+
+    expect(del.status).toBe(204);
+
+    const list = await request(app).get('/api/trips');
+    expect(list.status).toBe(200);
+    expect(list.body).toHaveLength(0);
+  });
+
+  it('returns 404 when deleting a non-existent trip', async () => {
+    const del = await request(app).delete('/api/trips/does-not-exist');
+
+    expect(del.status).toBe(404);
+    expect(del.body.error).toBe('Trip not found');
+  });
+
+  it('deleted trips no longer appear in GET /api/trips', async () => {
+    const create1 = await request(app).post('/api/saveTrip').send({
+      name: 'Trip One',
+      destinationType: 'city',
+      duration: 2,
+      checklist: [],
+    });
+
+    await request(app).post('/api/saveTrip').send({
+      name: 'Trip Two',
+      destinationType: 'beach',
+      duration: 4,
+      checklist: [],
+    });
+
+    await request(app).delete(`/api/trips/${create1.body.id}`);
+
+    const list = await request(app).get('/api/trips');
+
+    expect(list.body).toHaveLength(1);
+    expect(list.body[0].name).toBe('Trip Two');
+  });
+});

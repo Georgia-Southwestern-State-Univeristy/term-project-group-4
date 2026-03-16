@@ -1,4 +1,4 @@
-import { getTrips, saveTrip, updateTrip } from './apiClient.js';
+import { getTrips, saveTrip, updateTrip, deleteTrip } from './apiClient.js';
 
 /**
  * Load all trips from the server.
@@ -27,3 +27,11 @@ export async function updateTripOnServer(tripId, updates) {
   return updateTrip(tripId, updates);
 }
 
+/**
+ * Delete a trip from the server
+ * @param {string} tripId
+ * @returns {Promise<void>}
+ */
+export async function deleteTripFromServer(tripId) {
+  return deleteTrip(tripId);
+}

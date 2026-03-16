@@ -3,7 +3,8 @@ import {
   getAllTrips,
   getTripById,
   createTrip,
-  updateTrip
+  updateTrip,
+  deleteTrip
 } from './server/storageFile.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -251,6 +252,20 @@ app.put('/api/trips/:tripId', async (req, res) => {
     });
     
     res.status(500).json({ error: 'Failed to update trip', message: error.message });
+  }
+});
+
+// DELETE /api/trips/:tripId - Delete trip
+app.delete('/api/trips/:tripId', async (req, res) => {
+  try {
+    await deleteTrip(req.params.tripId);
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'TRIP_NOT_FOUND') {
+      return res.status(404).json({ error: 'Trip not found', message: error.message });
+    }
+
+    res.status(500).json({ error: 'Failed to delete trip', message: error.message });
   }
 });
 
