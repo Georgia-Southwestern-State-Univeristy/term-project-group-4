@@ -231,13 +231,20 @@ High user-facing risk:
 - Users may unintentionally create multiple versions of the same trip.
 - Data divergence may occur between edited and original trips.
 
-**Proposed Fix:**  
-Preserve `savedTripId` when editing an existing trip, or require generating a new trip to be an explicit separate action.
+**Fix Implemented:**  
+Removed the logic that reset `savedTripId` when generating a new checklist so that editing a loaded trip preserves its identifier and updates the existing record when saved.
 
-**Fix Status:** TBD  
-**Regression Test:** Add test verifying edited trips update the existing record rather than creating a new one  
-**Issue Link:** TBD  
-**PR Link:** TBD
+**Fix Status:** Fixed
+**Regression Test:** Manual regression verification performed:
+    1. Create and save a trip.
+    2. Load the saved trip.
+    3. Modify one or more fields.
+    4. Click **Generate Checklist**.
+    5. Click **Save Trip**. 
+    6. Confirm the existing trip updates instead of creating a duplicate.
+
+**Issue Link:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/65
+**PR Link:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/65
 
 ---
 
@@ -247,10 +254,10 @@ The following issues must be fixed during this deliverable, with regression test
 
 ---
 
-## Issue TBD
+## Issue 6: Editing a loaded trip can create duplicate trips
 
-**Fix PR:** TBD  
-**Regression Test:** TBD
+**Fix PR:** https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/66
+**Regression Test:** Manual regression verification (see steps above).
 
 ---
 
