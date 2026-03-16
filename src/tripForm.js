@@ -77,11 +77,15 @@ export function initTripForm({ onTripSaved } = {}) {
     };
 
     currentChecklist = generateChecklist(tripParams);
-    savedTripId = null;
     checklistSection.hidden = false;
     renderChecklist(currentChecklist);
     saveTripBtn.disabled = false;
-    saveTripBtn.textContent = 'Save Trip';
+
+    if (savedTripId) {
+      saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
+    } else {
+      saveTripBtn.textContent = 'Save Trip';
+    }
   });
 
   saveTripBtn.addEventListener('click', async () => {
@@ -100,7 +104,7 @@ export function initTripForm({ onTripSaved } = {}) {
     try {
       if (savedTripId) {
         await updateTripOnServer(savedTripId, tripData);
-        saveTripBtn.textContent = 'Saved!';
+        saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
         showToast('Trip updated successfully.', 'success');
       } else {
         const saved = await saveTripToServer(tripData);

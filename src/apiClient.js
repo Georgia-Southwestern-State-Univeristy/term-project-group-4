@@ -25,3 +25,11 @@ export async function updateTrip(tripId, updates) {
   if (!res.ok) throw new Error(`Failed to update trip: ${res.status}`);
   return res.json();
 }
+
+export async function deleteTrip(tripId) {
+  const res = await fetch(`${BASE}/trips/${encodeURIComponent(tripId)}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) throw new Error(`Failed to delete trip: ${res.status}`);
+}
