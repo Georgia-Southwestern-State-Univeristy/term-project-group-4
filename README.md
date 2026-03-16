@@ -23,9 +23,19 @@ This project requires Node.js v24 LTS (Long Term Support). Download and install 
    npm install
    ```
 
+4. Run database migrations (creates the SQLite database)
+   ```bash
+   npm run db:migrate
+   ```
+
+5. (Optional) Seed sample data
+   ```bash
+   npm run seed
+   ```
+
 ## Running Locally
 
-The app has two parts: a **Vite frontend** (serves the UI) and an **Express API server** (handles trip data storage). Both must be running for full functionality.
+The app has two parts: a **Vite frontend** (serves the UI) and an **Express API server** (handles trip data storage via SQLite). Both must be running for full functionality.
 
 ### Quick Start (both servers)
 
@@ -34,6 +44,8 @@ Run the frontend and backend together in a single terminal:
 npm run dev:full
 ```
 Then open `http://localhost:5173` in your browser.
+
+> **Note:** The server runs `migrateLatest()` on startup, so `npm run db:migrate` is only strictly needed if you want to run Knex CLI commands (like `npm run seed`) before starting the server.
 
 ### Running Separately
 
@@ -57,8 +69,9 @@ Starts the UI at `http://localhost:5173` with hot reloading. API requests are au
 - `GET /api/trips/{tripId}` - Retrieve a single trip by ID
 - `POST /api/saveTrip` - Create/save a new trip with checklist
 - `PUT /api/trips/{tripId}` - Update an existing trip
+- `DELETE /api/trips/{tripId}` - Delete a trip and its checklist items
 
-Trip data is persisted to `data/trips.json`.
+Trip data is persisted to a SQLite database at `data/trips.db`.
 
 ### Verify It Works
 
@@ -100,11 +113,21 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
   npm run preview
   ```
 
+- **Database Migrate**: Create or update the SQLite schema
+  ```bash
+  npm run db:migrate
+  ```
+
 - **Seed Sample Data**: Populate the database with demo trips and checklists
   ```bash
   npm run seed
   ```
-  This creates sample data at `data/trips.json` with 3 realistic trips (beach, mountain, city) ready for testing.
+  Inserts 3 demo trips (beach, mountain, city) into the database.
+
+- **Reset Database**: Roll back all migrations, re-migrate, and re-seed
+  ```bash
+  npm run db:reset
+  ```
 
 ### Reinstall Dependencies
 If you encounter dependency issues, reinstall:

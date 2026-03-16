@@ -1,3 +1,8 @@
+import { mkdirSync } from 'fs';
+
+// Ensure the data/ directory exists so SQLite can create the DB file
+mkdirSync('./data', { recursive: true });
+
 /**
  * Knex configuration — SQLite for local development, PostgreSQL for production.
  * @see https://knexjs.org/guide/#configuration-options
