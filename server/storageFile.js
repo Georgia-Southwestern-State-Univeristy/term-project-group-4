@@ -105,4 +105,26 @@ export async function updateTrip(tripId, updates) {
   return trip;
 }
 
+/**
+ * Delete a trip by ID
+ * @param {string} tripId - UUID of the trip to delete
+ * @returns {Promise<void>}
+ * @throws {Error} If trip with given ID is not found
+ */
+export async function deleteTrip(tripId) {
+  const data = await readFile();
+  const trips = data.trips || [];
 
+  const index = trips.findIndex((t) => t.id === tripId);
+
+  if (index === -1) {
+    const err = new Error(`Trip ${tripId} not found`);
+    err.code = 'TRIP_NOT_FOUND';
+    throw err;
+  }
+
+  trips.splice(index, 1);
+  data.trips = trips;
+
+  await writeFile(data);
+}

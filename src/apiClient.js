@@ -27,8 +27,9 @@ export async function updateTrip(tripId, updates) {
 }
 
 export async function deleteTrip(tripId) {
-  const res = await fetch(`${BASE}/trips/${tripId}`, {
+  const res = await fetch(`${BASE}/trips/${encodeURIComponent(tripId)}`, {
     method: 'DELETE',
   });
+
   if (!res.ok) throw new Error(`Failed to delete trip: ${res.status}`);
 }

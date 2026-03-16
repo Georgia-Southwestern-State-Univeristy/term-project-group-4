@@ -284,6 +284,30 @@ describe('DELETE /api/trips/:tripId', () => {
     expect(res.body.error).toBe('Trip not found');
   });
 
+  it('deleted trips no longer appear in GET /api/trips', async () => {
+    const create1 = await request(app).post('/api/saveTrip').send({
+      name: 'Trip One',
+      destinationType: 'city',
+      duration: 2,
+      checklist: [],
+    });
+
+    await request(app).post('/api/saveTrip').send({
+      name: 'Trip Two',
+      destinationType: 'beach',
+      duration: 4,
+      checklist: [],
+    });
+
+    await request(app).delete(`/api/trips/${create1.body.id}`);
+
+    const list = await request(app).get('/api/trips');
+
+    expect(list.status).toBe(200);
+    expect(list.body).toHaveLength(1);
+    expect(list.body[0].name).toBe('Trip Two');
+  });
+
   it('cascade-deletes checklist items', async () => {
     const create = await request(app).post('/api/saveTrip').send({
       name: 'Cascade Test',
