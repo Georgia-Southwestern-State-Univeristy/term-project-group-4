@@ -187,3 +187,12 @@ input[type="checkbox"] {
   opacity: 0;
   transform: translateY(-10px);
 }
+
+button.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+button.delete-btn:hover {
+  background: #dc2626;
+}
