@@ -17,7 +17,7 @@
     "format:check": "prettier --check .",
     "server": "node server.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-    "seed": "npx knex seed:run",
+    "seed": "npx knex migrate:latest && npx knex seed:run",
     "db:migrate": "npx knex migrate:latest",
     "db:seed": "npx knex seed:run",
     "db:reset": "npx knex migrate:rollback --all && npx knex migrate:latest && npx knex seed:run"

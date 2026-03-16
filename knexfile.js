@@ -37,6 +37,8 @@ export default {
       directory: './seeds',
     },
     pool: {
+      min: 1,
+      max: 1,
       afterCreate(conn, done) {
         conn.pragma('foreign_keys = ON');
         done();
@@ -44,6 +46,7 @@ export default {
     },
   },
 
+  // PostgreSQL for production — requires `npm install pg` before use.
   production: {
     client: 'pg',
     connection: process.env.DATABASE_URL,
