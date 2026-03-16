@@ -35,6 +35,7 @@
     "express": "^4.18.2",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.0",
+    "winston": "^3.11.0",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
