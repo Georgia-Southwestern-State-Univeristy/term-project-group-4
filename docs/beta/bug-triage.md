@@ -6,34 +6,60 @@ Each issue includes severity, reproduction steps, expected vs. actual behavior, 
 
 ---
 
-## Issue 1: Dependency vulnerability reported during install
+## Issue 1: ESLint does not recognize Vitest globals in test files
 
-**Severity:** Major
+**Severity:** Minor
 
 **Summary:**  
-Running `npm install` reports **1 high severity vulnerability** in project dependencies.
+The ESLint configuration does not include Vitest globals for test files. As a result, ESLint may report errors indicating that common testing functions such as `describe`, `it`, `test`, `expect`, and `beforeEach` are undefined.
 
 **Repro Steps:**
 1. Open a terminal in the project root.
 2. Run:
 
-   ```bash
-   npm install
-   ```  
+    ```bash
+    npm run lint
+    ```
 
-3. Review terminal output after installation completes.
+3. Review lint results for files ending in `.test.js`.
+4. ESLint may report errors similar to:
+
+    ```text
+    'describe' is not defined  no-undef
+    'it' is not defined        no-undef
+    'expect' is not defined    no-undef
+    ```
 
 **Expected Behavior:**  
-Dependencies install without high severity vulnerability warnings.
+ESLint should recognize Vitest testing globals in `.test.js` files so that valid test code does not trigger `no-undef` errors.
 
 **Actual Behavior:**  
-npm install completes, but reports 1 high severity vulnerability.
+Vitest globals are not included in the ESLint configuration, causing valid test code to be flagged as undefined variables.
 
 **Impact:**  
-Does not block local development, but introduces risk and should be addressed before wider release.
+This does not break the application or test execution, but it can create confusion during development and produce misleading lint errors when writing or modifying tests.
 
-**Fix Status:** Open  
-**Regression Test:** Not applicable (dependency/security issue)  
+**Technical Cause:**  
+The ESLint configuration currently only includes Node globals for test files:
+
+    globals: {
+        ...globals.node
+    }
+
+Vitest globals are not included.
+
+**Proposed Fix:**  
+Update the ESLint configuration to include Vitest globals.
+
+**Example change in `eslint.config.js`:**
+
+    globals: {
+        ...globals.node,
+        ...globals.vitest
+    }
+
+**Fix Status:** TBD  
+**Regression Test:** Run `npm run lint` and confirm `.test.js` files do not produce `no-undef` errors for Vitest globals  
 **Issue Link:** TBD  
 **PR Link:** TBD
 
@@ -138,7 +164,7 @@ This can confuse users and contribute to invalid or incomplete inputs.
 
 ---
 
-## Issue 5 — Required text fields accept whitespace-only input
+## Issue 5: Required text fields accept whitespace-only input
 
 **Severity:** Major
 
@@ -167,7 +193,7 @@ Invalid trip data can be created, reducing data quality and making saved trips c
 
 ---
 
-## Issue 6 — Editing a loaded trip can create duplicate trips
+## Issue 6: Editing a loaded trip can create duplicate trips
 
 **Severity:** Major
 
@@ -191,11 +217,11 @@ The application creates a new trip instead of updating the original one.
 **Technical Cause:**  
 In `tripForm.js`, when loading a saved trip the application stores the identifier:
 
-savedTripId = trip.id;
+    `savedTripId = trip.id;`
 
 However, when submitting the form to regenerate a checklist, the code resets:
 
-savedTripId = null;
+    `savedTripId = null;`
 
 This removes the reference to the original trip, so saving creates a new entry instead of updating the existing one.
 
