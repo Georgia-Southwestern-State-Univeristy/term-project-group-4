@@ -103,6 +103,30 @@ describe('POST /api/saveTrip', () => {
     expect(res.body.message).toMatch(/id.*string/);
   });
 
+  it('returns 400 when name is whitespace-only', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: '   ',
+      destinationType: 'beach',
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Missing required fields/);
+  });
+
+  it('returns 400 when destinationType is whitespace-only', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Valid Name',
+      destinationType: '   ',
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Missing required fields/);
+  });
+
   it('returns 400 when checklist item missing category field', async () => {
     const res = await request(app).post('/api/saveTrip').send({
       name: 'Invalid Checklist Trip',
@@ -254,6 +278,38 @@ describe('PUT /api/trips/:tripId', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/positive integer/);
+  });
+
+  it('returns 400 when name update is whitespace-only', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Whitespace Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await request(app)
+      .put(`/api/trips/${create.body.id}`)
+      .send({ name: '   ' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/name must not be blank/);
+  });
+
+  it('returns 400 when destinationType update is whitespace-only', async () => {
+    const create = await request(app).post('/api/saveTrip').send({
+      name: 'Whitespace Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await request(app)
+      .put(`/api/trips/${create.body.id}`)
+      .send({ destinationType: '   ' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/destinationType must not be blank/);
   });
 });
 

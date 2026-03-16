@@ -80,25 +80,27 @@ app.post('/api/saveTrip', async (req, res) => {
   
   try {
     const { name, destinationType, duration, checklist } = req.body;
-    
+    const trimmedName = name?.trim();
+    const trimmedType = destinationType?.trim();
+
     await log(requestId, 'CREATE_TRIP', 'START', {
       name,
       destinationType,
       duration
     });
-    
-    if (!name || !destinationType || duration === undefined || duration === null) {
+
+    if (!trimmedName || !trimmedType || duration === undefined || duration === null) {
       const missingFields = [];
-      if (!name) missingFields.push('name');
-      if (!destinationType) missingFields.push('destinationType');
+      if (!trimmedName) missingFields.push('name');
+      if (!trimmedType) missingFields.push('destinationType');
       if (duration === undefined || duration === null) missingFields.push('duration');
-      
+
       await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
         reason: 'Missing required fields',
         missing: missingFields,
-        received: { name: !!name, destinationType: !!destinationType, duration: !(duration === undefined || duration === null) }
+        received: { name: !!trimmedName, destinationType: !!trimmedType, duration: !(duration === undefined || duration === null) }
       });
-      
+
       return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
     if (!Number.isInteger(duration) || duration < 1) {
@@ -141,8 +143,8 @@ app.post('/api/saveTrip', async (req, res) => {
     }
     
     const trip = await createTrip({
-      name,
-      destinationType,
+      name: trimmedName,
+      destinationType: trimmedType,
       duration,
       checklist: checklist || []
     });
@@ -188,7 +190,14 @@ app.put('/api/trips/:tripId', async (req, res) => {
       });
       return res.status(400).json({ error: 'duration must be a positive integer' });
     }
-    
+
+    if (name !== undefined && !name.trim()) {
+      return res.status(400).json({ error: 'name must not be blank' });
+    }
+    if (destinationType !== undefined && !destinationType.trim()) {
+      return res.status(400).json({ error: 'destinationType must not be blank' });
+    }
+
     // Validate checklist payload structure if provided
     if (checklist && Array.isArray(checklist)) {
       for (const item of checklist) {
@@ -220,8 +229,8 @@ app.put('/api/trips/:tripId', async (req, res) => {
     }
 
     const updates = {};
-    if (name !== undefined) updates.name = name;
-    if (destinationType !== undefined) updates.destinationType = destinationType;
+    if (name !== undefined) updates.name = name.trim();
+    if (destinationType !== undefined) updates.destinationType = destinationType.trim();
     if (duration !== undefined) updates.duration = duration;
     if (checklist !== undefined) updates.checklist = checklist;
 

@@ -71,7 +71,7 @@ export function initTripForm({ onTripSaved } = {}) {
 
     const formData = new FormData(form);
     const tripParams = {
-      name: formData.get('name'),
+      name: formData.get('name')?.trim(),
       destinationType: formData.get('destinationType'),
       duration: parseInt(formData.get('duration'), 10),
     };
@@ -95,7 +95,7 @@ export function initTripForm({ onTripSaved } = {}) {
     saveTripBtn.textContent = 'Saving…';
 
     const tripData = {
-      name: formData.get('name'),
+      name: formData.get('name')?.trim(),
       destinationType: formData.get('destinationType'),
       duration: parseInt(formData.get('duration'), 10),
       checklist: currentChecklist || [],
