@@ -46,6 +46,7 @@ for item in "${items[@]}"; do
 
   # Extract issue number from URL
   issue_number=$(echo "$issue_url" | grep -oE '[0-9]+$')
+  echo "  Issue number: #$issue_number"
 
   echo "  Adding to project #$PROJECT_NUMBER..."
   gh project item-add "$PROJECT_NUMBER" \
