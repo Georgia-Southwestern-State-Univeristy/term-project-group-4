@@ -39,8 +39,8 @@ function rowToTrip(tripRow, itemRows) {
 
 // ── public API (same interface as storageFile.js + deleteTrip) ───────
 
-export async function getAllTrips() {
-  const trips = await db('trips').orderBy('created_at', 'desc');
+export async function getAllTrips(userId) {
+  const trips = await db('trips').where('user_id', userId).orderBy('created_at', 'desc');
   if (trips.length === 0) return [];
 
   const items = await db('checklist_items')
@@ -57,8 +57,8 @@ export async function getAllTrips() {
   return trips.map((t) => rowToTrip(t, itemsByTrip[t.id] || []));
 }
 
-export async function getTripById(tripId) {
-  const tripRow = await db('trips').where('id', tripId).first();
+export async function getTripById(tripId, userId) {
+  const tripRow = await db('trips').where('id', tripId).andWhere('user_id', userId).first();
   if (!tripRow) return null;
 
   const itemRows = await db('checklist_items')
@@ -68,7 +68,7 @@ export async function getTripById(tripId) {
   return rowToTrip(tripRow, itemRows);
 }
 
-export async function createTrip(tripParams) {
+export async function createTrip(tripParams, userId) {
   const id = uuidv4();
   const createdAt = new Date().toISOString();
 
@@ -78,6 +78,7 @@ export async function createTrip(tripParams) {
       name: tripParams.name,
       destination_type: tripParams.destinationType,
       duration: tripParams.duration,
+      user_id: userId,
       created_at: createdAt,
     });
 
@@ -95,11 +96,11 @@ export async function createTrip(tripParams) {
     }
   });
 
-  return getTripById(id);
+  return getTripById(id, userId);
 }
 
-export async function updateTrip(tripId, updates) {
-  const existing = await db('trips').where('id', tripId).first();
+export async function updateTrip(tripId, updates, userId) {
+  const existing = await db('trips').where('id', tripId).andWhere('user_id', userId).first();
   if (!existing) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';
@@ -133,14 +134,44 @@ export async function updateTrip(tripId, updates) {
     }
   });
 
-  return getTripById(tripId);
+  return getTripById(tripId, userId);
 }
 
-export async function deleteTrip(tripId) {
-  const count = await db('trips').where('id', tripId).del();
+export async function deleteTrip(tripId, userId) {
+  const count = await db('trips').where('id', tripId).andWhere('user_id', userId).del();
   if (count === 0) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';
     throw err;
   }
+}
+
+// User functions
+export async function findOrCreateUser(profile) {
+  const { id: googleId, emails, displayName, photos } = profile;
+  const email = emails[0].value;
+  const picture = photos && photos.length > 0 ? photos[0].value : null;
+
+  let user = await db('users').where('google_id', googleId).first();
+  if (user) {
+    return user;
+  }
+
+  const userId = uuidv4();
+  const createdAt = new Date().toISOString();
+
+  await db('users').insert({
+    id: userId,
+    google_id: googleId,
+    email,
+    name: displayName,
+    picture,
+    created_at: createdAt,
+  });
+
+  return db('users').where('id', userId).first();
+}
+
+export async function getUserById(userId) {
+  return db('users').where('id', userId).first();
 }
