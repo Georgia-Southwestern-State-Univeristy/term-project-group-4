@@ -25,19 +25,21 @@ const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Passport configuration
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    const user = await findOrCreateUser(profile);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-}));
+// Passport configuration (only in non-test environments)
+if (process.env.NODE_ENV !== 'test') {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: '/auth/google/callback'
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      const user = await findOrCreateUser(profile);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  }));
+}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -52,27 +54,50 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-}));
+// Session configuration
+const getSessionSecret = () => {
+  if (process.env.NODE_ENV === 'test') {
+    return 'test-secret-key-do-not-use-in-production';
+  }
+  if (!process.env.SESSION_SECRET) {
+    console.warn('⚠️  SESSION_SECRET not set. Using default value. Set SESSION_SECRET environment variable for production.');
+    return 'default-dev-secret-change-in-production';
+  }
+  return process.env.SESSION_SECRET;
+};
 
-app.use(passport.initialize());
-app.use(passport.session());
+if (process.env.NODE_ENV !== 'test') {
+  app.use(session({
+    secret: getSessionSecret(),
+    resave: false,
+    saveUninitialized: false,
+  }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+} else {
+  // Minimal session support for tests
+  app.use(session({
+    secret: getSessionSecret(),
+    resave: false,
+    saveUninitialized: false,
+  }));
+}
 
 app.use(express.json());
 
-// Auth routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Auth routes (Google OAuth only in production/development)
+if (process.env.NODE_ENV !== 'test') {
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/auth/login-error' }),
-  (req, res) => {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    res.redirect(frontendUrl);
-  }
-);
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/auth/login-error' }),
+    (req, res) => {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(frontendUrl);
+    }
+  );
+}
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
