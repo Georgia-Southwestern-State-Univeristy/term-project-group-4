@@ -95,6 +95,12 @@ app.get('/auth/user', (req, res) => {
 
 // Middleware to require authentication
 function requireAuth(req, res, next) {
+  // For testing: allow test user ID from header
+  if (process.env.NODE_ENV === 'test' && req.headers['x-test-user-id']) {
+    req.user = { id: req.headers['x-test-user-id'] };
+    return next();
+  }
+  
   if (req.isAuthenticated()) {
     return next();
   }
