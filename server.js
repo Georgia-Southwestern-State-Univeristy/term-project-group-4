@@ -126,11 +126,10 @@ function requireAuth(req, res, next) {
     return next();
   }
   
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ error: 'Authentication required' });
+if (req.isAuthenticated?.() && req.user) {
+  return next();
 }
+return res.status(401).json({ error: 'Authentication required' });
 
 // GET /api/trips - List all trips
 app.get('/api/trips', requireAuth, async (req, res) => {
