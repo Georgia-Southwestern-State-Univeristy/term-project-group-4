@@ -178,7 +178,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('trims leading/trailing whitespace and saves valid values', async () => {
-    const res = await request(app).post('/api/saveTrip').send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: '  Weekend Escape  ',
       destinationType: '  beach  ',
       duration: 2,
@@ -355,15 +355,14 @@ describe('PUT /api/trips/:tripId', () => {
   });
 
   it('trims leading/trailing whitespace on name and destinationType updates', async () => {
-    const create = await request(app).post('/api/saveTrip').send({
+    const create = await authRequest('post', '/api/saveTrip').send({
       name: 'Base Trip',
       destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    const update = await request(app)
-      .put(`/api/trips/${create.body.id}`)
+    const update = await authRequest('put', `/api/trips/${create.body.id}`)
       .send({
         name: '  Updated Trip  ',
         destinationType: '  outdoors  ',
