@@ -4,3 +4,4 @@ data/
 !/docs/data/
 project-activity-report.md
 logs/*.log
+.env
