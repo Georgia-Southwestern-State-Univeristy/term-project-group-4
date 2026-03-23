@@ -11,12 +11,12 @@
 | # | Item | Owner | Priority | Acceptance Criteria |
 |---|------|-------|----------|---|
 | **1** | **User authentication (login/session)** | Naren | 1 (blocker) | ✅ Login endpoint implemented; session/token persisted; protected routes enforce authentication; tests verify authorized vs unauthorized |
-| **2** | **Add input length limits** | TBD (Owner B) | 2 | ✅ Name ≤ 100 chars, destination ≤ 50 chars; server rejects >limit with 400; UI prevents input overfill |
+| **2** | **Add input length limits** | Heather | 2 | ✅ Name ≤ 100 chars, destination ≤ 50 chars; server rejects >limit with 400; UI prevents input overfill |
 | **3** | **Display API errors in UI** | Jason | 2 | ✅ **Partially implemented:** toast notifications already active for save/update/load. Finish by adding delete-failure toast and surfacing server validation messages (not only generic network/status errors). |
-| **4** | **Audit XSS vulnerability** | TBD (Owner D) | 2 | ✅ Confirm all name/destinationType rendering uses `.textContent` only (no `.innerHTML`); add code comment to prevent future changes |
+| **4** | **Audit XSS vulnerability** | Heather | 2 | ✅ Confirm all name/destinationType rendering uses `.textContent` only (no `.innerHTML`); add code comment to prevent future changes |
 | **5** | **Regression tests: validation** | Jason | 1 (blocker) | ✅ 4 new tests: POST/PUT whitespace-only inputs → 400; existing trip creation still passes; length limits enforced |
 | **6** | **UX polish: loading indicator** | Jason | 3 | ✅ Show spinner/progress text while checklist generates; give user visual feedback (not just disabled button) |
-| **7** | **Improve error message leakage** | TBD (Owner G) | 3 | ✅ Server doesn't expose internal stack traces to client; logs full error internally but returns generic "error" to API |
+| **7** | **Improve error message leakage** | Heather | 3 | ✅ Server doesn't expose internal stack traces to client; logs full error internally but returns generic "error" to API |
 
 **Total:** 7 items. **Owners:** Replace remaining `TBD (Owner X)` entries with assigned teammate names. Naren owns #1 (auth). Jason owns #3, #5, #6 (deliverable D).
 
