@@ -2,6 +2,57 @@ import { initTripForm } from './tripForm.js';
 import { loadTripsFromServer, deleteTripFromServer } from './storage.js';
 import { showToast } from './toast.js';
 
+let currentUser = null;
+
+async function checkAuthStatus() {
+  try {
+    const response = await fetch('/auth/user');
+    if (response.ok) {
+      currentUser = await response.json();
+      updateAuthUI();
+      return true;
+    } else {
+      currentUser = null;
+      updateAuthUI();
+      return false;
+    }
+  } catch (error) {
+    console.error('Failed to check auth status:', error);
+    currentUser = null;
+    updateAuthUI();
+    return false;
+  }
+}
+
+function updateAuthUI() {
+  const userInfo = document.getElementById('user-info');
+  const loginSection = document.getElementById('login-section');
+  const userName = document.getElementById('user-name');
+  const logoutBtn = document.getElementById('logout-btn');
+  const appSections = document.querySelectorAll('#app > section');
+
+  if (currentUser) {
+    userName.textContent = currentUser.name;
+    userInfo.hidden = false;
+    loginSection.hidden = true;
+    appSections.forEach(section => {
+      section.style.display = '';
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/auth/logout');
+      await checkAuthStatus();
+      showToast('Logged out successfully', 'success');
+    });
+  } else {
+    userInfo.hidden = true;
+    loginSection.hidden = false;
+    appSections.forEach(section => {
+      section.style.display = 'none';
+    });
+  }
+}
+
 function renderSavedTrips(trips, loadTrip, deleteTrip) {
   const list = document.getElementById('saved-trips-list');
   const noTripsMsg = document.getElementById('no-trips-message');
@@ -49,6 +100,16 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
 }
 
 async function init() {
+  const isAuthenticated = await checkAuthStatus();
+
+  if (!isAuthenticated) {
+    // Hide the main app content if not authenticated
+    document.querySelectorAll('#app > section').forEach(section => {
+      section.style.display = 'none';
+    });
+    return;
+  }
+
   const searchInput = document.getElementById('trip-search');
   let allTrips = [];
 
