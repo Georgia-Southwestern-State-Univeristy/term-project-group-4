@@ -38,6 +38,23 @@ function authRequest(method, path) {
   return request(app)[method](path).set('x-test-user-id', testUserId);
 }
 
+describe('Authentication enforcement', () => {
+  it('returns 401 when GET /api/trips is called without auth', async () => {
+    const res = await request(app).get('/api/trips');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 401 when POST /api/saveTrip is called without auth', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Unauthorized Trip',
+      destinationType: 'beach',
+      duration: 3,
+      checklist: [],
+    });
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('POST /api/saveTrip', () => {
   it('creates a trip and returns it with an id', async () => {
     const tripData = {
