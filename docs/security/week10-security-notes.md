@@ -94,7 +94,7 @@ Partial updates could bypass validation rules.
 API routes could be accessed without authentication.
 
 ### After
-Protected routes now require authenticated users and reject unauthorized requests.
+Protected routes now require authenticated users and consistently reject unauthorized requests with 401 responses.
 
 ### Behavior Change
 - Before: GET /api/trips could be called without authentication
@@ -104,7 +104,24 @@ Protected routes now require authenticated users and reject unauthorized request
 - After: Requests without authentication are rejected
 
 ### Evidence
-PR: Week10/authentication-enforcement #73
+- Implementation: PR #73 (auth enforcement)
+- Verification: PR #72 (auth enforcement tests + middleware hardening)
+
+## Additional Hardening: Authentication Middleware Safety  
+
+### Description  
+The authentication middleware (`requireAuth`) previously assumed `req.isAuthenticated` always existed. In test environments, this caused unauthenticated requests to throw errors and return `500` instead of `401`.
+
+### Fix  
+- Added defensive check for `req.isAuthenticated`  
+- Ensured unauthenticated requests consistently return `401`
+
+### Impact  
+- Prevents server errors on unauthenticated requests  
+- Ensures consistent and correct API behavior  
+
+### Evidence  
+- Included in PR #72
 
 ---
 
