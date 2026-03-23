@@ -11,17 +11,16 @@
 | # | Item | Owner | Priority | Acceptance Criteria |
 |---|------|-------|----------|---|
 | **1** | **User authentication (login/session)** | Naren | 1 (blocker) | ✅ Login endpoint implemented; session/token persisted; protected routes enforce authentication; tests verify authorized vs unauthorized |
-| **2** | **Trim & validate trip name/destinationType** | TBD (Owner A) | 1 (blocker) | ✅ Whitespace-only values rejected (API 400); valid names trimmed on save; server-side validation on POST + PUT |
-| **3** | **Add input length limits** | TBD (Owner B) | 2 | ✅ Name ≤ 100 chars, destination ≤ 50 chars; server rejects >limit with 400; UI prevents input overfill |
-| **4** | **Display API errors in UI** | Jason | 2 | ✅ **Partially implemented:** toast notifications already active for save/update/load. Finish by adding delete-failure toast and surfacing server validation messages (not only generic network/status errors). |
-| **5** | **Audit XSS vulnerability** | TBD (Owner D) | 2 | ✅ Confirm all name/destinationType rendering uses `.textContent` only (no `.innerHTML`); add code comment to prevent future changes |
-| **6** | **Regression tests: validation** | Jason | 1 (blocker) | ✅ 4 new tests: POST/PUT whitespace-only inputs → 400; existing trip creation still passes; length limits enforced |
-| **7** | **UX polish: loading indicator** | Jason | 3 | ✅ Show spinner/progress text while checklist generates; give user visual feedback (not just disabled button) |
-| **8** | **Improve error message leakage** | TBD (Owner G) | 3 | ✅ Server doesn't expose internal stack traces to client; logs full error internally but returns generic "error" to API |
+| **2** | **Add input length limits** | TBD (Owner B) | 2 | ✅ Name ≤ 100 chars, destination ≤ 50 chars; server rejects >limit with 400; UI prevents input overfill |
+| **3** | **Display API errors in UI** | Jason | 2 | ✅ **Partially implemented:** toast notifications already active for save/update/load. Finish by adding delete-failure toast and surfacing server validation messages (not only generic network/status errors). |
+| **4** | **Audit XSS vulnerability** | TBD (Owner D) | 2 | ✅ Confirm all name/destinationType rendering uses `.textContent` only (no `.innerHTML`); add code comment to prevent future changes |
+| **5** | **Regression tests: validation** | Jason | 1 (blocker) | ✅ 4 new tests: POST/PUT whitespace-only inputs → 400; existing trip creation still passes; length limits enforced |
+| **6** | **UX polish: loading indicator** | Jason | 3 | ✅ Show spinner/progress text while checklist generates; give user visual feedback (not just disabled button) |
+| **7** | **Improve error message leakage** | TBD (Owner G) | 3 | ✅ Server doesn't expose internal stack traces to client; logs full error internally but returns generic "error" to API |
 
-**Total:** 8 items. **Owners:** Replace remaining `TBD (Owner X)` entries with assigned teammate names. Naren owns #1 (auth). Jason owns #4, #6, #7 (deliverable D).
+**Total:** 7 items. **Owners:** Replace remaining `TBD (Owner X)` entries with assigned teammate names. Naren owns #1 (auth). Jason owns #3, #5, #6 (deliverable D).
 
-**Status note:** Item #4 is in progress and close to done. Existing toast system is live in UI; remaining work is to wire delete-path error toast and display backend validation text for failed API calls.
+**Status note:** Item #3 is in progress and close to done. Existing toast system is live in UI; remaining work is to wire delete-path error toast and display backend validation text for failed API calls.
 
 ---
 
@@ -52,7 +51,7 @@
 
 | Risk | Mitigation |
 |------|-----------|
-| Auth + validation is too much scope | Validate (item #2) is higher priority; auth can slip if needed |
+| Auth + validation is too much scope | Length limits (item #2) are lower priority; auth can slip if needed |
 | Hosted database not ready for deployment | Keep local DB for dev/test; schedule managed DB migration in Week 11 deployment task |
 | Tests missing for auth logic | Define test criteria now: authorized user sees trip; unauthorized gets 401; session persists |
 
