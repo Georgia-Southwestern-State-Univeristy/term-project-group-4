@@ -8,6 +8,16 @@
 </head>
 <body>
   <main id="app">
+    <header id="auth-section">
+      <div id="user-info" hidden>
+        <span id="user-name"></span>
+        <button id="logout-btn">Logout</button>
+      </div>
+      <div id="login-section">
+        <a href="/auth/google" id="login-btn">Login with Google</a>
+      </div>
+    </header>
+
     <h1>Smart Packing Checklist Generator</h1>
 
     <section id="trip-form-section">
@@ -41,6 +51,10 @@
 
     <section id="checklist-section" hidden>
       <h2>Your Packing Checklist</h2>
+      <div id="checklist-loading" class="loading-indicator" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Generating checklist...</span>
+      </div>
       <div id="checklist-container"></div>
       <p id="progress-text"></p>
     </section>

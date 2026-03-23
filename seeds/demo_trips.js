@@ -5,9 +5,21 @@ export async function seed(knex) {
   // Clear existing data (checklist_items first due to FK)
   await knex('checklist_items').del();
   await knex('trips').del();
+  await knex('users').del();
 
   const now = new Date().toISOString();
   const SEED_USER_ID = 'seed-user';
+
+  // Create a demo user
+  const demoUserId = 'demo-user-123';
+  await knex('users').insert({
+    id: demoUserId,
+    google_id: 'demo-google-id',
+    email: 'demo@example.com',
+    name: 'Demo User',
+    picture: null,
+    created_at: now,
+  });
 
   const trips = [
     {
@@ -16,6 +28,7 @@ export async function seed(knex) {
       name: 'Summer Beach Vacation - Hawaii',
       destination_type: 'beach',
       duration: 5,
+      user_id: demoUserId,
       created_at: now,
     },
     {
@@ -24,6 +37,7 @@ export async function seed(knex) {
       name: 'Weekend Hiking Adventure - Rocky Mountains',
       destination_type: 'outdoors',
       duration: 3,
+      user_id: demoUserId,
       created_at: now,
     },
     {
@@ -32,6 +46,7 @@ export async function seed(knex) {
       name: 'City Exploration - New York Week',
       destination_type: 'city',
       duration: 7,
+      user_id: demoUserId,
       created_at: now,
     },
   ];

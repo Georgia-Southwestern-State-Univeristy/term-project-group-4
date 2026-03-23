@@ -35,6 +35,7 @@ export async function findOrCreateUser(profile) {
   if (user) return user;
 
   const id = uuidv4();
+  const createdAt = new Date().toISOString();
 
   await db('users').insert({
     id,
@@ -42,6 +43,7 @@ export async function findOrCreateUser(profile) {
     email,
     name,
     picture,
+    created_at: createdAt,
   });
 
   return getUserById(id);
