@@ -37,10 +37,13 @@ function rowToTrip(tripRow, itemRows) {
   };
 }
 
-// ── public API (same interface as storageFile.js + deleteTrip) ───────
+// ── public API (ownership-aware) ─────────────────────────────────────
 
-export async function getAllTrips() {
-  const trips = await db('trips').orderBy('created_at', 'desc');
+export async function getAllTrips(userId) {
+  const trips = await db('trips')
+    .where('user_id', userId)
+    .orderBy('created_at', 'desc');
+
   if (trips.length === 0) return [];
 
   const items = await db('checklist_items')
@@ -57,8 +60,11 @@ export async function getAllTrips() {
   return trips.map((t) => rowToTrip(t, itemsByTrip[t.id] || []));
 }
 
-export async function getTripById(tripId) {
-  const tripRow = await db('trips').where('id', tripId).first();
+export async function getTripById(tripId, userId) {
+  const tripRow = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .first();
+
   if (!tripRow) return null;
 
   const itemRows = await db('checklist_items')
@@ -75,6 +81,7 @@ export async function createTrip(tripParams) {
   await db.transaction(async (trx) => {
     await trx('trips').insert({
       id,
+      user_id: tripParams.userId,
       name: tripParams.name,
       destination_type: tripParams.destinationType,
       duration: tripParams.duration,
@@ -95,11 +102,14 @@ export async function createTrip(tripParams) {
     }
   });
 
-  return getTripById(id);
+  return getTripById(id, tripParams.userId);
 }
 
-export async function updateTrip(tripId, updates) {
-  const existing = await db('trips').where('id', tripId).first();
+export async function updateTrip(tripId, userId, updates) {
+  const existing = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .first();
+
   if (!existing) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';
@@ -113,7 +123,9 @@ export async function updateTrip(tripId, updates) {
     if (updates.duration !== undefined) cols.duration = updates.duration;
 
     if (Object.keys(cols).length) {
-      await trx('trips').where('id', tripId).update(cols);
+      await trx('trips')
+        .where({ id: tripId, user_id: userId })
+        .update(cols);
     }
 
     if (updates.checklist !== undefined) {
@@ -133,11 +145,14 @@ export async function updateTrip(tripId, updates) {
     }
   });
 
-  return getTripById(tripId);
+  return getTripById(tripId, userId);
 }
 
-export async function deleteTrip(tripId) {
-  const count = await db('trips').where('id', tripId).del();
+export async function deleteTrip(tripId, userId) {
+  const count = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .del();
+
   if (count === 0) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';

@@ -7,10 +7,12 @@ export async function seed(knex) {
   await knex('trips').del();
 
   const now = new Date().toISOString();
+  const SEED_USER_ID = 'seed-user';
 
   const trips = [
     {
       id: 'trip-001',
+      user_id: SEED_USER_ID,
       name: 'Summer Beach Vacation - Hawaii',
       destination_type: 'beach',
       duration: 5,
@@ -18,6 +20,7 @@ export async function seed(knex) {
     },
     {
       id: 'trip-002',
+      user_id: SEED_USER_ID,
       name: 'Weekend Hiking Adventure - Rocky Mountains',
       destination_type: 'outdoors',
       duration: 3,
@@ -25,6 +28,7 @@ export async function seed(knex) {
     },
     {
       id: 'trip-003',
+      user_id: SEED_USER_ID,
       name: 'City Exploration - New York Week',
       destination_type: 'city',
       duration: 7,
