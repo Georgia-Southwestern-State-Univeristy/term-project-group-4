@@ -6,6 +6,25 @@ A Node.js-based project that includes automated testing and code linting to ensu
 
 This project requires Node.js v24 LTS (Long Term Support). Download and install from the [official Node.js website](https://nodejs.org/).
 
+## Google OAuth Setup
+
+This application uses Google OAuth for user authentication. To set it up:
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Create OAuth 2.0 credentials (Client ID and Client Secret)
+5. Add `http://localhost:5173` to authorized origins (for Vite dev server)
+6. Add `http://localhost:5173/auth/google/callback` to authorized redirect URIs
+7. Copy the Client ID and Client Secret to your `.env` file
+
+Create a `.env` file in the project root with:
+```
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+SESSION_SECRET=your-random-session-secret
+```
+
 ## Getting Started
 
 1. Clone the project
@@ -53,24 +72,28 @@ Starts the UI at `http://localhost:5173` with hot reloading. API requests are au
 
 ### API Endpoints
 
-- `GET /api/trips` - List all saved trips
-- `GET /api/trips/{tripId}` - Retrieve a single trip by ID
+All endpoints require authentication.
+
+- `GET /api/trips` - List all saved trips for the authenticated user
+- `GET /api/trips/{tripId}` - Retrieve a single trip by ID (user-specific)
 - `POST /api/saveTrip` - Create/save a new trip with checklist
 - `PUT /api/trips/{tripId}` - Update an existing trip
+- `DELETE /api/trips/{tripId}` - Delete a trip
 
-Trip data is persisted to `data/trips.json`.
+Trip data is persisted to a SQLite database. Each user sees only their own trips.
 
 ### Verify It Works
 
 1. Run `npm run dev:full`
 2. Open `http://localhost:5173`
-3. Enter a trip name, select a destination type, and set a duration
-4. Click **Generate Checklist** to create a packing list
-5. Click **Save Trip** to persist the trip to the server
-6. Confirm the button shows "Saved!" with a trip ID
-7. The trip appears in the **Saved Trips** list below the form
-8. Use the filter input to search trips by name
-9. Click **Load** on a saved trip to restore it into the form with its checklist
+3. Click "Login with Google" and authenticate
+4. Enter a trip name, select a destination type, and set a duration
+5. Click **Generate Checklist** to create a packing list
+6. Click **Save Trip** to persist the trip to the server
+7. Confirm the button shows "Saved!" with a trip ID
+8. The trip appears in the **Saved Trips** list below the form
+9. Use the filter input to search trips by name
+10. Click **Load** on a saved trip to restore it into the form with its checklist
 
 ### API Documentation (Swagger UI)
 After installing the server (`npm run server`), the OpenAPI documentation is available at:
@@ -104,7 +127,7 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
   ```bash
   npm run seed
   ```
-  This creates sample data at `data/trips.json` with 3 realistic trips (beach, mountain, city) ready for testing.
+  This creates sample data in the SQLite database with 3 realistic trips (beach, mountain, city) ready for testing.
 
 ### Reinstall Dependencies
 If you encounter dependency issues, reinstall:
