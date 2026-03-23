@@ -125,11 +125,12 @@ function requireAuth(req, res, next) {
     req.user = { id: req.headers['x-test-user-id'] };
     return next();
   }
-  
-  if (req.isAuthenticated()) {
+
+  if (req.isAuthenticated?.() && req.user) {
     return next();
   }
-  res.status(401).json({ error: 'Authentication required' });
+
+  return res.status(401).json({ error: 'Authentication required' });
 }
 
 // GET /api/trips - List all trips
