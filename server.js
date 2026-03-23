@@ -236,7 +236,7 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
     if (duration !== undefined) updates.duration = duration;
     if (checklist !== undefined) updates.checklist = checklist;
 
-    const trip = await updateTrip(tripId, req.user.id, updates);
+    const trip = await updateTrip(tripId, updates, req.user.id);
 
     await log(requestId, 'UPDATE_TRIP', 'SUCCESS', {
       tripId: trip.id,

@@ -3,19 +3,32 @@ import request from 'supertest';
 
 // Set test env before importing app
 process.env.NODE_ENV = 'test';
-import { migrateLatest, destroyDb, db } from '../server/storage.js';
+import { migrateLatest, destroyDb, db, findOrCreateUser } from '../server/storage.js';
 const { app } = await import('../server.js');
 
-const USER_A = 'user-a';
-const USER_B = 'user-b';
-
-function asUser(req, userId) {
-  return req.set('x-test-user-id', userId);
-}
+let userAId;
+let userBId;
 
 // Run migrations once, then clean tables before each test
 beforeAll(async () => {
   await migrateLatest();
+
+  const userA = await findOrCreateUser({
+    id: 'test-google-id-a',
+    emails: [{ value: 'usera@example.com' }],
+    displayName: 'User A',
+    photos: [],
+  });
+
+  const userB = await findOrCreateUser({
+    id: 'test-google-id-b',
+    emails: [{ value: 'userb@example.com' }],
+    displayName: 'User B',
+    photos: [],
+  });
+
+  userAId = userA.id;
+  userBId = userB.id;
 });
 
 beforeEach(async () => {
@@ -25,6 +38,28 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await destroyDb();
+});
+
+// Helper function to add test user authentication header
+function authRequest(method, path, userId = userAId) {
+  return request(app)[method](path).set('x-test-user-id', userId);
+}
+
+describe('Authentication enforcement', () => {
+  it('returns 401 when GET /api/trips is called without auth', async () => {
+    const res = await request(app).get('/api/trips');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 401 when POST /api/saveTrip is called without auth', async () => {
+    const res = await request(app).post('/api/saveTrip').send({
+      name: 'Unauthorized Trip',
+      destinationType: 'beach',
+      duration: 3,
+      checklist: [],
+    });
+    expect(res.status).toBe(401);
+  });
 });
 
 describe('POST /api/saveTrip', () => {
@@ -38,10 +73,7 @@ describe('POST /api/saveTrip', () => {
       ],
     };
 
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send(tripData);
+    const res = await authRequest('post', '/api/saveTrip').send(tripData);
 
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
@@ -53,20 +85,14 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when required fields are missing', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({ name: 'Incomplete' });
+    const res = await authRequest('post', '/api/saveTrip').send({ name: 'Incomplete' });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/Missing required fields/);
   });
 
   it('returns 400 when duration is not a positive integer', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Bad Duration Trip',
       destinationType: 'beach',
       duration: -3,
@@ -78,10 +104,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when duration is zero', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Zero Duration Trip',
       destinationType: 'beach',
       duration: 0,
@@ -93,10 +116,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when checklist item missing packed field', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Invalid Checklist Trip',
       destinationType: 'beach',
       duration: 5,
@@ -111,10 +131,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when checklist item missing id field', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Invalid Checklist Trip',
       destinationType: 'beach',
       duration: 5,
@@ -129,10 +146,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when name is whitespace-only', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: '   ',
       destinationType: 'beach',
       duration: 3,
@@ -144,10 +158,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when destinationType is whitespace-only', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Valid Name',
       destinationType: '   ',
       duration: 3,
@@ -159,10 +170,7 @@ describe('POST /api/saveTrip', () => {
   });
 
   it('returns 400 when checklist item missing category field', async () => {
-    const res = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const res = await authRequest('post', '/api/saveTrip').send({
       name: 'Invalid Checklist Trip',
       destinationType: 'beach',
       duration: 5,
@@ -179,22 +187,22 @@ describe('POST /api/saveTrip', () => {
 
 describe('GET /api/trips', () => {
   it('returns only the authenticated user’s trips', async () => {
-    await asUser(request(app).post('/api/saveTrip'), USER_A).send({
+    await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'User A Trip',
       destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    await asUser(request(app).post('/api/saveTrip'), USER_B).send({
+    await authRequest('post', '/api/saveTrip', userBId).send({
       name: 'User B Trip',
       destinationType: 'beach',
-      duration: 2,
+      duration: 4,
       checklist: [],
     });
 
-    const resA = await asUser(request(app).get('/api/trips'), USER_A);
-    const resB = await asUser(request(app).get('/api/trips'), USER_B);
+    const resA = await authRequest('get', '/api/trips', userAId);
+    const resB = await authRequest('get', '/api/trips', userBId);
 
     expect(resA.status).toBe(200);
     expect(resA.body).toHaveLength(1);
@@ -208,10 +216,7 @@ describe('GET /api/trips', () => {
 
 describe('GET /api/trips/:tripId', () => {
   it('returns a single trip by ID to its owner', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Beach Getaway',
       destinationType: 'beach',
       duration: 4,
@@ -220,10 +225,7 @@ describe('GET /api/trips/:tripId', () => {
       ],
     });
 
-    const res = await asUser(
-      request(app).get(`/api/trips/${create.body.id}`),
-      USER_A,
-    );
+    const res = await authRequest('get', `/api/trips/${create.body.id}`, userAId);
 
     expect(res.status).toBe(200);
     expect(res.body.id).toBe(create.body.id);
@@ -232,40 +234,28 @@ describe('GET /api/trips/:tripId', () => {
   });
 
   it('returns 404 when another user tries to access a trip by ID', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Private Trip',
       destinationType: 'city',
       duration: 2,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).get(`/api/trips/${create.body.id}`),
-      USER_B,
-    );
+    const res = await authRequest('get', `/api/trips/${create.body.id}`, userBId);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('returns 404 for a non-existent trip id', async () => {
-    const res = await asUser(
-      request(app).get('/api/trips/does-not-exist'),
-      USER_A,
-    );
+    const res = await authRequest('get', '/api/trips/does-not-exist', userAId);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('returns updated data after a PUT modification', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Mountain Hike',
       destinationType: 'outdoors',
       duration: 3,
@@ -276,10 +266,7 @@ describe('GET /api/trips/:tripId', () => {
     expect(create.status).toBe(201);
     const tripId = create.body.id;
 
-    const update = await asUser(
-      request(app).put(`/api/trips/${tripId}`),
-      USER_A,
-    ).send({
+    const update = await authRequest('put', `/api/trips/${tripId}`, userAId).send({
       duration: 5,
       checklist: [
         { id: 'item-0', name: 'Hiking boots', category: 'Gear', packed: true },
@@ -287,10 +274,7 @@ describe('GET /api/trips/:tripId', () => {
     });
     expect(update.status).toBe(200);
 
-    const res = await asUser(
-      request(app).get(`/api/trips/${tripId}`),
-      USER_A,
-    );
+    const res = await authRequest('get', `/api/trips/${tripId}`, userAId);
 
     expect(res.status).toBe(200);
     expect(res.body.duration).toBe(5);
@@ -302,7 +286,7 @@ describe('GET /api/trips/:tripId (boundary)', () => {
   it('getTripById returns null when trip does not exist for that user', async () => {
     const { getTripById } = await import('../server/storage.js');
 
-    const result = await getTripById('any-id-that-does-not-exist', USER_A);
+    const result = await getTripById('any-id-that-does-not-exist', userAId);
 
     expect(result).toBeNull();
   });
@@ -310,10 +294,7 @@ describe('GET /api/trips/:tripId (boundary)', () => {
 
 describe('PUT /api/trips/:tripId', () => {
   it('updates checklist on an existing trip', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Outdoors Trip',
       destinationType: 'outdoors',
       duration: 4,
@@ -326,100 +307,76 @@ describe('PUT /api/trips/:tripId', () => {
     const updatedChecklist = [
       { id: 'item-0', name: 'Hiking boots', category: 'Outdoors', packed: true },
     ];
-    const res = await asUser(
-      request(app).put(`/api/trips/${tripId}`),
-      USER_A,
-    ).send({ checklist: updatedChecklist });
+    const res = await authRequest('put', `/api/trips/${tripId}`, userAId)
+      .send({ checklist: updatedChecklist });
 
     expect(res.status).toBe(200);
     expect(res.body.checklist[0].packed).toBe(true);
   });
 
   it('returns 404 when another user tries to update a trip', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
-      name: 'Update Me',
-      destinationType: 'beach',
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
+      name: 'User A Trip',
+      destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).put(`/api/trips/${create.body.id}`),
-      USER_B,
-    ).send({ duration: 5 });
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userBId)
+      .send({ duration: 5 });
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('returns 404 for a non-existent trip id', async () => {
-    const res = await asUser(
-      request(app).put('/api/trips/does-not-exist'),
-      USER_A,
-    ).send({ duration: 5 });
+    const res = await authRequest('put', '/api/trips/does-not-exist', userAId)
+      .send({ duration: 5 });
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('returns 400 when duration is not a positive integer', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Validation Trip',
       destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).put(`/api/trips/${create.body.id}`),
-      USER_A,
-    ).send({ duration: -1 });
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userAId)
+      .send({ duration: -1 });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/positive integer/);
   });
 
   it('returns 400 when name update is whitespace-only', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Whitespace Test',
       destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).put(`/api/trips/${create.body.id}`),
-      USER_A,
-    ).send({ name: '   ' });
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userAId)
+      .send({ name: '   ' });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/name must not be blank/);
   });
 
   it('returns 400 when destinationType update is whitespace-only', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Whitespace Test',
       destinationType: 'city',
       duration: 3,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).put(`/api/trips/${create.body.id}`),
-      USER_A,
-    ).send({ destinationType: '   ' });
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userAId)
+      .send({ destinationType: '   ' });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/destinationType must not be blank/);
@@ -428,10 +385,7 @@ describe('PUT /api/trips/:tripId', () => {
 
 describe('DELETE /api/trips/:tripId', () => {
   it('deletes an existing trip and returns 204', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Doomed Trip',
       destinationType: 'beach',
       duration: 2,
@@ -441,73 +395,52 @@ describe('DELETE /api/trips/:tripId', () => {
     });
     const tripId = create.body.id;
 
-    const res = await asUser(
-      request(app).delete(`/api/trips/${tripId}`),
-      USER_A,
-    );
+    const res = await authRequest('delete', `/api/trips/${tripId}`, userAId);
     expect(res.status).toBe(204);
 
-    const get = await asUser(
-      request(app).get(`/api/trips/${tripId}`),
-      USER_A,
-    );
+    const get = await authRequest('get', `/api/trips/${tripId}`, userAId);
     expect(get.status).toBe(404);
   });
 
   it('returns 404 when another user tries to delete a trip', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
-      name: 'Do Not Delete',
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
+      name: 'User A Trip',
       destinationType: 'city',
-      duration: 2,
+      duration: 3,
       checklist: [],
     });
 
-    const res = await asUser(
-      request(app).delete(`/api/trips/${create.body.id}`),
-      USER_B,
-    );
+    const res = await authRequest('delete', `/api/trips/${create.body.id}`, userBId);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('returns 404 for a non-existent trip id', async () => {
-    const res = await asUser(
-      request(app).delete('/api/trips/does-not-exist'),
-      USER_A,
-    );
+    const res = await authRequest('delete', '/api/trips/does-not-exist', userAId);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Trip not found');
   });
 
   it('deleted trips no longer appear in GET /api/trips', async () => {
-    const create1 = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create1 = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Trip One',
       destinationType: 'city',
       duration: 2,
       checklist: [],
     });
 
-    await asUser(request(app).post('/api/saveTrip'), USER_A).send({
+    await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Trip Two',
       destinationType: 'beach',
       duration: 4,
       checklist: [],
     });
 
-    await asUser(
-      request(app).delete(`/api/trips/${create1.body.id}`),
-      USER_A,
-    );
+    await authRequest('delete', `/api/trips/${create1.body.id}`, userAId);
 
-    const list = await asUser(request(app).get('/api/trips'), USER_A);
+    const list = await authRequest('get', '/api/trips', userAId);
 
     expect(list.status).toBe(200);
     expect(list.body).toHaveLength(1);
@@ -515,10 +448,7 @@ describe('DELETE /api/trips/:tripId', () => {
   });
 
   it('cascade-deletes checklist items', async () => {
-    const create = await asUser(
-      request(app).post('/api/saveTrip'),
-      USER_A,
-    ).send({
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
       name: 'Cascade Test',
       destinationType: 'city',
       duration: 1,
@@ -528,10 +458,7 @@ describe('DELETE /api/trips/:tripId', () => {
       ],
     });
 
-    await asUser(
-      request(app).delete(`/api/trips/${create.body.id}`),
-      USER_A,
-    );
+    await authRequest('delete', `/api/trips/${create.body.id}`, userAId);
 
     const remaining = await db('checklist_items')
       .where('trip_id', create.body.id);

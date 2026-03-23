@@ -19,7 +19,35 @@ export async function destroyDb() {
   await db.destroy();
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
+// ── auth helpers ─────────────────────────────────────────────────────
+
+export async function getUserById(id) {
+  return db('users').where({ id }).first();
+}
+
+export async function findOrCreateUser(profile) {
+  const googleId = profile.id;
+  const email = profile.emails?.[0]?.value ?? '';
+  const name = profile.displayName ?? email ?? 'Unknown User';
+  const picture = profile.photos?.[0]?.value ?? null;
+
+  let user = await db('users').where({ google_id: googleId }).first();
+  if (user) return user;
+
+  const id = uuidv4();
+
+  await db('users').insert({
+    id,
+    google_id: googleId,
+    email,
+    name,
+    picture,
+  });
+
+  return getUserById(id);
+}
+
+// ── trip helpers ─────────────────────────────────────────────────────
 
 function rowToTrip(tripRow, itemRows) {
   return {
@@ -74,14 +102,14 @@ export async function getTripById(tripId, userId) {
   return rowToTrip(tripRow, itemRows);
 }
 
-export async function createTrip(tripParams) {
+export async function createTrip(tripParams, userId = tripParams.userId) {
   const id = uuidv4();
   const createdAt = new Date().toISOString();
 
   await db.transaction(async (trx) => {
     await trx('trips').insert({
       id,
-      user_id: tripParams.userId,
+      user_id: userId,
       name: tripParams.name,
       destination_type: tripParams.destinationType,
       duration: tripParams.duration,
@@ -102,10 +130,10 @@ export async function createTrip(tripParams) {
     }
   });
 
-  return getTripById(id, tripParams.userId);
+  return getTripById(id, userId);
 }
 
-export async function updateTrip(tripId, userId, updates) {
+export async function updateTrip(tripId, updates, userId) {
   const existing = await db('trips')
     .where({ id: tripId, user_id: userId })
     .first();
@@ -130,6 +158,7 @@ export async function updateTrip(tripId, userId, updates) {
 
     if (updates.checklist !== undefined) {
       await trx('checklist_items').where('trip_id', tripId).del();
+
       if (updates.checklist.length) {
         await trx('checklist_items').insert(
           updates.checklist.map((item, i) => ({

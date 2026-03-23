@@ -1,5 +1,5 @@
 /**
- * Seed the database with the same 3 demo trips from scripts/seed.js.
+ * Seed the database with the same 3 demo trips, now with ownership.
  */
 export async function seed(knex) {
   // Clear existing data (checklist_items first due to FK)
