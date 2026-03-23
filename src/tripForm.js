@@ -11,6 +11,8 @@ import { showToast } from './toast.js';
 export function initTripForm({ onTripSaved } = {}) {
   const form = document.getElementById('trip-form');
   const checklistSection = document.getElementById('checklist-section');
+  const checklistLoading = document.getElementById('checklist-loading');
+  const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
 
   let currentChecklist = null;
@@ -22,6 +24,17 @@ export function initTripForm({ onTripSaved } = {}) {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => fn(...args), delay);
     };
+  }
+
+  function setChecklistLoading(isLoading) {
+    if (checklistLoading) {
+      checklistLoading.hidden = !isLoading;
+    }
+
+    if (generateChecklistBtn) {
+      generateChecklistBtn.disabled = isLoading;
+      generateChecklistBtn.textContent = isLoading ? 'Generating...' : 'Generate Checklist';
+    }
   }
 
   const autoSaveChecklist = debounce(async (checklist) => {
@@ -66,25 +79,33 @@ export function initTripForm({ onTripSaved } = {}) {
     saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
   }
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(form);
-    const tripParams = {
-      name: formData.get('name')?.trim(),
-      destinationType: formData.get('destinationType'),
-      duration: parseInt(formData.get('duration'), 10),
-    };
+    setChecklistLoading(true);
+    try {
+      // Yield one animation frame so the spinner renders before generation starts.
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
-    currentChecklist = generateChecklist(tripParams);
-    checklistSection.hidden = false;
-    renderChecklist(currentChecklist);
-    saveTripBtn.disabled = false;
+      const formData = new FormData(form);
+      const tripParams = {
+        name: formData.get('name')?.trim(),
+        destinationType: formData.get('destinationType'),
+        duration: parseInt(formData.get('duration'), 10),
+      };
 
-    if (savedTripId) {
-      saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
-    } else {
-      saveTripBtn.textContent = 'Save Trip';
+      currentChecklist = generateChecklist(tripParams);
+      checklistSection.hidden = false;
+      renderChecklist(currentChecklist);
+      saveTripBtn.disabled = false;
+
+      if (savedTripId) {
+        saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
+      } else {
+        saveTripBtn.textContent = 'Save Trip';
+      }
+    } finally {
+      setChecklistLoading(false);
     }
   });
 
