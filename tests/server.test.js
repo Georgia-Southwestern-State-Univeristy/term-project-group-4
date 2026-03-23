@@ -176,6 +176,19 @@ describe('POST /api/saveTrip', () => {
     expect(res.body.error).toBe('Invalid checklist payload');
     expect(res.body.message).toMatch(/category.*string/);
   });
+
+  it('trims leading/trailing whitespace and saves valid values', async () => {
+    const res = await authRequest('post', '/api/saveTrip').send({
+      name: '  Weekend Escape  ',
+      destinationType: '  beach  ',
+      duration: 2,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.name).toBe('Weekend Escape');
+    expect(res.body.destinationType).toBe('beach');
+  });
 });
 
 describe('GET /api/trips', () => {
@@ -339,6 +352,25 @@ describe('PUT /api/trips/:tripId', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/destinationType must not be blank/);
+  });
+
+  it('trims leading/trailing whitespace on name and destinationType updates', async () => {
+    const create = await authRequest('post', '/api/saveTrip').send({
+      name: 'Base Trip',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const update = await authRequest('put', `/api/trips/${create.body.id}`)
+      .send({
+        name: '  Updated Trip  ',
+        destinationType: '  outdoors  ',
+      });
+
+    expect(update.status).toBe(200);
+    expect(update.body.name).toBe('Updated Trip');
+    expect(update.body.destinationType).toBe('outdoors');
   });
 });
 
