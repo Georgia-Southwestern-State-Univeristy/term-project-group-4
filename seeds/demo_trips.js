@@ -1,5 +1,5 @@
 /**
- * Seed the database with the same 3 demo trips from scripts/seed.js.
+ * Seed the database with the same 3 demo trips, now with ownership.
  */
 export async function seed(knex) {
   // Clear existing data (checklist_items first due to FK)
@@ -8,6 +8,7 @@ export async function seed(knex) {
   await knex('users').del();
 
   const now = new Date().toISOString();
+  const SEED_USER_ID = 'seed-user';
 
   // Create a demo user
   const demoUserId = 'demo-user-123';
@@ -23,6 +24,7 @@ export async function seed(knex) {
   const trips = [
     {
       id: 'trip-001',
+      user_id: SEED_USER_ID,
       name: 'Summer Beach Vacation - Hawaii',
       destination_type: 'beach',
       duration: 5,
@@ -31,6 +33,7 @@ export async function seed(knex) {
     },
     {
       id: 'trip-002',
+      user_id: SEED_USER_ID,
       name: 'Weekend Hiking Adventure - Rocky Mountains',
       destination_type: 'outdoors',
       duration: 3,
@@ -39,6 +42,7 @@ export async function seed(knex) {
     },
     {
       id: 'trip-003',
+      user_id: SEED_USER_ID,
       name: 'City Exploration - New York Week',
       destination_type: 'city',
       duration: 7,
