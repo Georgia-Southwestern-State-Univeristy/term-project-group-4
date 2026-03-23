@@ -44,7 +44,7 @@ export function initTripForm({ onTripSaved } = {}) {
       await updateTripOnServer(savedTripId, { checklist });
       showToast('Checklist saved.', 'success');
     } catch (err) {
-      showToast('Failed to sync checklist (network error)', 'error');
+      showToast(`Failed to sync checklist: ${err.message}`, 'error');
       console.error('Failed to sync checklist:', err);
     }
   }, 600);
@@ -136,7 +136,7 @@ export function initTripForm({ onTripSaved } = {}) {
       saveTripBtn.disabled = false;
       if (onTripSaved) onTripSaved();
     } catch (err) {
-      showToast('Failed to save trip (network error)', 'error');
+      showToast(`Failed to save trip: ${err.message}`, 'error');
       console.error('Failed to save trip:', err);
       saveTripBtn.textContent = 'Save failed – retry?';
       saveTripBtn.disabled = false;

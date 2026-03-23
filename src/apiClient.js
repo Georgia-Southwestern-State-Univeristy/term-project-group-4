@@ -1,8 +1,20 @@
 const BASE = '/api';
 
+/**
+ * Extract error message from response body or return generic fallback
+ */
+async function getErrorMessage(res) {
+  try {
+    const body = await res.json();
+    return body.error || body.message || `Error ${res.status}`;
+  } catch {
+    return `Error ${res.status}`;
+  }
+}
+
 export async function getTrips() {
   const res = await fetch(`${BASE}/trips`);
-  if (!res.ok) throw new Error(`Failed to fetch trips: ${res.status}`);
+  if (!res.ok) throw new Error(await getErrorMessage(res));
   return res.json();
 }
 
@@ -12,7 +24,7 @@ export async function saveTrip(tripData) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(tripData),
   });
-  if (!res.ok) throw new Error(`Failed to save trip: ${res.status}`);
+  if (!res.ok) throw new Error(await getErrorMessage(res));
   return res.json();
 }
 
@@ -22,7 +34,7 @@ export async function updateTrip(tripId, updates) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
   });
-  if (!res.ok) throw new Error(`Failed to update trip: ${res.status}`);
+  if (!res.ok) throw new Error(await getErrorMessage(res));
   return res.json();
 }
 
@@ -31,5 +43,5 @@ export async function deleteTrip(tripId) {
     method: 'DELETE',
   });
 
-  if (!res.ok) throw new Error(`Failed to delete trip: ${res.status}`);
+  if (!res.ok) throw new Error(await getErrorMessage(res));
 }
