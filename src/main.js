@@ -59,7 +59,7 @@ async function init() {
       renderSavedTrips(allTrips, loadTrip, handleDeleteTrip);
       searchInput.value = '';
     } catch (err) {
-      showToast('Failed to load trips (network error)', 'error');
+      showToast(`Failed to load trips: ${err.message}`, 'error');
       console.error('Failed to load trips from server:', err);
     }
   }
@@ -80,7 +80,9 @@ async function init() {
     try {
       await deleteTripFromServer(tripId);
       await refreshTripList();
+      showToast('Trip deleted successfully.', 'success');
     } catch (err) {
+      showToast(`Failed to delete trip: ${err.message}`, 'error');
       console.error('Failed to delete trip:', err);
     }
   }
