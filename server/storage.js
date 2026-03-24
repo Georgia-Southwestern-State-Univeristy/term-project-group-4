@@ -19,7 +19,37 @@ export async function destroyDb() {
   await db.destroy();
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
+// ── auth helpers ─────────────────────────────────────────────────────
+
+export async function getUserById(id) {
+  return db('users').where({ id }).first();
+}
+
+export async function findOrCreateUser(profile) {
+  const googleId = profile.id;
+  const email = profile.emails?.[0]?.value ?? '';
+  const name = profile.displayName ?? email ?? 'Unknown User';
+  const picture = profile.photos?.[0]?.value ?? null;
+
+  let user = await db('users').where({ google_id: googleId }).first();
+  if (user) return user;
+
+  const id = uuidv4();
+  const createdAt = new Date().toISOString();
+
+  await db('users').insert({
+    id,
+    google_id: googleId,
+    email,
+    name,
+    picture,
+    created_at: createdAt,
+  });
+
+  return getUserById(id);
+}
+
+// ── trip helpers ─────────────────────────────────────────────────────
 
 function rowToTrip(tripRow, itemRows) {
   return {
@@ -37,10 +67,13 @@ function rowToTrip(tripRow, itemRows) {
   };
 }
 
-// ── public API (same interface as storageFile.js + deleteTrip) ───────
+// ── public API (ownership-aware) ─────────────────────────────────────
 
 export async function getAllTrips(userId) {
-  const trips = await db('trips').where('user_id', userId).orderBy('created_at', 'desc');
+  const trips = await db('trips')
+    .where('user_id', userId)
+    .orderBy('created_at', 'desc');
+
   if (trips.length === 0) return [];
 
   const items = await db('checklist_items')
@@ -58,7 +91,10 @@ export async function getAllTrips(userId) {
 }
 
 export async function getTripById(tripId, userId) {
-  const tripRow = await db('trips').where('id', tripId).andWhere('user_id', userId).first();
+  const tripRow = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .first();
+
   if (!tripRow) return null;
 
   const itemRows = await db('checklist_items')
@@ -68,17 +104,17 @@ export async function getTripById(tripId, userId) {
   return rowToTrip(tripRow, itemRows);
 }
 
-export async function createTrip(tripParams, userId) {
+export async function createTrip(tripParams, userId = tripParams.userId) {
   const id = uuidv4();
   const createdAt = new Date().toISOString();
 
   await db.transaction(async (trx) => {
     await trx('trips').insert({
       id,
+      user_id: userId,
       name: tripParams.name,
       destination_type: tripParams.destinationType,
       duration: tripParams.duration,
-      user_id: userId,
       created_at: createdAt,
     });
 
@@ -100,7 +136,10 @@ export async function createTrip(tripParams, userId) {
 }
 
 export async function updateTrip(tripId, updates, userId) {
-  const existing = await db('trips').where('id', tripId).andWhere('user_id', userId).first();
+  const existing = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .first();
+
   if (!existing) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';
@@ -114,11 +153,14 @@ export async function updateTrip(tripId, updates, userId) {
     if (updates.duration !== undefined) cols.duration = updates.duration;
 
     if (Object.keys(cols).length) {
-      await trx('trips').where('id', tripId).update(cols);
+      await trx('trips')
+        .where({ id: tripId, user_id: userId })
+        .update(cols);
     }
 
     if (updates.checklist !== undefined) {
       await trx('checklist_items').where('trip_id', tripId).del();
+
       if (updates.checklist.length) {
         await trx('checklist_items').insert(
           updates.checklist.map((item, i) => ({
@@ -138,40 +180,13 @@ export async function updateTrip(tripId, updates, userId) {
 }
 
 export async function deleteTrip(tripId, userId) {
-  const count = await db('trips').where('id', tripId).andWhere('user_id', userId).del();
+  const count = await db('trips')
+    .where({ id: tripId, user_id: userId })
+    .del();
+
   if (count === 0) {
     const err = new Error(`Trip ${tripId} not found`);
     err.code = 'TRIP_NOT_FOUND';
     throw err;
   }
-}
-
-// User functions
-export async function findOrCreateUser(profile) {
-  const { id: googleId, emails, displayName, photos } = profile;
-  const email = emails[0].value;
-  const picture = photos && photos.length > 0 ? photos[0].value : null;
-
-  let user = await db('users').where('google_id', googleId).first();
-  if (user) {
-    return user;
-  }
-
-  const userId = uuidv4();
-  const createdAt = new Date().toISOString();
-
-  await db('users').insert({
-    id: userId,
-    google_id: googleId,
-    email,
-    name: displayName,
-    picture,
-    created_at: createdAt,
-  });
-
-  return db('users').where('id', userId).first();
-}
-
-export async function getUserById(userId) {
-  return db('users').where('id', userId).first();
 }
