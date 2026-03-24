@@ -1,7 +1,7 @@
 {
   "name": "term-project-group-4",
   "version": "1.0.0",
-  "description": "",
+  "description": "Smart Packing Checklist Generator",
   "main": "index.js",
   "directories": {
     "doc": "docs"
