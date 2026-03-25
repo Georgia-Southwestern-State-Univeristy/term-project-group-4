@@ -11,6 +11,7 @@ export async function up(knex) {
     table.text('email').notNullable();
     table.text('name').notNullable();
     table.text('picture');
+    table.text('created_at').notNullable();
   });
 }
 

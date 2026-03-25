@@ -5,6 +5,8 @@ import {
   createTrip,
   updateTrip,
   deleteTrip,
+  findOrCreateUser,
+  getUserById,
   migrateLatest,
 } from './server/storage.js';
 import { requireAuth } from './server/auth.js';
@@ -12,13 +14,107 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { log } from './server/logger.js';
 import { v4 as uuidv4 } from 'uuid';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import session from 'express-session';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Passport configuration (only in non-test environments)
+if (process.env.NODE_ENV !== 'test') {
+  passport.use(new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: '/auth/google/callback',
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await findOrCreateUser(profile);
+        done(null, user);
+      } catch (error) {
+        done(error, null);
+      }
+    },
+  ));
+}
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await getUserById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+// Session configuration
+const getSessionSecret = () => {
+  if (process.env.NODE_ENV === 'test') {
+    return 'test-secret-key-do-not-use-in-production';
+  }
+  if (!process.env.SESSION_SECRET) {
+    console.warn('⚠️  SESSION_SECRET not set. Using default value. Set SESSION_SECRET environment variable for production.');
+    return 'default-dev-secret-change-in-production';
+  }
+  return process.env.SESSION_SECRET;
+};
+
+app.use(session({
+  secret: getSessionSecret(),
+  resave: false,
+  saveUninitialized: false,
+}));
+
+if (process.env.NODE_ENV !== 'test') {
+  app.use(passport.initialize());
+  app.use(passport.session());
+}
+
 app.use(express.json());
+
+// Auth routes (Google OAuth only in production/development)
+if (process.env.NODE_ENV !== 'test') {
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+  app.get(
+    '/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/auth/login-error' }),
+    (req, res) => {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(frontendUrl);
+    },
+  );
+}
+
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => {
+    res.redirect('/');
+  });
+});
+
+app.get('/auth/user', (req, res) => {
+  try {
+    if (req.user) {
+      res.json(req.user);
+    } else {
+      res.status(401).json({ error: 'Not authenticated' });
+    }
+  } catch (error) {
+    console.error('Error in /auth/user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // GET /api/trips - List all trips
 app.get('/api/trips', requireAuth, async (req, res) => {
@@ -118,25 +214,25 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
 
     if (checklist && Array.isArray(checklist)) {
       for (const item of checklist) {
-        if (!item.hasOwnProperty('id') || typeof item.id !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'id') || typeof item.id !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have an "id" string field',
           });
         }
-        if (!item.hasOwnProperty('name') || typeof item.name !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'name') || typeof item.name !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "name" string field',
           });
         }
-        if (!item.hasOwnProperty('category') || typeof item.category !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'category') || typeof item.category !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "category" string field',
           });
         }
-        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'packed') || typeof item.packed !== 'boolean') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "packed" boolean field',
@@ -203,25 +299,25 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
 
     if (checklist && Array.isArray(checklist)) {
       for (const item of checklist) {
-        if (!item.hasOwnProperty('id') || typeof item.id !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'id') || typeof item.id !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have an "id" string field',
           });
         }
-        if (!item.hasOwnProperty('name') || typeof item.name !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'name') || typeof item.name !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "name" string field',
           });
         }
-        if (!item.hasOwnProperty('category') || typeof item.category !== 'string') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'category') || typeof item.category !== 'string') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "category" string field',
           });
         }
-        if (!item.hasOwnProperty('packed') || typeof item.packed !== 'boolean') {
+        if (!Object.prototype.hasOwnProperty.call(item, 'packed') || typeof item.packed !== 'boolean') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: 'Each checklist item must have a "packed" boolean field',
