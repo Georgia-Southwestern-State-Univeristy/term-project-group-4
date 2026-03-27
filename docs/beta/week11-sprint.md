@@ -15,54 +15,47 @@ This is the required Week 11 workflow and takes priority over new feature reques
 
 ---
 
-## Committed Integration Backlog (6 Items)
+## Committed Integration Backlog (5 Items)
 
 | # | Item | Owner | Priority |
 |---|------|-------|----------|
-| 1 | E2E workflow integration fixes (auth + API + DB + UI) | Jason | 1 (blocker) |
-| 2 | Reliability hardening for loading/error states | Heather | 1 (blocker) |
-| 3 | Failure handling improvements in server/API responses | Naren | 1 (blocker) |
-| 4 | Add workflow-focused automated tests (minimum 4) | Naren | 2 |
-| 5 | CI stability cleanup and flaky check remediation | Jason | 2 |
-| 6 | Known issues log and beta readiness snapshot | Heather | 2 |
+| 1 | E2E workflow verification and integration fixes as needed (auth + API + DB + UI) | Heather | 1 |
+| 2 | Reliability hardening (UI loading/error states + server failure responses) | Jason | 2 |
+| 3 | Add workflow-focused automated tests (minimum 4) | Naren | 2 |
+| 4 | CI stability cleanup and flaky check remediation | Jason | 2 |
+| 5 | Known issues log and beta readiness snapshot | Heather | 2 |
 
-Rule check: 6 of 6 committed items directly improve integration, workflow completion, reliability, testing, or CI stability.
+Rule check: All committed items directly improve or document integration, workflow completion, reliability, testing, or CI stability.
 
 ---
 
 ## Acceptance Criteria by Item (Deliverable A Scope)
 
-### 1. E2E workflow integration fixes (auth + API + DB + UI)
+### 1. E2E workflow verification and integration fixes as needed (auth + API + DB + UI)
 
 - The primary workflow (sign in -> create -> save -> reload -> update -> delete) succeeds on current `main` without manual DB/file edits.
-- One full run of the workflow is verified by the team on the same deployed/local environment used for sprint review.
-- Integration fixes are merged and linked from the sprint board.
+- One full run of the workflow is verified by the team on the sprint-review target environment (Elastic Beanstalk if deployed; otherwise the agreed local review environment).
+- Verification evidence is captured; if any integration defects are found, fixes are merged and linked from the sprint board.
 
-### 2. Reliability hardening for loading/error states
+### 2. Reliability hardening (UI loading/error states + server failure responses)
 
-- At least 2 concrete UI reliability defects are fixed (for example: stuck spinner, duplicate submission, missing failure feedback).
-- Save, update, and delete actions surface user-facing success/error feedback.
-- Loading states always resolve to a visible end state (success or error) with no indefinite pending UI.
+- TBD: At least 2 concrete UI reliability defects are fixed (for example: stuck spinner, duplicate submission, missing failure feedback).
+- Save, update, and delete actions surface user-facing success/error feedback in both success and failure cases.
+- Server responses for failure paths are consistent and do not leak stack traces to the client.
 
-### 3. Failure handling improvements in server/API responses
-
-- At least 2 API failure paths are hardened and return consistent status codes (for example: 400 validation, 401 unauthorized, 404 not found).
-- Failure responses do not crash the server and do not leak stack traces in client responses.
-- Server logs contain enough context to debug failures (request/action + reason).
-
-### 4. Add workflow-focused automated tests (minimum 4)
+### 3. Add workflow-focused automated tests (minimum 4)
 
 - Add at least 4 new tests in Week 11.
-- At least 2 tests validate the primary end-to-end workflow behavior.
+- At least 2 tests validate the primary end-to-end workflow behavior. 
 - At least 1 integration or multi-component test and at least 1 failure-path/regression test are included.
 
-### 5. CI stability cleanup and flaky check remediation
+### 4. CI stability cleanup and flaky check remediation
 
 - CI passes on all Week 11 PRs that implement committed sprint items.
 - Any CI failure encountered during Week 11 has a recorded fix in the corresponding PR discussion.
 - `main` is green at sprint close.
 
-### 6. Known issues log and beta readiness snapshot
+### 5. Known issues log and beta readiness snapshot
 
 - Known issues discovered during Week 11 are captured and ranked high/medium/low.
 - Deferred items from this sprint are listed with a short reason.
@@ -80,8 +73,8 @@ Rule check: 6 of 6 committed items directly improve integration, workflow comple
 
 ## Sequencing Gate
 
-1. Fix blocker integration and reliability defects first (Items 1-3).
-2. Land workflow tests and CI fixes next (Items 4-5).
-3. Finalize known issues and readiness snapshot at sprint close (Item 6).
+1. Fix E2E integration first (Item 1).
+2. Land reliability fixes and workflow tests in parallel (Items 2-3).
+3. Finalize known issues and readiness snapshot at sprint close (Item 5).
 
-No new feature expansion unless blocker integration work is complete and CI is stable.
+No new feature expansion unless integration work is complete and CI is stable.
