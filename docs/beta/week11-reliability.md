@@ -1,88 +1,129 @@
-# Week 11 Reliability + Failure Handling
-## Smart Packing Checklist Generator
+# Week 11 Reliability and Failure Handling
 
 ## Scope
-This document is the Week 11 reliability plan for Beta Sprint 3. It focuses on concrete failure handling in the primary workflow (sign in -> create -> save -> reload -> update -> delete) before new feature expansion.
+
+This document tracks concrete reliability risks in the current system, records Week 11 reliability fixes, and lists deferred risks for Week 12+.
+
+Rule applied: reliability work below is implementation-specific and tied to current frontend/backend behavior.
 
 ---
 
-## 1. Reliability Risks Identified (System-Specific)
+## System-Specific Reliability Risks (Required 3)
 
-### Risk 1: Checklist generation failure can leave unclear UI state
+### Risk 1: Duplicate or inconsistent saves from repeated user clicks
 
-- Component path: `src/tripForm.js` -> checklist generation -> form/checklist UI state
-- Failure mode: if checklist generation throws, users may not get clear guidance and may attempt invalid follow-up actions.
-- Impact: confusing recovery path and reduced trust in the workflow.
+- Area: frontend trip save flow in `src/tripForm.js`
+- Failure mode: repeated clicks on Save can create duplicate in-flight save/update requests and inconsistent UI state.
+- User impact: duplicate records or unclear save state.
 
-### Risk 2: Duplicate delete submissions from repeated clicks
+### Risk 2: Invalid payloads causing unstable API behavior
 
-- Component path: `src/main.js` -> saved trips list -> delete action -> API
-- Failure mode: repeated clicks can send multiple delete requests before the first request completes.
-- Impact: inconsistent feedback, noisy error handling, and avoidable API churn.
+- Area: backend create/update handlers in `server.js`
+- Failure mode: malformed checklist items or blank required fields can enter API handlers and break expected persistence behavior.
+- User impact: bad data, failed saves, and unclear correction path.
 
-### Risk 3: Logout handler duplication during repeated auth checks
+### Risk 3: Missing or unauthorized trip IDs during update/delete
 
-- Component path: `src/main.js` -> `checkAuthStatus()` -> `updateAuthUI()`
-- Failure mode: repeated listener attachment can cause multiple logout actions from one click.
-- Impact: duplicate network calls and inconsistent auth feedback.
-
----
-
-## 2. Planned Reliability Fixes for Week 11
-
-### Planned Fix A (Risk 1): Harden checklist generation failure handling
-
-- Files targeted: `src/tripForm.js`
-- Before (current behavior): generation error handling is not explicit enough to guarantee clear user recovery state.
-- Planned after behavior:
-  - wrap generation flow in a defensive `try/catch`
-  - show clear user-facing error toast on generation failure
-  - reset UI controls to a safe retry state (no stuck loading/invalid save action)
-
-### Planned Fix B (Risk 2): Prevent duplicate delete submissions
-
-- Files targeted: `src/main.js`
-- Before (current behavior): delete action does not guard strongly enough against repeated clicks while request is pending.
-- Planned after behavior:
-  - disable delete action immediately after confirmation
-  - show an in-progress state (`Deleting...`)
-  - restore action state if delete fails so users can retry deliberately
-
-### Planned Fix C (Risk 3): Enforce single logout handler binding
-
-- Files targeted: `src/main.js`
-- Before (current behavior): logout binding may be re-registered when auth status is refreshed.
-- Planned after behavior:
-  - use one stable logout handler assignment pattern
-  - ensure one click maps to one logout request and one UI result
-
-Week 11 completion target: implement at least 2 of the 3 fixes above and capture before/after evidence.
+- Area: backend trip read/update/delete routes in `server.js`
+- Failure mode: trip not found (non-existent or wrong owner) can throw and produce poor or inconsistent failure semantics if not handled cleanly.
+- User impact: confusing failure responses and uncertainty whether data changed.
 
 ---
 
-## 3. Planned User-Facing Error Message Improvements (2+ Required)
+## Week 11 Fixes Implemented (At Least 2)
 
-1. Add explicit checklist generation failure messaging in form flow (actionable retry guidance).
-2. Improve delete failure messaging and retry affordance in saved trips actions.
-3. Normalize authentication-related failure feedback so logout/login state changes are clear.
+### Fix A: Prevent duplicate save submission in UI
 
-Week 11 completion target: deliver at least 2 improvements in production UI paths.
+- Before:
+  - Save actions could be retriggered while a request was in flight.
+  - Users had limited immediate signal that save was processing.
+- After:
+  - Save button is disabled during save/update request and text changes to `Saving...`.
+  - On success, button text is updated to `Saved! (ID: ...)` and success toast is shown.
+  - On failure, button is re-enabled and changed to `Save failed - retry?`.
+- Implementation evidence:
+  - `src/tripForm.js`
+- User-facing messaging improved:
+  - `Trip saved successfully.`
+  - `Trip updated successfully.`
+  - `Failed to save trip: <error>`
+
+### Fix B: Harden server-side validation for whitespace and checklist payloads
+
+- Before:
+  - Whitespace-only required fields could pass as valid input.
+  - Invalid checklist item shape could produce inconsistent outcomes.
+- After:
+  - `POST /api/saveTrip` trims and validates required string fields.
+  - `PUT /api/trips/:tripId` rejects blank `name`/`destinationType` updates.
+  - Both endpoints validate each checklist item (`id`, `name`, `category`, `packed`) with 400 responses.
+- Implementation evidence:
+  - `server.js`
+  - `tests/server.test.js`
+- User-facing messaging improved:
+  - `Missing required fields: ...`
+  - `name must not be blank`
+  - `destinationType must not be blank`
+  - `Invalid checklist payload` with field-specific message
+
+### Fix C: Safe not-found and ownership handling on trip operations
+
+- Before:
+  - Not-found and cross-user access paths risked generic or ambiguous failure handling.
+- After:
+  - GET/PUT/DELETE trip routes return clear `404` with `Trip not found` for missing/non-owned trips.
+  - Update/delete paths handle not-found conditions without crashing server flow.
+- Implementation evidence:
+  - `server.js`
+  - `tests/server.test.js`
+- User-facing messaging improved:
+  - `Trip not found`
+  - `Failed to update trip: <error>` (frontend surfaced)
+  - `Failed to delete trip: <error>` (frontend surfaced)
 
 ---
 
-## 4. Evidence Plan
+## Verification Evidence
 
-- Branch: `week11-reliability-deliverable-c`
-- Sprint board: https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
-- Required PR evidence: reliability fix PR links + test/CI links (`TBD` until implementation)
-- Run notes: capture one before/after scenario per completed fix
+### Code References
+
+- `src/tripForm.js`
+- `src/apiClient.js`
+- `server.js`
+- `tests/server.test.js`
+
+### PR and CI Evidence
+
+- Project Board Sprint View:
+  - https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
+- Week 11 reliability PR links:
+  - TBD
+- Passing CI run links:
+  - Add links to `docs/beta/week11-ci.md` when available
 
 ---
 
-## 5. Remaining Risks Deferred to Week 12+
+## Remaining Risks Deferred to Week 12+
 
-1. Explicit request timeout + abort behavior for slow network/API paths.
-2. Conflict UX for concurrent updates (optimistic locking surface and user resolution flow).
-3. Offline/reconnect strategy (queue/retry model instead of immediate failure only).
+### Deferred 1: Session reliability under multi-instance hosting
 
-These remain deferred because Week 11 is focused on stabilizing the primary integrated workflow first.
+- Why deferred: migration to Elastic Beanstalk is still in progress; current session approach is not ideal for horizontal scaling.
+- Risk: login/session consistency may degrade if multiple instances are enabled without shared session storage.
+
+### Deferred 2: Cloud log durability and centralized queryability
+
+- Why deferred: current logger writes to local file path and migration logging strategy is still being finalized.
+- Risk: incident debugging in cloud environments can be harder without durable centralized logs.
+
+### Deferred 3: Request timeout and retry strategy for API calls
+
+- Why deferred: frontend currently surfaces errors but does not yet implement explicit timeout controls/backoff strategy.
+- Risk: poor behavior during partial outages or slow downstream dependencies.
+
+---
+
+## Next Update Checklist
+
+- Add concrete Week 11 PR links for each implemented fix.
+- Attach screenshot snippets or run notes for at least two failure-path user messages.
+- Add CI links proving reliability-path tests pass on `main`.
