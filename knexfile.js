@@ -1,5 +1,5 @@
 /**
- * Knex configuration — SQLite for local development, PostgreSQL for production.
+ * Knex configuration — SQLite for local development and Beta production hosting.
  * @see https://knexjs.org/guide/#configuration-options
  */
 export default {
@@ -45,16 +45,24 @@ export default {
       },
     },
   },
-
-  // PostgreSQL for production — requires `npm install pg` before use.
   production: {
-    client: 'pg',
-    connection: process.env.DATABASE_URL,
+    client: 'better-sqlite3',
+    connection: {
+      filename: process.env.SQLITE_PATH || '/data/trips.db',
+    },
+    useNullAsDefault: true,
     migrations: {
       directory: './migrations',
     },
     seeds: {
       directory: './seeds',
+    },
+    pool: {
+      afterCreate(conn, done) {
+        conn.pragma('journal_mode = WAL');
+        conn.pragma('foreign_keys = ON');
+        done();
+      },
     },
   },
 };

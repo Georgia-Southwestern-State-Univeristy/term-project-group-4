@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import {
   getAllTrips,
   getTripById,
@@ -25,9 +27,63 @@ const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isTest = process.env.NODE_ENV === 'test';
+const isProduction = process.env.NODE_ENV === 'production';
+const distDir = path.resolve(process.cwd(), 'dist');
+
+function getConfiguredDbPath() {
+  if (isTest) return ':memory:';
+  if (isProduction) return process.env.SQLITE_PATH || '/data/trips.db';
+  return path.resolve(process.cwd(), 'data', 'trips.db');
+}
+
+function getDbPathStatus() {
+  const dbPath = getConfiguredDbPath();
+
+  if (dbPath === ':memory:') {
+    return {
+      path: dbPath,
+      writable: true,
+      target: dbPath,
+      error: null,
+    };
+  }
+
+  const targetPath = fs.existsSync(dbPath) ? dbPath : path.dirname(dbPath);
+
+  try {
+    fs.accessSync(targetPath, fs.constants.W_OK);
+    return {
+      path: dbPath,
+      writable: true,
+      target: targetPath,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      path: dbPath,
+      writable: false,
+      target: targetPath,
+      error: error.message,
+    };
+  }
+}
+
+function ensureProductionStorageReady() {
+  if (!isProduction) return;
+
+  if (!process.env.SQLITE_PATH) {
+    throw new Error('SQLITE_PATH must be set in production. Refusing to start without an explicit persistent DB path.');
+  }
+
+  const dbStatus = getDbPathStatus();
+  if (!dbStatus.writable) {
+    throw new Error(`Configured SQLite path is not writable: ${dbStatus.target}. ${dbStatus.error}`);
+  }
+}
 
 // Passport configuration (only in non-test environments)
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
   passport.use(new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
@@ -74,17 +130,36 @@ app.use(session({
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
+  proxy: isProduction,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction,
+  },
 }));
 
-if (process.env.NODE_ENV !== 'test') {
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
+if (!isTest) {
   app.use(passport.initialize());
   app.use(passport.session());
 }
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  const dbStatus = getDbPathStatus();
+  res.status(dbStatus.writable ? 200 : 503).json({
+    status: dbStatus.writable ? 'ok' : 'degraded',
+    environment: process.env.NODE_ENV || 'development',
+    database: dbStatus,
+  });
+});
+
 // Auth routes (Google OAuth only in production/development)
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
   app.get(
@@ -379,14 +454,30 @@ app.delete('/api/trips/:tripId', requireAuth, async (req, res) => {
 // Swagger UI - serve API documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+if (isProduction) {
+  app.use(express.static(distDir));
+
+  app.get(/^\/(?!api\/|auth\/|docs(?:\/|$)|health$).*/, (req, res, next) => {
+    const indexPath = path.join(distDir, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+    return res.sendFile(indexPath);
+  });
+}
+
 // Export app for testing
 export { app };
 
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
+  ensureProductionStorageReady();
   await migrateLatest();
   app.listen(PORT, () => {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`SQLite path: ${getConfiguredDbPath()}`);
     console.log('Endpoints:');
+    console.log('  GET    /health');
     console.log('  GET    /api/trips');
     console.log('  GET    /api/trips/{tripId}');
     console.log('  POST   /api/saveTrip');
