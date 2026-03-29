@@ -7,11 +7,8 @@ export async function seed(knex) {
   await knex('trips').del();
   await knex('users').del();
 
-  const now = new Date().toISOString();
-  const SEED_USER_ID = 'seed-user';
-
-  // Create a demo user
-  const demoUserId = 'demo-user-123';
+const now = new Date().toISOString();
+const demoUserId = 'demo-user-123';
   await knex('users').insert({
     id: demoUserId,
     google_id: 'demo-google-id',
@@ -24,16 +21,15 @@ export async function seed(knex) {
   const trips = [
     {
       id: 'trip-001',
-      user_id: SEED_USER_ID,
+      user_id: demoUserId,
       name: 'Summer Beach Vacation - Hawaii',
       destination_type: 'beach',
       duration: 5,
-      user_id: demoUserId,
       created_at: now,
     },
     {
       id: 'trip-002',
-      user_id: SEED_USER_ID,
+      user_id: demoUserId,
       name: 'Weekend Hiking Adventure - Rocky Mountains',
       destination_type: 'outdoors',
       duration: 3,
@@ -42,7 +38,7 @@ export async function seed(knex) {
     },
     {
       id: 'trip-003',
-      user_id: SEED_USER_ID,
+      user_id: demoUserId,
       name: 'City Exploration - New York Week',
       destination_type: 'city',
       duration: 7,
