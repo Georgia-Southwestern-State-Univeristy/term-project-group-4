@@ -95,11 +95,23 @@ if (process.env.NODE_ENV !== 'test') {
       res.redirect(frontendUrl);
     },
   );
+
+  app.get('/auth/login-error', (req, res) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}?authError=google_login_failed`);
+  });
 }
 
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => {
-    res.redirect('/');
+app.get('/auth/logout', (req, res, next) => {
+  req.logout((error) => {
+    if (error) return next(error);
+
+    req.session.destroy((sessionError) => {
+      if (sessionError) return next(sessionError);
+
+      res.clearCookie('connect.sid');
+      res.status(200).json({ success: true });
+    });
   });
 });
 
@@ -130,7 +142,7 @@ app.get('/api/trips', requireAuth, async (req, res) => {
       errorType: error.constructor?.name,
       stack: error.stack?.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to fetch trips', message: error.message });
+    res.status(500).json({ error: 'Failed to fetch trips' });
   }
 });
 
@@ -165,7 +177,7 @@ app.get('/api/trips/:tripId', requireAuth, async (req, res) => {
       errorType: error.constructor.name,
       stack: error.stack.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to fetch trip', message: error.message });
+    res.status(500).json({ error: 'Failed to fetch trip' });
   }
 });
 
@@ -263,7 +275,7 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       errorType: error.constructor.name,
       stack: error.stack.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to create trip', message: error.message });
+    res.status(500).json({ error: 'Failed to create trip' });
   }
 });
 
@@ -349,7 +361,7 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
         tripId,
         reason: error.message,
       });
-      return res.status(404).json({ error: 'Trip not found', message: error.message });
+      return res.status(404).json({ error: 'Trip not found' });
     }
 
     await log(requestId, 'UPDATE_TRIP', 'ERROR', {
@@ -359,7 +371,7 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
       stack: error.stack.split('\n').slice(0, 3),
     });
 
-    res.status(500).json({ error: 'Failed to update trip', message: error.message });
+    res.status(500).json({ error: 'Failed to update trip' });
   }
 });
 
@@ -370,9 +382,9 @@ app.delete('/api/trips/:tripId', requireAuth, async (req, res) => {
     res.status(204).end();
   } catch (error) {
     if (error.code === 'TRIP_NOT_FOUND') {
-      return res.status(404).json({ error: 'Trip not found', message: error.message });
+      return res.status(404).json({ error: 'Trip not found' });
     }
-    res.status(500).json({ error: 'Failed to delete trip', message: error.message });
+    res.status(500).json({ error: 'Failed to delete trip' });
   }
 });
 
