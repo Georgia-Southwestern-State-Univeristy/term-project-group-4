@@ -100,6 +100,122 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
 
 - http://localhost:3000/docs
 
+## End-to-End (E2E) Testing with Playwright
+
+This includes comprehensive E2E tests using Playwright that verify the entire user workflow including Google OAuth authentication, trip creation, checklist generation, and data persistence.
+
+### Prerequisites for E2E Tests
+
+1. **Google OAuth Test Account**: You need a real Google account for testing
+   - Email: `group4termproject@gmail.com`
+   - Password: Set via `TEST_PASSWORD` environment variable
+
+2. **Environment Variables**: Set in `.env` or pass at runtime. Test uses localhost if there is no BAse URL in .env file
+   ```bash
+   BASE_URL=
+   TEST_EMAIL=group4termproject@gmail.com
+   TEST_PASSWORD=your-test-password
+   ```
+
+### Installing Playwright
+
+Install Playwright and its browser binaries:
+```bash
+npm install --save-dev @playwright/test
+npx playwright install
+```
+
+### Running E2E Tests
+
+**Important**: Both the backend API (port 3000) and frontend server (port 5173) must be running. Playwright will start these automatically, but you can also run them manually in separate terminals:
+
+```bash
+# Terminal 1: Start backend API
+npm run server
+
+# Terminal 2: Start frontend dev server
+npm run dev
+
+# Terminal 3: Run E2E tests
+export TEST_PASSWORD="your-test-password"
+npx playwright test
+```
+
+#### Running All Tests
+```bash
+export TEST_PASSWORD="your-test-password"
+npx playwright test
+```
+
+#### Running Specific Test File
+```bash
+export TEST_PASSWORD="your-test-password"
+npx playwright test tests/e2e/primary-workflow.spec.js
+```
+
+#### Running Tests in Headed Mode (see browser)
+```bash
+export TEST_PASSWORD="your-test-password"
+npx playwright test --headed
+```
+
+#### Running Tests in Debug Mode
+```bash
+export TEST_PASSWORD="your-test-password"
+npx playwright test --debug
+```
+
+#### Running Tests in UI Mode (interactive)
+```bash
+export TEST_PASSWORD="your-test-password"
+npx playwright test --ui
+```
+
+### E2E Test Files
+
+The test suite includes three test files:
+
+1. **`tests/e2e/auth.spec.js`** - Authentication Tests
+   - Verifies Google OAuth login flow works end-to-end
+   - Confirms user is properly authenticated and logged in
+
+2. **`tests/e2e/primary-workflow.spec.js`** - Primary Workflow Tests
+   - Tests core user journey: login → create trip → generate checklist → save trip
+   - Verifies checklist items are correctly generated for different destination types (beach, camping, city)
+   - Uses timestamp-based unique trip names to avoid conflicts
+
+3. **`tests/e2e/integration.spec.js`** - Integration Tests
+   - Tests saving a trip and then loading it back
+   - Verifies trip data is correctly persisted and restored
+   - Confirms form is repopulated with saved trip information
+
+4. **`tests/e2e/failure-paths.spec.js`** - Failure Path Tests
+   - Tests error handling and edge cases
+   - Verifies validation prevents saving trips with invalid data (e.g., spaces-only trip names)
+   - Confirms error toast messages display when operations fail
+
+### Test Configuration
+
+Playwright configuration is in `playwright.config.js`:
+- **Viewport**: 1920x1080 (ensures all elements are visible)
+- **Timeout**: 30 seconds per test
+- **Retries**: 0 on local, 2 on CI
+- **Browsers**: Chromium (Firefox and WebKit commented out)
+- **Web Servers**: Automatically starts both API (port 3000) and frontend (port 5173)
+
+### Test Reports
+
+After running tests, view detailed reports:
+```bash
+npx playwright show-report
+```
+
+This opens an HTML report with:
+- Test results and timing
+- Screenshots on failure
+- Video recordings (if enabled)
+- Detailed trace files for debugging
+
 
 ## Development Commands
 
