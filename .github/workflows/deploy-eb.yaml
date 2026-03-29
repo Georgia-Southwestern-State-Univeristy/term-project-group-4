@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
       - '**/*.md'
 
 concurrency:
@@ -41,6 +40,15 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Validate deployment target
+        env:
+          ENV_NAME: ${{ secrets.EB_ENVIRONMENT_NAME }}
+        run: |
+          if [ "$ENV_NAME" != "spcg-prod-alb-lt" ]; then
+            echo "EB_ENVIRONMENT_NAME must be set to spcg-prod-alb-lt. Current value is: ${ENV_NAME:-<empty>}"
+            exit 1
+          fi
+
       - name: Package deployment bundle
         run: |
           zip -r deploy.zip . \
@@ -48,7 +56,6 @@ jobs:
             -x ".git/*" \
             -x ".github/*" \
             -x "tests/*" \
-            -x "docs/*" \
             -x "logs/*" \
             -x "*.log"
 

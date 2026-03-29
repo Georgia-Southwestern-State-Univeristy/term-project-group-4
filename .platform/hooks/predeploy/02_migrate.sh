@@ -22,6 +22,18 @@ if [[ ! -d "$APP_STAGING" ]]; then
 fi
 
 cd "$APP_STAGING"
-echo "[migrate] running migrations (SQLITE_PATH=${SQLITE_PATH:-/data/trips.db})…"
+DB_PATH="${SQLITE_PATH:-/data/trips.db}"
+
+echo "[migrate] running migrations (SQLITE_PATH=$DB_PATH)..."
 node_modules/.bin/knex migrate:latest
+
+# Migrations run as root in EB hooks. Ensure the runtime app user can write DB.
+# WAL mode creates companion files (.db-wal, .db-shm) that must also be owned by webapp.
+if [[ -d "/data" ]]; then
+  find /data -maxdepth 1 -name 'trips.db*' -exec chown webapp:webapp {} \; 2>/dev/null || true
+  find /data -maxdepth 1 -name 'trips.db*' -exec chmod 660 {} \; 2>/dev/null || true
+  chown webapp:webapp /data || true
+  chmod 750 /data || true
+fi
+
 echo "[migrate] migrations complete"
