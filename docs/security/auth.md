@@ -28,6 +28,7 @@ SmartChecklist uses **Google OAuth 2.0** for user authentication combined with *
 **Endpoints:**
 - `GET /auth/google` - Initiates Google OAuth flow
 - `GET /auth/google/callback` - OAuth callback endpoint (handled by Passport)
+- `GET /auth/login-error` - Redirect endpoint for failed OAuth attempts; redirects to frontend with `?authError=google_login_failed`
 - `GET /auth/logout` - Logs out the user, destroys the session, and clears the session cookie
 - `GET /auth/user` - Returns authenticated user info; responds with 401 if not authenticated
 
@@ -121,4 +122,3 @@ curl -X GET http://localhost:3000/api/trips \
 ```
 
 This bypasses OAuth and session requirements for automated testing.
-
