@@ -27,14 +27,7 @@ export default defineConfig({
 
   webServer: [
     {
-      command: 'npm run server',
-      port: 3000,
-      reuseExistingServer: false,
-      timeout: 120000,
-      readyTimeout: 30000,
-    },
-    {
-      command: 'npm run dev',
+      command: 'npm run dev:full',
       port: 5173,
       reuseExistingServer: false,
       timeout: 120000,
