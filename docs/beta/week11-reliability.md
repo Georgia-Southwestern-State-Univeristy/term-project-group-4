@@ -43,6 +43,7 @@ Rule applied: reliability work below is implementation-specific and tied to curr
   - On failure, button is re-enabled and changed to `Save failed - retry?`.
 - Implementation evidence:
   - `src/tripForm.js`
+  - Addressed in PR #89: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/89
 - User-facing messaging improved:
   - `Trip saved successfully.`
   - `Trip updated successfully.`
@@ -60,6 +61,7 @@ Rule applied: reliability work below is implementation-specific and tied to curr
 - Implementation evidence:
   - `server.js`
   - `tests/server.test.js`
+  - Addressed in PR #90: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/90
 - User-facing messaging improved:
   - `Missing required fields: ...`
   - `name must not be blank`
@@ -76,6 +78,8 @@ Rule applied: reliability work below is implementation-specific and tied to curr
 - Implementation evidence:
   - `server.js`
   - `tests/server.test.js`
+  - Addressed in PR #89: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/89
+  - Additional API/doc reliability alignment in PR #90: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/90
 - User-facing messaging improved:
   - `Trip not found`
   - `Failed to update trip: <error>` (frontend surfaced)
@@ -97,9 +101,11 @@ Rule applied: reliability work below is implementation-specific and tied to curr
 - Project Board Sprint View:
   - https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
 - Week 11 reliability PR links:
-  - TBD
+  - PR #89 (Frontend save flow + auth/frontend integration fixes): https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/89
+  - PR #90 (Server-side validation + API/doc alignment): https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/90
+  - PR #91 (Repo hygiene/schema cleanup supporting reliability consistency): https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/91
 - Passing CI run links:
-  - Add links to `docs/beta/week11-ci.md` when available
+  - Attached in the corresponding Week 11 PR checks/discussions.
 
 ---
 
@@ -124,6 +130,5 @@ Rule applied: reliability work below is implementation-specific and tied to curr
 
 ## Next Update Checklist
 
-- Add concrete Week 11 PR links for each implemented fix.
 - Attach screenshot snippets or run notes for at least two failure-path user messages.
-- Add CI links proving reliability-path tests pass on `main`.
+- After merge, add final `main` CI run link confirming reliability-path tests remain green.
