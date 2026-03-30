@@ -1,7 +1,7 @@
 /**
- * Add user ownership to trips.
- * Existing rows are backfilled with a placeholder owner so the migration
- * can run safely on local/dev databases that already contain trips.
+ * Backfill compatibility migration for older local databases created before
+ * trip ownership was added. Fresh databases created from migration 001 already
+ * include trips.user_id, so this migration safely no-ops in that case.
  */
 export async function up(knex) {
   const hasColumn = await knex.schema.hasColumn('trips', 'user_id');
