@@ -119,7 +119,22 @@ jobs:
       - name: Build application
         run: npm run build
 
+      - name: Create .env file for tests
+        run: |
+          cat > .env << EOF
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          FRONTEND_URL=http://localhost:5173
+          TEST_EMAIL=${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
+          NODE_ENV=test
+          CI=true
+          EOF
+
       - name: Run E2E Tests
+        env:
+          CI: true
         run: npm run test:e2e
 
       - name: Upload test results
