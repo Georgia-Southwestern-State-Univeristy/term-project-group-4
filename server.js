@@ -37,6 +37,15 @@ function getConfiguredDbPath() {
   return path.resolve(process.cwd(), 'data', 'trips.db');
 }
 
+function isMounted(targetPath) {
+  try {
+    const mounts = fs.readFileSync('/proc/mounts', 'utf8');
+    return mounts.includes(targetPath);
+  } catch {
+    return false;
+  }
+}
+
 function getDbPathStatus() {
   const dbPath = getConfiguredDbPath();
 
@@ -74,6 +83,12 @@ function ensureProductionStorageReady() {
 
   if (!process.env.SQLITE_PATH) {
     throw new Error('SQLITE_PATH must be set in production. Refusing to start without an explicit persistent DB path.');
+  }
+
+  if (process.env.SQLITE_PATH.startsWith('/data')) {
+    if (!isMounted('/data')) {
+      throw new Error('/data is not mounted. Refusing to start. Verify that the EBS volume was successfully attached by the predeploy hook.');
+    }
   }
 
   const dbStatus = getDbPathStatus();
@@ -151,11 +166,28 @@ app.use(express.json());
 
 app.get('/health', (req, res) => {
   const dbStatus = getDbPathStatus();
-  res.status(dbStatus.writable ? 200 : 503).json({
+  const statusCode = dbStatus.writable ? 200 : 503;
+
+  const baseResponse = {
     status: dbStatus.writable ? 'ok' : 'degraded',
     environment: process.env.NODE_ENV || 'development',
-    database: dbStatus,
-  });
+  };
+
+  // In production, avoid exposing internal filesystem paths or low-level errors.
+  const responseBody = isProduction
+    ? {
+        ...baseResponse,
+        database: {
+          writable: dbStatus.writable,
+        },
+      }
+    : {
+        ...baseResponse,
+        // In non-production, include full database status for easier debugging.
+        database: dbStatus,
+      };
+
+  res.status(statusCode).json(responseBody);
 });
 
 // Auth routes (Google OAuth only in production/development)

@@ -44,8 +44,8 @@ jobs:
         env:
           ENV_NAME: ${{ secrets.EB_ENVIRONMENT_NAME }}
         run: |
-          if [ "$ENV_NAME" != "spcg-prod-alb-lt" ]; then
-            echo "EB_ENVIRONMENT_NAME must be set to spcg-prod-alb-lt. Current value is: ${ENV_NAME:-<empty>}"
+          if [ -z "$ENV_NAME" ]; then
+            echo "EB_ENVIRONMENT_NAME must be set"
             exit 1
           fi
 

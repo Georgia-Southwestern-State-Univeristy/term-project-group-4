@@ -1,6 +1,6 @@
 #!/bin/bash
 # Runs Knex database migrations against the production SQLite database.
-# Runs as the webapp service user during hooks/predeploy on every deployment,
+# Runs under the Elastic Beanstalk predeploy hook user (root by default),
 # after 01_mount_ebs.sh has attached /data and npm install has completed.
 
 set -euo pipefail

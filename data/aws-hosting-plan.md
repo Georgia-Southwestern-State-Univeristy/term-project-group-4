@@ -1,6 +1,6 @@
 # AWS Hosting Plan Scratch
 
-This is a temporary planning note for AWS hosting. It is intentionally stored under `data/`, which is ignored by git in this repo.
+This is a working planning note for AWS hosting. It is currently versioned in the repository for team visibility and will be moved to docs/ or finalized documentation after stabilization.
 
 ## Recommendation
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Attaches and mounts the persistent EBS volume that holds the SQLite database.
-# Runs as root during confighooks/predeploy on every deployment.
+# Runs as root from .platform/hooks/predeploy on every deployment.
 # Requires EBS_VOLUME_ID to be set as an EB environment property.
 # Safe to run on already-mounted volumes (idempotent).
 
