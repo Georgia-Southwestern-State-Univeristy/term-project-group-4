@@ -39,7 +39,7 @@ Rule check: All committed items directly improve or document integration, workfl
 
 ### 2. Reliability hardening (UI loading/error states + server failure responses)
 
-- TBD: At least 2 concrete UI reliability defects are fixed (for example: stuck spinner, duplicate submission, missing failure feedback).
+- At least 2 concrete reliability defects identified during Week 11 integration work are fixed and verified in the sprint-review environment. Current targets include duplicate client actions/event handling, missing user-facing failure feedback, and inconsistent server failure responses.
 - Save, update, and delete actions surface user-facing success/error feedback in both success and failure cases.
 - Server responses for failure paths are consistent and do not leak stack traces to the client.
 
@@ -67,7 +67,7 @@ Rule check: All committed items directly improve or document integration, workfl
 
 - **Project Board Sprint View:** https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
 - **PR Evidence:** Week 11 PRs linked from each backlog item
-- **CI Evidence:** Passing run links included in `week11-ci.md`
+- **CI Evidence:** Passing CI run links attached to relevant Week 11 PRs and, where needed, recorded in the project board items.
 
 ---
 
