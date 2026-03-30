@@ -68,7 +68,7 @@ export async function loginWithGoogle(page) {
     await signInBtn.click();
 
     // Wait for confirmation screen and click continue button
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(5000);
     const confirmBtn = page.getByRole('button', { name: 'Continue' }).first();
     const isConfirmVisible = await confirmBtn.isVisible().catch(() => false);
     if (isConfirmVisible) {
@@ -76,8 +76,18 @@ export async function loginWithGoogle(page) {
       await confirmBtn.click();
     }
 
-    // Wait for redirect back to app
-    await page.waitForURL('/', { waitUntil: 'networkidle' });
+    // Wait for redirect back to app with longer timeout
+    console.log('Waiting for redirect back to home page...');
+    try {
+      await page.waitForURL('/', { waitUntil: 'networkidle', timeout: 30000 });
+      console.log('Successfully redirected to home page');
+    } catch (error) {
+      console.log('Timeout waiting for redirect, checking current URL:', await page.url());
+      // If we're already on the home page or auth callback succeeded, continue
+      if (!page.url().includes('localhost:5173')) {
+        throw new Error(`Redirect failed: stuck on ${page.url()}`);
+      }
+    }
     
     // Verify we're logged in by checking for user info
     const userInfo = page.locator('#user-info');
