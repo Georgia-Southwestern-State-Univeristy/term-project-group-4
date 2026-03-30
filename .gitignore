@@ -5,3 +5,5 @@ data/
 project-activity-report.md
 logs/*.log
 .env
+deploy-manual*.zip
+deploy-manualfix*.zip
