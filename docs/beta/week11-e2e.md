@@ -1,69 +1,107 @@
 # Week 11 End-to-End Workflow Proof
 ## Smart Packing Checklist Generator
 
-This workflow demonstrates meaningful system behavior across authentication, frontend UI, backend API, and persistence layers. It confirms that the core user journey is functional end-to-end.
+This document demonstrates that the core system workflow functions end-to-end across authentication, frontend UI, backend API, and persistence layers.
 
 ---
 
 ## Primary Workflow: Create and Save a Trip
 
-This workflow demonstrates a complete user journey across frontend UI, backend API, and persistence.
+This workflow validates the full user journey from login to persistent storage.
 
 ---
 
 ## Entry Point and User Role
 
-- Entry Point: Application home page (`/`)
-- User Role: Authenticated user (Google OAuth)
+- **Entry Point:** http://localhost:5173/
+- **User Role:** Authenticated user
 
 ---
 
 ## Workflow Steps
 
-1. User logs in via Google OAuth
-![Login Page](image.png)
+### 1. User logs in via Google OAuth
+![Login Page](image.png)  
 ![Login to Google Account](image-1.png)
-2. User enters trip details:
-   - Trip name
-   - Destination type
-   - Duration
+
+---
+
+### 2. User enters trip details
+- Trip name  
+- Destination type  
+- Duration  
+
 ![Enter Trip Details](image-2.png)
-3. User clicks **Generate Checklist**
-   - Frontend calls checklist generation logic
+
+---
+
+### 3. User clicks **Generate Checklist**
+- Frontend generates checklist items based on destination type  
+
 ![Generate Checklist](image-3.png)
-4. Checklist is displayed in the UI
+
+---
+
+### 4. Checklist is displayed in the UI
 ![Checklist Displayed](image-4.png)
-5. User clicks **Save Trip**
-   - Frontend sends request to backend API
+
+---
+
+### 5. User clicks **Save Trip**
+- Frontend sends request to backend API  
+
 ![Saved Trip](image-5.png)
-6. Backend validates request, enforces ownership, and persists trip
-7. Saved trip appears in UI list
+
+---
+
+### 6. Backend processes request
+- Validates input  
+- Enforces user ownership  
+- Persists data to SQLite  
+
+---
+
+### 7. Saved trip appears in UI
+- Trip is added to saved trips list  
+- User can reload it later  
+
 ![Saved Trip Visible](image-6.png)
 
 ---
 
 ## System Components Involved
 
-- Frontend (Vite + Vanilla JS)
-  - `tripForm.js`
-  - `apiClient.js`
-- Backend (Node.js + Express)
-  - `server.js`
-- Database layer (SQLite via storage module)
-- Authentication (Google OAuth)
-- CI/Test layer (Playwright E2E tests)
+### Frontend (Vite + Vanilla JS)
+- `tripForm.js`
+- `apiClient.js`
+- `main.js`
+
+### Backend (Node.js + Express)
+- `server.js`
+
+### Persistence Layer
+- Knex + SQLite
+
+### Authentication
+- Google OAuth (user-facing)
+- Session-based authentication
+
+### Testing / CI
+- Playwright E2E tests
+- GitHub Actions CI pipeline
 
 ---
 
 ## Expected Output / Final State
 
-- A new trip is saved with:
-  - Valid trip data
-  - Generated checklist items
-- Trip appears in the saved trips list
-- No duplicate entries created
-- UI reflects success state (toast or updated list)
-- Data is associated with the authenticated user and isolated from other users
+- Trip is saved with:
+  - Valid trip data  
+  - Generated checklist items  
+- Trip appears in saved trips list  
+- No duplicate entries are created  
+- UI reflects success state  
+- Data is user-specific and isolated  
+- Trip can be reloaded into the form  
 
 ---
 
@@ -71,83 +109,95 @@ This workflow demonstrates a complete user journey across frontend UI, backend A
 
 ### PRs That Enabled This Workflow
 
-This end-to-end workflow is the result of incremental development across multiple PRs integrating authentication, API functionality, persistence, frontend behavior, and testing.
+#### Authentication
+- #70 – Google authentication implementation  
+- #89 – Auth and frontend integration fixes  
 
-Representative contributions include:
+#### API / Backend
+- #22 – Initial save trip API  
+- #25 – Validation and error handling fixes  
+- #33 – GET /api/trips/:tripId  
+- #95 – API and documentation alignment  
 
-#### Authentication and Access Control
-- Implemented google authentication #70  
-- Week11/auth-and-frontend-integration-fixes #89  
+#### Persistence
+- #57 – Migration to SQLite (Knex)  
+- #36 – Seed script  
+- #91 – Schema cleanup  
 
-These PRs introduced and stabilized the Google OAuth authentication flow, including session handling and protected API routes.
+#### Frontend
+- #37 – Saved trips list + load/filter  
+- #55 – Toast notifications  
 
-#### API and Backend Functionality
-- Add GET /api/trips/:tripId endpoint #33  
-- Wire frontend to Express API — MVP save trip path #22  
-- Fix PR #22 review feedback: 404 handling, validation, naming #25  
+#### Testing & CI
+- #38 – Demo-path tests
+- #102 – Workflow-focused automated tests  
+- #103 – CI stability cleanup  
+- #94 – Required check reporting  
+- #96 – workflow_dispatch  
 
-These PRs enabled trip creation, retrieval, validation, and consistent API behavior.
-
-#### Persistence Layer
-- Migrate storage from JSON file to SQLite via Knex.js #57  
-- Added data seed script #36  
-
-These changes ensure trip data persists across sessions and reloads.
-
-#### Frontend Integration
-- Add saved trips list with load and filter #37  
-- Week11/api-and-doc-alignment #95  
-
-These PRs enabled checklist rendering, saved trip visibility, and API/UI alignment.
-
-#### Schema and Data Consistency
-- updated checklist payload key value to be packed #29  
-- Week11/repo-hygiene-and-schema-cleanup #91
-
-These changes standardized data structures across frontend, backend, and documentation.
-
-#### Testing and CI
-- Add demo-path tests: retrieve-after-update and boundary #38  
-- ci: always report required checks #94  
-- ci: add workflow_dispatch #96  
-
-These PRs introduced workflow testing and CI improvements supporting validation of the system.
-
-#### Infrastructure and Deployment
-- Week11/aws beta hosting #92  
-
-This enabled a hosted environment and configuration for persistence and deployment.
+#### Infrastructure
+- #92 – AWS beta hosting  
 
 ---
 
-### Test Evidence
+## Test Evidence
 
-- Playwright E2E Tests:
-  - `tests/e2e/primary-workflow.spec.js`
-  - `tests/e2e/integration.spec.js`
+### Playwright E2E Tests
 
-Verified behaviors:
-- User can log in
+- `tests/e2e/primary-workflow.spec.js`
+- `tests/e2e/integration.spec.js`
+- `tests/e2e/failure-paths.spec.js`
+
+### Verified Behaviors
+
+- User can authenticate (test-mode in automation)
 - User can create and save a trip
-- Trip persists and can be reloaded
-- Duplicate submissions are prevented
+- Trip persists and reloads correctly
+- Invalid input triggers proper error handling
 
 ---
 
-### Run Notes
+## Run Notes
 
-Local test run:
-- Started backend (`npm run server`)
-- Started frontend (`npm run dev`)
-- Executed Playwright tests (`npx playwright test`)
-- Verified:
-  - Trip creation
-  - Checklist generation
-  - Save + reload functionality
+### Manual Testing
+
+- Ran application locally (`npm run dev:full`)
+- Logged in via Google OAuth
+- Created trip and generated checklist
+- Saved trip and verified persistence
+- Reloaded saved trip successfully
+
+### Automated Testing
+
+- Executed Playwright tests:
+  ```bash
+  npx playwright test
+  ```
+
+- Tests use test-mode authentication (`x-test-user-id`) to avoid OAuth dependency  
 
 ---
 
-### CI Evidence
+## CI Evidence
 
-- CI pipeline includes E2E test stage (currently optional)
-- Link to CI run: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions
+CI pipeline includes:
+
+- Lint stage  
+- Unit tests (Vitest)  
+- Playwright E2E tests (non-blocking)  
+
+GitHub Actions:
+
+https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions  
+
+---
+
+## Notes on Authentication
+
+- Manual testing: uses real Google OAuth  
+- Automated tests (CI): use test-mode authentication  
+
+This ensures:
+
+- realistic user behavior validation  
+- stable and reliable automated test execution  
