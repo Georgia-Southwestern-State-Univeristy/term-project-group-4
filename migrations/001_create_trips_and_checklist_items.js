@@ -1,6 +1,6 @@
 /**
- * Create the core schema: users, trips, and checklist_items tables.
- * Schema is portable across SQLite and PostgreSQL.
+ * Baseline schema for the authenticated multi-user version of the app.
+ * Creates users, trips, and checklist_items tables for fresh databases.
  */
 export function up(knex) {
   return knex.schema
