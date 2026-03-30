@@ -92,6 +92,7 @@ jobs:
         run: npm ci
 
       - name: Run Unit Tests
+        if: needs.changes.outputs.docs_only != 'true'
         run: npm run test
 
   e2e-tests:
@@ -128,6 +129,3 @@ jobs:
           name: playwright-report
           path: test-results/
           retention-days: 7
-      - name: Run Tests
-        if: needs.changes.outputs.docs_only != 'true'
-        run: npm run test
