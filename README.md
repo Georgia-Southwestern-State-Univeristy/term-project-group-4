@@ -48,6 +48,7 @@ FRONTEND_URL=http://localhost:5173
 
 The app has two parts: a **Vite frontend** (serves the UI) and an **Express API server** (handles trip data storage). Both must be running for full functionality.
 
+
 ### Quick Start (both servers)
 
 Run the frontend and backend together in a single terminal:
@@ -102,6 +103,116 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
 
 - http://localhost:3000/docs
 
+## End-to-End (E2E) Testing with Playwright
+
+This project includes Playwright E2E tests that verify the core Smart Packing Checklist workflow across the real frontend and backend.
+
+### Important Note
+
+Playwright E2E tests are configured to use the project’s **test-mode authentication** rather than a real Google OAuth login. This keeps the tests focused on app behavior and avoids flaky external-auth automation.
+
+Normal/manual use of the app can still use Google OAuth through the browser.
+
+Playwright starts the app automatically through the configured `webServer`, so you do not need to manually run `npm run server` and `npm run dev` when using the E2E commands below.
+
+## E2E Test Files
+
+The current E2E suite includes:
+
+1. **`tests/e2e/primary-workflow.spec.js`**
+   - verifies create/save flow  
+   - checks destination-specific checklist generation  
+
+2. **`tests/e2e/integration.spec.js`**
+   - verifies saved trip reload/edit behavior  
+
+3. **`tests/e2e/failure-paths.spec.js`**
+   - verifies invalid input handling and error toast behavior  
+
+## Test Configuration
+
+Playwright configuration is in `playwright.config.js` and includes:
+
+- `BASE_URL` support  
+- Chromium browser project  
+- screenshots on failure  
+- traces on first retry  
+- automatic app startup via `webServer`  
+- test auth header via `x-test-user-id`  
+
+## Running E2E Tests Locally
+
+### Bash / macOS / Linux
+
+```bash
+npm install
+npx playwright install
+
+export NODE_ENV=test
+export BASE_URL=http://localhost:5173
+export FRONTEND_URL=http://localhost:5173
+export TEST_USER_ID=demo-user-123
+export SESSION_SECRET=test-session-secret
+
+npx playwright test
+```
+
+### PowerShell (Windows)
+
+```powershell
+npm install
+npx playwright install
+
+$env:NODE_ENV="test"
+$env:BASE_URL="http://localhost:5173"
+$env:FRONTEND_URL="http://localhost:5173"
+$env:TEST_USER_ID="demo-user-123"
+$env:SESSION_SECRET="test-session-secret"
+
+npx playwright test
+```
+
+## Run a Specific Test File
+
+### Bash / macOS / Linux
+
+```bash
+npx playwright test tests/e2e/primary-workflow.spec.js
+```
+
+### PowerShell (Windows)
+
+```powershell
+npx playwright test tests/e2e/primary-workflow.spec.js
+```
+
+## Run in Headed / Debug / UI Mode
+
+### Bash / macOS / Linux
+
+```bash
+npx playwright test --headed
+npx playwright test --debug
+npx playwright test --ui
+```
+
+### PowerShell (Windows)
+
+```powershell
+npx playwright test --headed
+npx playwright test --debug
+npx playwright test --ui
+```
+
+## View Test Report
+
+```bash
+npx playwright show-report
+```
+
+## CI Behavior
+
+The CI pipeline includes a Playwright E2E stage, but it is currently non-blocking (`continue-on-error: true`) while the team continues stabilizing this workflow.
 
 ## Development Commands
 
@@ -110,7 +221,7 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
   npm run lint
   ```
 
-- **Run Tests**: Execute the test suite
+- **Run Unit Tests**: Execute the Vitest unit test suite
   ```bash
   npm run test
   ```
@@ -127,9 +238,8 @@ After installing the server (`npm run server`), the OpenAPI documentation is ava
 
 - **Seed Sample Data**: Populate the database with demo trips and checklists
   ```bash
-  npm run seed
+  npx knex seed:run
   ```
-  This creates sample data in the SQLite database with 3 realistic trips (beach, mountain, city) ready for testing.
 
 ### Reinstall Dependencies
 If you encounter dependency issues, reinstall:
