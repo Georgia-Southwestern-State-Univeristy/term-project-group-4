@@ -21,17 +21,24 @@ This workflow demonstrates a complete user journey across frontend UI, backend A
 ## Workflow Steps
 
 1. User logs in via Google OAuth
+![Login Page](image.png)
+![Login to Google Account](image-1.png)
 2. User enters trip details:
    - Trip name
    - Destination type
    - Duration
+![Enter Trip Details](image-2.png)
 3. User clicks **Generate Checklist**
    - Frontend calls checklist generation logic
+![Generate Checklist](image-3.png)
 4. Checklist is displayed in the UI
+![Checklist Displayed](image-4.png)
 5. User clicks **Save Trip**
    - Frontend sends request to backend API
+![Saved Trip](image-5.png)
 6. Backend validates request, enforces ownership, and persists trip
 7. Saved trip appears in UI list
+![Saved Trip Visible](image-6.png)
 
 ---
 
@@ -143,4 +150,4 @@ Local test run:
 ### CI Evidence
 
 - CI pipeline includes E2E test stage (currently optional)
-- Link to CI run: (add GitHub Actions run link here if available)
+- Link to CI run: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions
