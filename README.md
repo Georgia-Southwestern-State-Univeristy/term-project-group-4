@@ -144,32 +144,72 @@ npx playwright test
 ```
 
 #### Running All Tests
+
+**Bash/macOS/Linux:**
 ```bash
 export TEST_PASSWORD="your-test-password"
 npx playwright test
 ```
 
+**PowerShell (Windows):**
+```powershell
+$env:TEST_PASSWORD = "your-test-password"
+npx playwright test
+```
+
 #### Running Specific Test File
+
+**Bash/macOS/Linux:**
 ```bash
 export TEST_PASSWORD="your-test-password"
 npx playwright test tests/e2e/primary-workflow.spec.js
 ```
 
+**PowerShell (Windows):**
+```powershell
+$env:TEST_PASSWORD = "your-test-password"
+npx playwright test tests/e2e/primary-workflow.spec.js
+```
+
 #### Running Tests in Headed Mode (see browser)
+
+**Bash/macOS/Linux:**
 ```bash
 export TEST_PASSWORD="your-test-password"
 npx playwright test --headed
 ```
 
+**PowerShell (Windows):**
+```powershell
+$env:TEST_PASSWORD = "your-test-password"
+npx playwright test --headed
+```
+
 #### Running Tests in Debug Mode
+
+**Bash/macOS/Linux:**
 ```bash
 export TEST_PASSWORD="your-test-password"
 npx playwright test --debug
 ```
 
+**PowerShell (Windows):**
+```powershell
+$env:TEST_PASSWORD = "your-test-password"
+npx playwright test --debug
+```
+
 #### Running Tests in UI Mode (interactive)
+
+**Bash/macOS/Linux:**
 ```bash
 export TEST_PASSWORD="your-test-password"
+npx playwright test --ui
+```
+
+**PowerShell (Windows):**
+```powershell
+$env:TEST_PASSWORD = "your-test-password"
 npx playwright test --ui
 ```
 

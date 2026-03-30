@@ -10,7 +10,7 @@ This week we implemented comprehensive automated testing using Playwright for en
 
 ### Important CI/CD Note
 
-⚠️ **Static URL Not Yet Live**: The CI/CD pipeline currently has E2E tests configured as **optional** (`continue-on-error: true`) because the application does not yet have a live static/staging URL. E2E tests can only run locally against `localhost:5173` and `localhost:3000` with real servers running. Once a staging environment is deployed, E2E tests should be made **required** on PRs by removing `continue-on-error: true`.
+⚠️ **Static URL Not Yet Live**: The CI/CD pipeline currently has E2E tests configured as **optional** (`continue-on-error: true`) as tests are not stable. Tests are passing locally and failing on CI/CD. Tests will be fixed in next sprint.
 
 ## Test Implementation Summary
 
