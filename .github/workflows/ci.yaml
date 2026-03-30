@@ -128,7 +128,7 @@ jobs:
           FRONTEND_URL=http://localhost:5173
           TEST_EMAIL=${{ secrets.TEST_EMAIL }}
           TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
-          NODE_ENV=test
+          NODE_ENV=development
           CI=true
           EOF
 
