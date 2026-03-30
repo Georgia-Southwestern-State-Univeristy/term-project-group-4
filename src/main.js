@@ -35,18 +35,31 @@ function updateAuthUI() {
     userName.textContent = currentUser.name;
     userInfo.hidden = false;
     loginSection.hidden = true;
+
     appSections.forEach(section => {
       section.style.display = '';
     });
 
-    logoutBtn.addEventListener('click', async () => {
-      await fetch('/auth/logout');
-      await checkAuthStatus();
-      showToast('Logged out successfully', 'success');
-    });
+    // ✅ ONLY use onclick (no addEventListener)
+    logoutBtn.onclick = async () => {
+      try {
+        const response = await fetch('/auth/logout');
+        if (!response.ok) {
+          throw new Error('Logout failed');
+        }
+
+        await checkAuthStatus();
+        showToast('Logged out successfully', 'success');
+      } catch (error) {
+        console.error('Failed to log out:', error);
+        showToast('Failed to log out', 'error');
+      }
+    };
+
   } else {
     userInfo.hidden = true;
     loginSection.hidden = false;
+
     appSections.forEach(section => {
       section.style.display = 'none';
     });

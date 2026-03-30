@@ -1,3 +1,8 @@
+/**
+ * Legacy JSON-file storage from the midterm/MVP phase.
+ * Not used by the current database-backed application.
+ * Retained temporarily for historical reference only.
+ */
 import { promises as fs } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';

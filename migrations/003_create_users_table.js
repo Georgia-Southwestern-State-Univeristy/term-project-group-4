@@ -1,5 +1,7 @@
 /**
- * Create the users table for Google-authenticated users.
+ * Compatibility migration for older local databases created before the users
+ * table existed. Fresh databases created from migration 001 already include
+ * users, so this migration safely no-ops in that case.
  */
 export async function up(knex) {
   const exists = await knex.schema.hasTable('users');
