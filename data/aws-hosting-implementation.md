@@ -33,8 +33,10 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
 
 ### 1.2 Add startup safety check
 
-- Fail startup if `NODE_ENV=production` and `SQLITE_PATH` directory is not writable.
-- Log explicit error and exit non-zero to avoid silent writes to ephemeral disk.
+- Implemented: fail startup if `NODE_ENV=production` and `SQLITE_PATH` is missing.
+- Implemented: if `SQLITE_PATH` is under `/data`, verify `/data` is mounted before startup.
+- Implemented: fail startup if the configured DB path (or parent directory) is not writable.
+- Current behavior prevents silent writes to ephemeral disk when mount fails.
 
 ### 1.3 Production frontend serving
 
@@ -43,15 +45,20 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
 
 ### 1.4 Health endpoint
 
-- Add `GET /health` endpoint that returns:
-  - app status
-  - DB path in use
-  - DB path write check result (boolean)
+- Implemented `GET /health` endpoint.
+- Current behavior:
+  - Always returns app status (`ok` or `degraded`) and environment.
+  - In non-production, includes detailed DB path/target/error for debugging.
+  - In production, only exposes `database.writable` to avoid leaking filesystem paths/internal errors.
 
 ### 1.5 Session/cookie hardening
 
-- Add `app.set('trust proxy', 1)` for LB/proxy mode.
-- Ensure secure cookie flags in production.
+- Implemented `app.set('trust proxy', 1)` in production.
+- Implemented session cookie hardening in production:
+  - `secure: true`
+  - `httpOnly: true`
+  - `sameSite: 'lax'`
+  - `proxy: true`
 
 ## Phase 2: AWS Infrastructure
 
@@ -75,17 +82,20 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
 4. Mount to `/data`.
 5. Add `/etc/fstab` entry for reboot remount.
 6. Set ownership/permissions so app process can read/write.
+7. Implemented in hook automation under `.platform/hooks/predeploy/01_mount_ebs.sh`.
 
 ### 2.3 Automate on instance replacement
 
-- Implement attach/mount automation in EB configuration:
-  - `.ebextensions` and/or platform hooks.
-- Ensure app does not start serving before mount success.
+- Implemented attach/mount automation in platform hooks:
+  - `.platform/hooks/predeploy/01_mount_ebs.sh`
+- Deprecated duplicate confighook copy is a no-op:
+  - `.platform/confighooks/predeploy/01_mount_ebs.sh`
+- Implemented startup guard in app to fail fast when `/data` is expected but not mounted.
 
 ## Phase 3: Deploy and Verify
 
 1. Deploy app build to EB.
-2. Verify `/health` is healthy and reports mounted path.
+2. Verify `/health` is healthy; in production, confirm it returns only high-level DB writable status (no internal path details).
 3. Run migrations: `npm run db:migrate`.
 4. Verify DB file and tables exist under `/data/trips.db`.
 5. Validate OAuth sign-in on hosted URL.
@@ -118,11 +128,8 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
 
 ## Open Issues to Track
 
-- `knexfile.js` production SQLite switch
-- production static asset serving
-- health endpoint and startup mount guard
-- session/cookie hardening for proxy HTTPS
-- EB attach/mount automation script
+- force real `EBS_VOLUME_ID` value to be set in EB environment properties (replace placeholder)
+- enforce secure secrets in EB environment properties (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SESSION_SECRET`)
 - forced replacement regression test
 
 ## CI/CD Automation (PR Pass -> Auto Deploy)
