@@ -1,59 +1,80 @@
 # Week 11 CI/CD & Automated Testing Report
 
 **Date**: March 28, 2026  
-**Status**: ✅ Automated testing suite implemented and configured  
-**Requirement Met**: 4+ new automated tests added, CI pipeline enhanced
+**Status**: ✅ Playwright E2E suite added; CI integration added as optional/non-blocking  
+**Requirement Met**: 4+ new automated tests added, CI pipeline enhanced  
+
+---
 
 ## Overview
 
-This week we implemented comprehensive automated testing using Playwright for end-to-end testing and enhanced our CI/CD pipeline to automatically run these tests on every pull request. The E2E tests use real Google OAuth authentication and include proper handling of browser dialogs, timestamp-based unique trip names, and comprehensive error validation with toast message assertions.
+This week we added Playwright end-to-end tests for the primary Smart Packing Checklist workflow and wired them into the CI pipeline.
+
+To improve CI reliability, the Playwright suite now runs against the project’s **existing test-mode authentication** instead of attempting to automate a real Google OAuth login. Browser requests include the project’s test auth header (`x-test-user-id`) while the app runs in `NODE_ENV=test`.
+
+This keeps the tests focused on **our actual system behavior**:
+
+- frontend UI flow  
+- backend API behavior  
+- persistence and reload behavior  
+- failure-path validation  
 
 ### Important CI/CD Note
 
-⚠️ **Static URL Not Yet Live**: The CI/CD pipeline currently has E2E tests configured as **optional** (`continue-on-error: true`) as tests are not stable. Tests are passing locally and failing on CI/CD. Tests will be fixed in next sprint.
+⚠️ **E2E remains optional/non-blocking in CI for now** (`continue-on-error: true`)
+
+**Reason:**
+
+- the E2E stage is still being stabilized  
+- test reliability is improving, but the team is not yet treating it as a required merge gate  
+
+---
 
 ## Test Implementation Summary
 
 ### Test Count & Categories
 
-✅ **Total New Tests Added**: 4 E2E tests 
+- ✅ **Total New Tests Added**: 4 E2E tests  
 
+### 1. Primary End-to-End Workflow Tests (2 tests)
 
-#### 1. Primary End-to-End Workflow Tests (2 test)
 **File**: `tests/e2e/primary-workflow.spec.js`
 
-These tests verify the complete user journey from login to saving trips:
-- ✅ Create beach trip with checklist generation and save
-- ✅ Uses timestamp-based unique trip names to avoid conflicts
-- ✅ Verifies correct checklist items per destination type
-- ✅ Tests with 1920x1080 viewport for proper element visibility
-- ✅ Handles window.confirm() dialogs properly
+These tests verify:
 
-**Framework**: Playwright with real Google OAuth authentication
-**Environment**: Localhost:5173 (Vite dev server) + Localhost:3000 (Express API)
+- create beach trip with checklist generation and save  
+- create outdoor trip with destination-appropriate checklist items  
+- timestamp-based unique trip names to avoid collisions  
 
-#### 2. Integration & Multi-Component Tests (1 test)
+**Framework**: Playwright  
+**Auth mode**: project test-mode auth (`x-test-user-id`)  
+**Environment**: `http://localhost:5173` + proxied backend/API  
+
+---
+
+### 2. Integration & Multi-Component Test (1 test)
+
 **File**: `tests/e2e/integration.spec.js`
 
-These tests verify interactions between multiple components:
-- ✅ User can load a previously saved trip and continue editing
-- ✅ Uses timestamp-based unique trip names
-- ✅ Verifies form is repopulated with correct trip data
-- ✅ Tests trip persistence and reload functionality
+This test verifies:
 
-**Purpose**: Ensure trip saving and loading works correctly
+- user can save a trip  
+- user can load that saved trip back into the form  
+- saved data persists and restores correctly  
 
-#### 4. Failure-Path & Regression Tests (1 tests)
+---
+
+### 3. Failure-Path & Regression Test (1 test)
+
 **File**: `tests/e2e/failure-paths.spec.js`
 
-These tests ensure robustness and prevent regressions:
-- ✅ Cannot save trip with only spaces in trip name
-  - Generates checklist successfully
-  - Attempts save which fails
-  - **Assertion**: Error toast with "Failed to save trip" message appears
+This test verifies:
 
-**Purpose**: Validate input validation, error handling, and toast notifications
+- spaces-only trip names fail validation  
+- checklist can still be generated before failed save  
+- user sees an error toast when save fails  
 
+---
 
 ## Technical Implementation
 
@@ -62,52 +83,42 @@ These tests ensure robustness and prevent regressions:
 **File**: `playwright.config.js`
 
 Features implemented:
-```javascript
-✅ Configurable base URL (BASE_URL env variable, default: http://localhost:5173)
-✅ Viewport size: 1920x1080 (ensures all UI elements are visible)
-✅ Multi-browser testing (Chromium enabled, Firefox/WebKit available)
-✅ Web server auto-startup for both API (3000) and frontend (5173)
-✅ HTML and JSON test result reporting
-✅ Screenshot capture on failures
-✅ Trace recording for debugging
-✅ Timeout: 30 seconds per test
-✅ CI-optimized settings (2 retries on CI, 0 locally)
-✅ Dialog handling for window.confirm() dialogs
-```
+
+- configurable base URL (`BASE_URL`, default `http://localhost:5173`)  
+- viewport size: `1920x1080`  
+- Chromium test project enabled  
+- Playwright `webServer` auto-start using `npm run dev:full`  
+- HTML and JSON test result reporting  
+- screenshot capture on failures  
+- trace recording for debugging  
+- CI retries and timeout tuning  
+- automatic test auth header via `x-test-user-id`  
+
+---
 
 ### Authentication Setup
 
 **File**: `tests/e2e/auth-helper.js`
 
-Helper functions for E2E testing:
-```javascript
-✅ loginWithGoogle(page) - Real Google OAuth flow with confirmation screen
-  - Handles Google sign-in form
-  - Handles "You're signing back in..." confirmation screen
-  - Waits for redirect back to app
-✅ logout(page) - Clean session termination
-✅ isLoggedIn(page) - Auth status detection
-✅ Error handling for missing TEST_PASSWORD
-✅ Automatic test skipping without credentials
-✅ Enhanced logging for debugging
-```
+Current helper behavior:
+
+- uses project **test-mode auth**  
+- verifies authenticated UI state by checking `#user-info`  
+- no real Google login is required for CI E2E execution  
+
+---
 
 ### Environment Configuration
 
-**Files**: `.env`
+**CI/local test variables used by Playwright**
 
-```bash
-FRONTEND_URL=http://localhost:5173
-TEST_EMAIL=group4termproject@gmail.com
-TEST_PASSWORD=(set via environment variable - never committed)
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-```
+NODE_ENV=test  
+BASE_URL=http://localhost:5173  
+FRONTEND_URL=http://localhost:5173  
+TEST_USER_ID=demo-user-123  
+SESSION_SECRET=test-session-secret  
 
-**Note**: Password is not stored in version control. Set via:
-```bash
-export TEST_PASSWORD="your_password"
-```
+---
 
 ## CI/CD Pipeline Updates
 
@@ -116,80 +127,103 @@ export TEST_PASSWORD="your_password"
 **File**: `.github/workflows/ci.yaml`
 
 Enhanced pipeline stages:
-1. **Lint Stage** (unchanged)
-   - ESLint validation on code style
 
-2. **Unit Test Stage**
-   - Runs Vitest: `npm run test:unit`
-   - Tests: checklistGenerator, server, app
+**Lint Stage**
+- ESLint validation on code style  
 
-3. **E2E Test Stage** NEW (Optional)
-   - Installs Playwright browsers
-   - Builds frontend
-   - Runs: `npm run test:e2e`
-   - Uploads test results as artifact
-   - 7-day retention for debugging
-   - **Note**: `continue-on-error: true` - Does NOT block PR if tests fail
-   - **Reason**: Static/staging URL not yet available for CI testing
-   - **Future**: Will be made required when staging environment is deployed
+**Unit Test Stage**
+- Runs Vitest: npm run test  
+
+**E2E Test Stage (NEW - Optional)**
+- Installs Playwright browsers  
+- Builds frontend  
+- Starts app via Playwright webServer  
+- Runs: npm run test:e2e  
+- Uploads test results as artifact  
+- Remains non-blocking with `continue-on-error: true`  
+
+---
 
 ### New npm Scripts
 
-```json
-"test:e2e": "playwright test",
-"test:e2e:debug": "playwright test --debug",
-"test:e2e:ui": "playwright test --ui",
-"test:all": "npm run test:unit && npm run test:e2e"
-```
+"test:e2e": "playwright test"  
+"test:e2e:debug": "playwright test --debug"  
+"test:e2e:ui": "playwright test --ui"  
+"test:all": "npm run test:unit && npm run test:e2e"  
+
+---
 
 ## Test Execution Results
 
 ### Local Testing
 
-```bash
-✅ Playwright installation successful
-✅ All test files created and validated
-✅ Config supports both localhost:5174 and configurable BASE_URL
-✅ Auth helper implemented with Google OAuth support
-✅ Tests organized in 3 files with clear structure
-```
+- ✅ Playwright installation successful  
+- ✅ Test files created and running  
+- ✅ E2E auth now uses project test-mode auth  
+- ✅ App startup handled through Playwright webServer  
+- ✅ Tests organized into workflow, integration, and failure-path coverage  
 
+---
 
 ## Running Tests
 
 ### Local Development
 
-```bash
-# Install dependencies
-npm install
-npx playwright install
+**Bash / macOS / Linux**
 
-# Start both API server and frontend (in separate terminals or background)
-npm run server   # Terminal 1: API on localhost:3000
-npm run dev      # Terminal 2: Frontend on localhost:5173
+npm install  
+npx playwright install  
 
-# Set test credentials (required for Google login tests)
-export TEST_PASSWORD="your_google_account_password"
+export NODE_ENV=test  
+export BASE_URL=http://localhost:5173  
+export FRONTEND_URL=http://localhost:5173  
+export TEST_USER_ID=demo-user-123  
+export SESSION_SECRET=test-session-secret  
 
-# Run all E2E tests
-npx playwright test
+npx playwright test  
 
-# Run with headed browser (see browser window)
-npx playwright test --headed
+---
 
-# Run specific test file
-npx playwright test tests/e2e/primary-workflow.spec.js --headed
+**PowerShell (Windows)**
 
-# Interactive UI mode
-npx playwright test --ui
+npm install  
+npx playwright install  
 
-# Debug mode
-npx playwright test --debug
-```
+$env:NODE_ENV="test"  
+$env:BASE_URL="http://localhost:5173"  
+$env:FRONTEND_URL="http://localhost:5173"  
+$env:TEST_USER_ID="demo-user-123"  
+$env:SESSION_SECRET="test-session-secret"  
+
+npx playwright test  
+
+---
+
+### Run a Specific Test File
+
+npx playwright test tests/e2e/primary-workflow.spec.js  
+
+---
+
+### Interactive / Debug Modes
+
+npx playwright test --headed  
+npx playwright test --debug  
+npx playwright test --ui  
+
+---
 
 ### View Test Results
 
-```bash
-# Open HTML report
-npx playwright show-report
-```
+npx playwright show-report  
+
+---
+
+## Remaining Limitations / Next Sprint Follow-up
+
+- E2E is still optional in CI and not yet a required status check  
+- test stability still needs observation across more PRs  
+- future sprint can decide whether to:
+  - make E2E required  
+  - add more coverage  
+  - keep manual Google OAuth testing separate from CI

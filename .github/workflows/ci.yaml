@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   changes:
@@ -97,48 +97,62 @@ jobs:
 
   e2e-tests:
     name: E2E Tests (Playwright)
-    needs: lint
+    needs: [changes, lint]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
+      - name: Skip E2E for docs-only PR
+        if: needs.changes.outputs.docs_only == 'true'
+        run: echo "Docs-only PR detected. Skipping E2E tests."
+
       - name: Checkout code
+        if: needs.changes.outputs.docs_only != 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node
+        if: needs.changes.outputs.docs_only != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
+        if: needs.changes.outputs.docs_only != 'true'
         run: npm ci
 
       - name: Install Playwright browsers
+        if: needs.changes.outputs.docs_only != 'true'
         run: npx playwright install --with-deps
 
       - name: Build application
+        if: needs.changes.outputs.docs_only != 'true'
         run: npm run build
 
       - name: Create .env file for tests
+        if: needs.changes.outputs.docs_only != 'true'
         run: |
           cat > .env << EOF
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-          FRONTEND_URL=http://localhost:5173
-          TEST_EMAIL=${{ secrets.TEST_EMAIL }}
-          TEST_PASSWORD=${{ secrets.TEST_PASSWORD }}
-          NODE_ENV=development
+          NODE_ENV=test
           CI=true
+          FRONTEND_URL=http://localhost:5173
+          BASE_URL=http://localhost:5173
+          SESSION_SECRET=test-session-secret
+          TEST_USER_ID=demo-user-123
           EOF
 
       - name: Run E2E Tests
+        if: needs.changes.outputs.docs_only != 'true'
         env:
+          NODE_ENV: test
           CI: true
+          FRONTEND_URL: http://localhost:5173
+          BASE_URL: http://localhost:5173
+          SESSION_SECRET: test-session-secret
+          TEST_USER_ID: demo-user-123
         run: npm run test:e2e
 
       - name: Upload test results
-        if: always()
+        if: always() && needs.changes.outputs.docs_only != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
