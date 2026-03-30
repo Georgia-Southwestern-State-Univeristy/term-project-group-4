@@ -1,100 +1,180 @@
 openapi: 3.0.3
 info:
-  title: SmartChecklist APIs
-  version: 0.1.0
-  description: APIs to save, update and retrieving the trip/s data.
+  title: Smart Packing Checklist Generator API
+  version: 1.0.0
+  description: |
+    REST API for authenticated users to create, read, update, and delete their own trips
+    and packing checklist items.
+
 servers:
-  - url: /
+  - url: http://localhost:3000
+
 components:
   securitySchemes:
-    # Server currently does not enforce auth; this documents a future approach.
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: "MVP: no authentication enforced by the server. In future replace with JWT/OAuth2."
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Session cookie established after Google OAuth login
+
+  schemas:
+    ChecklistItem:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - packed
+      properties:
+        id:
+          type: string
+          example: item-0
+        name:
+          type: string
+          example: Sunscreen
+        category:
+          type: string
+          example: Beach
+        packed:
+          type: boolean
+          example: false
+
+    Trip:
+      type: object
+      required:
+        - id
+        - name
+        - destinationType
+        - duration
+        - checklist
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        name:
+          type: string
+          example: My Beach Trip
+        destinationType:
+          type: string
+          example: beach
+        duration:
+          type: integer
+          example: 5
+        checklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChecklistItem'
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-02-22T12:34:56.789Z
+
+    CreateTripRequest:
+      type: object
+      required:
+        - name
+        - destinationType
+        - duration
+      properties:
+        name:
+          type: string
+          example: My Beach Trip
+        destinationType:
+          type: string
+          example: beach
+        duration:
+          type: integer
+          minimum: 1
+          example: 5
+        checklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChecklistItem'
+
+    UpdateTripRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Updated Beach Trip
+        destinationType:
+          type: string
+          example: beach
+        duration:
+          type: integer
+          minimum: 1
+          example: 7
+        checklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChecklistItem'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Trip not found
+
+security:
+  - SessionAuth: []
+
 paths:
   /api/trips:
     get:
-      summary: List all trips
-      description: Returns all saved trips
+      summary: List trips for the authenticated user
+      description: Returns only the trips owned by the logged-in user.
       responses:
         '200':
-          description: Array of Trip
+          description: Array of trips
           content:
             application/json:
               schema:
                 type: array
-              example:
-                - id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-                  name: "My Beach Trip"
-                  destinationType: "beach"
-                  duration: 5
-                  checklist:
-                    - id: "item-0"
-                      name: "Sunscreen"
-                      category: "Beach"
-                      packed: false
-                    - id: "item-1"
-                      name: "Passport"
-                      category: "Essentials"
-                      packed: false
-                  createdAt: "2026-02-22T12:34:56.789Z"
+                items:
+                  $ref: '#/components/schemas/Trip'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/saveTrip:
     post:
-      summary: Create a new trip with optional checklist
-      description: Creates a new trip with the specified destination type, duration, and an optional checklist.
+      summary: Create a new trip
+      description: Creates a trip owned by the authenticated user.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                    type: string
-                destinationType:
-                  type: string
-                duration:
-                  type: integer
-                checklist:
-                  type: array
-              required: [name, destinationType, duration]
-              example:
-                name: "My Beach Trip"
-                destinationType: "beach"
-                duration: 5
-                checklist:
-                  - id: "item-0"
-                    name: "Sunscreen"
-                    category: "Beach"
-                    packed: false
-                  - id: "item-1"
-                    name: "Passport"
-                    category: "Essentials"
-                    packed: false
+              $ref: '#/components/schemas/CreateTripRequest'
       responses:
         '201':
-          description: Created Trip
+          description: Trip created
           content:
             application/json:
-              example:
-                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-                name: "My Beach Trip"
-                destinationType: "beach"
-                duration: 5
-                checklist:
-                  - id: "item-0"
-                    name: "Sunscreen"
-                    category: "Beach"
-                    packed: false
-                createdAt: "2026-02-22T12:34:56.789Z"
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/trips/{tripId}:
     get:
-      summary: Get a single trip by ID
-      description: Returns a single trip identified by its UUID.
+      summary: Get one trip
+      description: Returns the trip if it exists and belongs to the authenticated user.
       parameters:
         - name: tripId
           in: path
@@ -106,54 +186,24 @@ paths:
           description: Trip object
           content:
             application/json:
-              example:
-                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-                name: "My Beach Trip"
-                destinationType: "beach"
-                duration: 5
-                checklist:
-                  - id: "item-0"
-                    name: "Sunscreen"
-                    category: "Beach"
-                    packed: false
-                createdAt: "2026-02-22T12:34:56.789Z"
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Trip not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Trip not found"
-    delete:
-      summary: Delete a trip
-      description: Deletes a trip and its associated checklist items (cascade).
-      parameters:
-        - name: tripId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Trip deleted successfully
-        '404':
-          description: Trip not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Trip not found"
+                $ref: '#/components/schemas/ErrorResponse'
+
     put:
-      summary: Update an existing trip
-      description: Partial updates supported.
+      summary: Update a trip
+      description: Partially updates a trip if it belongs to the authenticated user.
       parameters:
         - name: tripId
           in: path
@@ -165,49 +215,36 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                destinationType:
-                  type: string
-                duration:
-                  type: integer
-                checklist:
-                  type: array
-            example:
-              duration: 7
-              checklist:
-                - label: "Updated item"
-                  completed: true
+              $ref: '#/components/schemas/UpdateTripRequest'
       responses:
         '200':
-          description: Updated Trip
+          description: Updated trip
           content:
             application/json:
-              example:
-                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-                destinationType: "mountains"
-                duration: 7
-                checklist:
-                  - label: "Updated item"
-                    completed: true
-                createdAt: "2026-02-22T12:34:56.789Z"
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Trip not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Trip f47ac10b-58cc-4372-a567-0e02b2c3d479 not found"
+                $ref: '#/components/schemas/ErrorResponse'
 
-      delete:
-      summary: Delete a trip by ID
-      description: Deletes a saved trip identified by its UUID.
+    delete:
+      summary: Delete a trip
+      description: Deletes a trip and its checklist items if it belongs to the authenticated user.
       parameters:
         - name: tripId
           in: path
@@ -217,14 +254,15 @@ paths:
       responses:
         '204':
           description: Trip deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Trip not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Trip not found"
+                $ref: '#/components/schemas/ErrorResponse'
