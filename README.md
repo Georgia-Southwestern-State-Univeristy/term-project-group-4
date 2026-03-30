@@ -10,19 +10,21 @@ This project requires Node.js v24 LTS (Long Term Support). Download and install 
 
 This application uses Google OAuth for user authentication. To set it up:
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+1. Go to the Google Cloud Console
 2. Create a new project or select an existing one
-3. Enable the Google+ API
+3. Configure the OAuth consent screen
 4. Create OAuth 2.0 credentials (Client ID and Client Secret)
-5. Add `http://localhost:5173` to authorized origins (for Vite dev server)
-6. Add `http://localhost:5173/auth/google/callback` to authorized redirect URIs
+5. Add `http://localhost:5173` to authorized JavaScript origins (frontend)
+6. Add `http://localhost:3000/auth/google/callback` to authorized redirect URIs (backend callback)
 7. Copy the Client ID and Client Secret to your `.env` file
 
 Create a `.env` file in the project root with:
-```
+
+```env
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 SESSION_SECRET=your-random-session-secret
+FRONTEND_URL=http://localhost:5173
 ```
 
 ## Getting Started
@@ -80,7 +82,7 @@ All endpoints require authentication.
 - `PUT /api/trips/{tripId}` - Update an existing trip
 - `DELETE /api/trips/{tripId}` - Delete a trip
 
-Trip data is persisted to a SQLite database. Each user sees only their own trips.
+Trip data is persisted through Knex using SQLite for local development. Each user sees only their own trips.
 
 ### Verify It Works
 

@@ -6,3 +6,5 @@ project-activity-report.md
 logs/*.log
 .env
 test-results/
+deploy-manual*.zip
+deploy-manualfix*.zip

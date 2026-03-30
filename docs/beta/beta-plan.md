@@ -44,21 +44,23 @@
 bottleneck. Every future feature (deletion, locking, multi-user, auth) depends on a real
 storage layer. Scheduling it first de-risks the rest of the plan.
 
-### Sprint 2 — Week 11: Enhancements
+### Sprint 3 — Week 11: AWS Migration & Hosted Readiness
 
-**Goal:** Add user-facing features and harden data integrity.
+**Goal:** Move the application from local-only operation to a secure AWS-hosted deployment path.
 
 | Story | Owner | Points |
 |-------|-------|--------|
-| #4 Custom checklist items | TBD | 5 |
-| #5 Optimistic locking | TBD | 3 |
-| #7 Edit trip metadata | TBD | 3 |
-| #10 Integration test suite | TBD | 3 |
+| Provision AWS runtime (Elastic Beanstalk or ECS) | Jason | 3 |
+| Provision RDS PostgreSQL + connectivity | Jason | 5 |
+| Production env vars/secrets + OAuth callback update | Heather | 3 |
+| Hosted smoke test + rollback checklist | Heather | 2 |
 
-**Quality sprint item:** Integration test suite — full round-trip tests covering
-create -> generate -> pack -> update -> delete flow.
+**Quality sprint item:** Hosted smoke test suite covering authenticated flow:
+login -> create -> save -> load -> update -> delete.
 
-### Sprint 3 — Week 12: Hardening & Release
+See detailed sprint plan: [week11-sprint.md](./week11-sprint.md)
+
+### Sprint 4 — Week 12: Hardening & Release
 
 **Goal:** Stabilise, document, and prepare for final demo.
 

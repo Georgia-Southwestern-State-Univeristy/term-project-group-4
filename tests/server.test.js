@@ -46,6 +46,16 @@ function authRequest(method, path, userId = userAId) {
 }
 
 describe('Authentication enforcement', () => {
+  it('returns health without requiring auth', async () => {
+    const res = await request(app).get('/health');
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(res.body.environment).toBe('test');
+    expect(res.body.database.path).toBe(':memory:');
+    expect(res.body.database.writable).toBe(true);
+  });
+
   it('returns 401 when GET /api/trips is called without auth', async () => {
     const res = await request(app).get('/api/trips');
     expect(res.status).toBe(401);

@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import {
   getAllTrips,
   getTripById,
@@ -25,9 +27,78 @@ const swaggerDocument = YAML.load('./docs/api/openapi.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isTest = process.env.NODE_ENV === 'test';
+const isProduction = process.env.NODE_ENV === 'production';
+const distDir = path.resolve(process.cwd(), 'dist');
+
+function getConfiguredDbPath() {
+  if (isTest) return ':memory:';
+  if (isProduction) return process.env.SQLITE_PATH || '/data/trips.db';
+  return path.resolve(process.cwd(), 'data', 'trips.db');
+}
+
+function isMounted(targetPath) {
+  try {
+    const mounts = fs.readFileSync('/proc/mounts', 'utf8');
+    return mounts.includes(targetPath);
+  } catch {
+    return false;
+  }
+}
+
+function getDbPathStatus() {
+  const dbPath = getConfiguredDbPath();
+
+  if (dbPath === ':memory:') {
+    return {
+      path: dbPath,
+      writable: true,
+      target: dbPath,
+      error: null,
+    };
+  }
+
+  const targetPath = fs.existsSync(dbPath) ? dbPath : path.dirname(dbPath);
+
+  try {
+    fs.accessSync(targetPath, fs.constants.W_OK);
+    return {
+      path: dbPath,
+      writable: true,
+      target: targetPath,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      path: dbPath,
+      writable: false,
+      target: targetPath,
+      error: error.message,
+    };
+  }
+}
+
+function ensureProductionStorageReady() {
+  if (!isProduction) return;
+
+  if (!process.env.SQLITE_PATH) {
+    throw new Error('SQLITE_PATH must be set in production. Refusing to start without an explicit persistent DB path.');
+  }
+
+  if (process.env.SQLITE_PATH.startsWith('/data')) {
+    if (!isMounted('/data')) {
+      throw new Error('/data is not mounted. Refusing to start. Verify that the EBS volume was successfully attached by the predeploy hook.');
+    }
+  }
+
+  const dbStatus = getDbPathStatus();
+  if (!dbStatus.writable) {
+    throw new Error(`Configured SQLite path is not writable: ${dbStatus.target}. ${dbStatus.error}`);
+  }
+}
 
 // Passport configuration (only in non-test environments)
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
   passport.use(new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
@@ -74,17 +145,53 @@ app.use(session({
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
+  proxy: isProduction,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction,
+  },
 }));
 
-if (process.env.NODE_ENV !== 'test') {
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
+if (!isTest) {
   app.use(passport.initialize());
   app.use(passport.session());
 }
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  const dbStatus = getDbPathStatus();
+  const statusCode = dbStatus.writable ? 200 : 503;
+
+  const baseResponse = {
+    status: dbStatus.writable ? 'ok' : 'degraded',
+    environment: process.env.NODE_ENV || 'development',
+  };
+
+  // In production, avoid exposing internal filesystem paths or low-level errors.
+  const responseBody = isProduction
+    ? {
+        ...baseResponse,
+        database: {
+          writable: dbStatus.writable,
+        },
+      }
+    : {
+        ...baseResponse,
+        // In non-production, include full database status for easier debugging.
+        database: dbStatus,
+      };
+
+  res.status(statusCode).json(responseBody);
+});
+
 // Auth routes (Google OAuth only in production/development)
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
   app.get(
@@ -95,11 +202,23 @@ if (process.env.NODE_ENV !== 'test') {
       res.redirect(frontendUrl);
     },
   );
+
+  app.get('/auth/login-error', (req, res) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}?authError=google_login_failed`);
+  });
 }
 
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => {
-    res.redirect('/');
+app.get('/auth/logout', (req, res, next) => {
+  req.logout((error) => {
+    if (error) return next(error);
+
+    req.session.destroy((sessionError) => {
+      if (sessionError) return next(sessionError);
+
+      res.clearCookie('connect.sid');
+      res.status(200).json({ success: true });
+    });
   });
 });
 
@@ -130,7 +249,7 @@ app.get('/api/trips', requireAuth, async (req, res) => {
       errorType: error.constructor?.name,
       stack: error.stack?.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to fetch trips', message: error.message });
+    res.status(500).json({ error: 'Failed to fetch trips' });
   }
 });
 
@@ -165,7 +284,7 @@ app.get('/api/trips/:tripId', requireAuth, async (req, res) => {
       errorType: error.constructor.name,
       stack: error.stack.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to fetch trip', message: error.message });
+    res.status(500).json({ error: 'Failed to fetch trip' });
   }
 });
 
@@ -263,7 +382,7 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       errorType: error.constructor.name,
       stack: error.stack.split('\n').slice(0, 3),
     });
-    res.status(500).json({ error: 'Failed to create trip', message: error.message });
+    res.status(500).json({ error: 'Failed to create trip' });
   }
 });
 
@@ -349,7 +468,7 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
         tripId,
         reason: error.message,
       });
-      return res.status(404).json({ error: 'Trip not found', message: error.message });
+      return res.status(404).json({ error: 'Trip not found' });
     }
 
     await log(requestId, 'UPDATE_TRIP', 'ERROR', {
@@ -359,7 +478,7 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
       stack: error.stack.split('\n').slice(0, 3),
     });
 
-    res.status(500).json({ error: 'Failed to update trip', message: error.message });
+    res.status(500).json({ error: 'Failed to update trip' });
   }
 });
 
@@ -370,23 +489,39 @@ app.delete('/api/trips/:tripId', requireAuth, async (req, res) => {
     res.status(204).end();
   } catch (error) {
     if (error.code === 'TRIP_NOT_FOUND') {
-      return res.status(404).json({ error: 'Trip not found', message: error.message });
+      return res.status(404).json({ error: 'Trip not found' });
     }
-    res.status(500).json({ error: 'Failed to delete trip', message: error.message });
+    res.status(500).json({ error: 'Failed to delete trip' });
   }
 });
 
 // Swagger UI - serve API documentation
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+if (isProduction) {
+  app.use(express.static(distDir));
+
+  app.get(/^\/(?!api\/|auth\/|docs(?:\/|$)|health$).*/, (req, res, next) => {
+    const indexPath = path.join(distDir, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+    return res.sendFile(indexPath);
+  });
+}
+
 // Export app for testing
 export { app };
 
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
+  ensureProductionStorageReady();
   await migrateLatest();
   app.listen(PORT, () => {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`SQLite path: ${getConfiguredDbPath()}`);
     console.log('Endpoints:');
+    console.log('  GET    /health');
     console.log('  GET    /api/trips');
     console.log('  GET    /api/trips/{tripId}');
     console.log('  POST   /api/saveTrip');

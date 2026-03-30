@@ -28,7 +28,8 @@ SmartChecklist uses **Google OAuth 2.0** for user authentication combined with *
 **Endpoints:**
 - `GET /auth/google` - Initiates Google OAuth flow
 - `GET /auth/google/callback` - OAuth callback endpoint (handled by Passport)
-- `GET /auth/logout` - Clears user session
+- `GET /auth/login-error` - Redirect endpoint for failed OAuth attempts; redirects to frontend with `?authError=google_login_failed`
+- `GET /auth/logout` - Logs out the user, destroys the session, and clears the session cookie
 - `GET /auth/user` - Returns authenticated user info; responds with 401 if not authenticated
 
 **Environment Variables Required:**
@@ -44,7 +45,7 @@ FRONTEND_URL           # Frontend application URL for post-login redirect
 - **Type:** Express Session with server-side storage
 - **Serialization:** User ID is stored in session cookie
 - **Deserialization:** User object is fetched from database per request
-- **Duration:** Browser session (cookie expires on browser close by default)
+- **Duration:** Session cookie behavior depends on Express Session defaults and browser lifecycle; no custom expiration policy is currently configured
 - **Security:** 
   - Session secret should be strong and unique per environment
 
@@ -102,7 +103,7 @@ Currently, **only a single user role exists**:
 ### Known Limitations
 
 1. **No Token Expiration:** Session tokens never expire during the same browser session; browser closure is required to force re-authentication
-2. **No Input Sanitization:** User inputs in trip names/descriptions are not sanitized against injection attacks
+2. **Limited Input Validation:** The backend validates required fields and checklist shape, but does not yet enforce stronger input-length limits, output encoding strategy, or broader hardening against abuse.
 3. **No Audit Logging:** User actions are logged for debugging but not for security auditing
 4. **No 2FA/MFA:** Multi-factor authentication is not available
 5. **No Password Management:** Users cannot change passwords (authentication is OAuth-only)
@@ -121,4 +122,3 @@ curl -X GET http://localhost:3000/api/trips \
 ```
 
 This bypasses OAuth and session requirements for automated testing.
-

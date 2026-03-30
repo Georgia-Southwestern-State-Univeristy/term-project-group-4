@@ -1,3 +1,7 @@
+/**
+ * Legacy seed helper for the earlier JSON-file storage implementation.
+ * Not used by the current Knex/database-backed seed flow.
+ */
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
