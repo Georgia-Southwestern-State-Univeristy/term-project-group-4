@@ -12,29 +12,23 @@ export async function resolveAuthenticatedUser(req) {
   if (isTestModeRequest(req)) {
     const id = req.headers['x-test-user-id'];
 
-    let user = await db('users').where({ id }).first();
-
-    if (!user) {
-      await db('users').insert({
+    await db('users')
+      .insert({
         id,
         google_id: id,
         email: `${id}@test.local`,
         name: 'Playwright Test User',
         picture: null,
+      })
+      .onConflict('id')
+      .merge({
+        google_id: id,
+        email: `${id}@test.local`,
+        name: 'Playwright Test User',
+        picture: null,
       });
-    } else if (user.google_id !== id || user.name !== 'Playwright Test User') {
-      await db('users')
-        .where({ id })
-        .update({
-          google_id: id,
-          email: `${id}@test.local`,
-          name: 'Playwright Test User',
-          picture: null,
-        });
-    }
 
-    user = await db('users').where({ id }).first();
-    return user;
+    return db('users').where({ id }).first();
   }
 
   return null;
