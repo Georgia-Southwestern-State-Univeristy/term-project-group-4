@@ -11,6 +11,7 @@ export async function resolveAuthenticatedUser(req) {
 
   if (isTestModeRequest(req)) {
     const id = req.headers['x-test-user-id'];
+    const createdAt = new Date().toISOString();
 
     await db('users')
       .insert({
@@ -19,6 +20,7 @@ export async function resolveAuthenticatedUser(req) {
         email: `${id}@test.local`,
         name: 'Playwright Test User',
         picture: null,
+        created_at: createdAt,
       })
       .onConflict('id')
       .merge({
