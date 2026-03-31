@@ -234,9 +234,9 @@ app.get('/auth/logout', (req, res, next) => {
   });
 });
 
-app.get('/auth/user', (req, res) => {
+app.get('/auth/user', async (req, res) => {
   try {
-    const user = resolveAuthenticatedUser(req);
+    const user = await resolveAuthenticatedUser(req);
 
     if (user) {
       req.user = user;
