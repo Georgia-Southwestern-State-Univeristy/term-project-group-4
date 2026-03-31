@@ -83,8 +83,9 @@ This workflow validates the full user journey from login to persistent storage.
 - Knex + SQLite
 
 ### Authentication
-- Google OAuth (user-facing)
-- Session-based authentication
+- Google OAuth for manual/user-facing login
+- Session-based authentication in normal app usage
+- Test-mode authentication (`x-test-user-id`) for automated Playwright execution
 
 ### Testing / CI
 - Playwright E2E tests
@@ -161,8 +162,8 @@ This workflow validates the full user journey from login to persistent storage.
 
 ### Manual Testing
 
-- Ran application locally (`npm run dev:full`)
-- Logged in via Google OAuth
+- Manual local verification: `npm run dev:full` with Google OAuth
+- Automated E2E verification: `npx playwright test`, which starts the app through Playwright using `npm run dev:full:test`
 - Created trip and generated checklist
 - Saved trip and verified persistence
 - Reloaded saved trip successfully
@@ -194,8 +195,8 @@ https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/ac
 
 ## Notes on Authentication
 
-- Manual testing: uses real Google OAuth  
-- Automated tests (CI): use test-mode authentication  
+- Manual testing uses Google OAuth
+- Automated E2E testing uses project test-mode authentication (`x-test-user-id`) while running the app in `NODE_ENV=test`
 
 This ensures:
 

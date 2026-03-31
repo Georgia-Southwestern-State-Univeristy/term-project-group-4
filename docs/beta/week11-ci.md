@@ -87,7 +87,8 @@ Features implemented:
 - configurable base URL (`BASE_URL`, default `http://localhost:5173`)  
 - viewport size: `1920x1080`  
 - Chromium test project enabled  
-- Playwright `webServer` auto-start using `npm run dev:full`  
+- Playwright `webServer` auto-start using `npm run dev:full:test`
+- `cross-env` used in npm scripts to ensure `NODE_ENV=test` works consistently across platforms (Windows/macOS/Linux)
 - HTML and JSON test result reporting  
 - screenshot capture on failures  
 - trace recording for debugging  
