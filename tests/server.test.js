@@ -72,6 +72,36 @@ describe('Authentication enforcement', () => {
   });
 });
 
+
+describe('Test-mode auth consistency', () => {
+  it('returns the authenticated test user from GET /auth/user when x-test-user-id is present', async () => {
+    const res = await request(app)
+      .get('/auth/user')
+      .set('x-test-user-id', userAId);
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(userAId);
+    expect(res.body.google_id).toBe(userAId);
+    expect(res.body.name).toBe('Playwright Test User');
+  });
+
+  it('returns 401 from GET /auth/user when test auth header is missing', async () => {
+    const res = await request(app).get('/auth/user');
+
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Not authenticated');
+  });
+
+  it('allows GET /auth/logout in test mode without Passport session state', async () => {
+    const res = await request(app)
+      .get('/auth/logout')
+      .set('x-test-user-id', userAId);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, testMode: true });
+  });
+});
+
 describe('POST /api/saveTrip', () => {
   it('creates a trip and returns it with an id', async () => {
     const tripData = {

@@ -129,7 +129,7 @@ Tasks:
   - `GOOGLE_CLIENT_ID=...`
   - `GOOGLE_CLIENT_SECRET=...`
   - `SESSION_SECRET=...`
-  - `FRONTEND_URL=https://<host>`
+  - `FRONTEND_URL=https://spcg.zentrofi.com`
 
 Exit criteria:
 - deployed app instance can boot and write to the SQLite file on the mounted EBS volume
@@ -287,3 +287,8 @@ Required GitHub repository secrets:
 
 Important note:
 - Use one EB instance only for this SQLite + EBS architecture.
+
+
+## FRONTEND_URL coordination note
+
+`FRONTEND_URL` is intentionally set to `https://spcg.zentrofi.com` for the hosted beta. This value must stay synchronized with the Google OAuth authorized JavaScript origin and the hosted callback URI (`https://spcg.zentrofi.com/auth/google/callback`). If the hosted domain changes later, both Elastic Beanstalk environment settings and Google Cloud OAuth settings must be updated together.

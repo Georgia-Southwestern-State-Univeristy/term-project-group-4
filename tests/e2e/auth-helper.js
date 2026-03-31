@@ -3,6 +3,8 @@
  * Browser requests include x-test-user-id via Playwright extraHTTPHeaders.
  */
 
+import { expect } from '@playwright/test';
+
 export const TEST_USER_ID = process.env.TEST_USER_ID || 'demo-user-123';
 
 export async function loginAsTestUser(page) {
@@ -11,19 +13,26 @@ export async function loginAsTestUser(page) {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
 
-  const userInfo = page.locator('#user-info');
-  await userInfo.waitFor({ state: 'visible', timeout: 10000 });
+  await expect(page.locator('#user-info')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('#login-section')).toBeHidden();
 
   console.log('Test-mode user is authenticated in UI.');
 }
 
 export async function isLoggedIn(page) {
   try {
-    await page.waitForLoadState('domcontentloaded').catch(() => {});
-    const userInfo = page.locator('#user-info');
-    const isVisible = await userInfo.isVisible().catch(() => false);
-    console.log('User info visible:', isVisible);
-    return isVisible;
+    const response = await page.request.get('/auth/user', {
+      headers: { 'x-test-user-id': TEST_USER_ID },
+    });
+
+    if (!response.ok()) {
+      console.log('Auth status endpoint returned:', response.status());
+      return false;
+    }
+
+    const user = await response.json();
+    console.log('Authenticated as:', user.id);
+    return Boolean(user?.id);
   } catch (error) {
     console.log('Error checking login status:', error.message);
     return false;
@@ -34,8 +43,6 @@ export async function logout(page) {
   const logoutBtn = page.locator('#logout-btn');
   if (await logoutBtn.isVisible().catch(() => false)) {
     await logoutBtn.click();
-
-    const loginBtn = page.locator('#login-btn');
-    await loginBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    await expect(page.locator('#login-section')).toBeVisible({ timeout: 5000 });
   }
 }

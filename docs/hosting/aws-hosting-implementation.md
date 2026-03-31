@@ -72,7 +72,7 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
    - `GOOGLE_CLIENT_ID=...`
    - `GOOGLE_CLIENT_SECRET=...`
    - `SESSION_SECRET=...`
-   - `FRONTEND_URL=https://<host>`
+   - `FRONTEND_URL=https://spcg.zentrofi.com`
 
 ### 2.2 EBS volume setup
 
@@ -169,3 +169,8 @@ Execution checklist for implementing Elastic Beanstalk hosting with SQLite on an
 2. If deployment fails, roll back application version.
 3. Do not destroy EBS volume during app rollback.
 4. Re-validate `/health` and data access before reopening demo access.
+
+
+## FRONTEND_URL coordination note
+
+`FRONTEND_URL` is intentionally set to `https://spcg.zentrofi.com` for the hosted beta. This value must stay synchronized with the Google OAuth authorized JavaScript origin and the hosted callback URI (`https://spcg.zentrofi.com/auth/google/callback`). If the hosted domain changes later, both Elastic Beanstalk environment settings and Google Cloud OAuth settings must be updated together.

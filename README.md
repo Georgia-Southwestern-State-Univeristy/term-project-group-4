@@ -27,6 +27,8 @@ SESSION_SECRET=your-random-session-secret
 FRONTEND_URL=http://localhost:5173
 ```
 
+In production, `SESSION_SECRET` must be explicitly set. The server refuses to start in production if that value is missing.
+
 ## Getting Started
 
 1. Clone the project
@@ -139,6 +141,7 @@ Playwright configuration is in `playwright.config.js` and includes:
 - traces on first retry  
 - automatic app startup via `webServer`  
 - test auth header via `x-test-user-id`  
+- centralized test-mode auth support for `/auth/user`, protected API routes, and `/auth/logout`  
 
 ## Running E2E Tests Locally
 
@@ -213,6 +216,8 @@ npx playwright show-report
 ## CI Behavior
 
 The CI pipeline includes a Playwright E2E stage, but it is currently non-blocking (`continue-on-error: true`) while the team continues stabilizing this workflow.
+
+The deploy workflow now also waits for Elastic Beanstalk to finish updating and performs a post-deploy `/health` smoke test before treating the deployment as successful.
 
 ## Development Commands
 

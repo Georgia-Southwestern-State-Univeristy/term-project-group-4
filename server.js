@@ -11,7 +11,7 @@ import {
   getUserById,
   migrateLatest,
 } from './server/storage.js';
-import { requireAuth } from './server/auth.js';
+import { requireAuth, resolveAuthenticatedUser, isTestModeRequest } from './server/auth.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { log } from './server/logger.js';
@@ -134,8 +134,11 @@ const getSessionSecret = () => {
   if (process.env.NODE_ENV === 'test') {
     return 'test-secret-key-do-not-use-in-production';
   }
+  if (isProduction && !process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET must be set in production. Refusing to start with an insecure default session secret.');
+  }
   if (!process.env.SESSION_SECRET) {
-    console.warn('⚠️  SESSION_SECRET not set. Using default value. Set SESSION_SECRET environment variable for production.');
+    console.warn('⚠️  SESSION_SECRET not set. Using default development value. Set SESSION_SECRET environment variable for shared environments.');
     return 'default-dev-secret-change-in-production';
   }
   return process.env.SESSION_SECRET;
@@ -210,6 +213,15 @@ if (!isTest) {
 }
 
 app.get('/auth/logout', (req, res, next) => {
+  if (isTestModeRequest(req)) {
+    req.user = null;
+    return res.status(200).json({ success: true, testMode: true });
+  }
+
+  if (typeof req.logout !== 'function') {
+    return res.status(200).json({ success: true });
+  }
+
   req.logout((error) => {
     if (error) return next(error);
 
@@ -224,8 +236,11 @@ app.get('/auth/logout', (req, res, next) => {
 
 app.get('/auth/user', (req, res) => {
   try {
-    if (req.user) {
-      res.json(req.user);
+    const user = resolveAuthenticatedUser(req);
+
+    if (user) {
+      req.user = user;
+      res.json(user);
     } else {
       res.status(401).json({ error: 'Not authenticated' });
     }

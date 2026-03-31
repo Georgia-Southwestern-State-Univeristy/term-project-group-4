@@ -95,3 +95,52 @@ jobs:
             --application-name "$APP_NAME" \
             --environment-name "$ENV_NAME" \
             --version-label "$VERSION_LABEL"
+
+      - name: Wait for EB environment to finish updating
+        env:
+          ENV_NAME: ${{ secrets.EB_ENVIRONMENT_NAME }}
+        run: |
+          aws elasticbeanstalk wait environment-updated \
+            --environment-names "$ENV_NAME"
+
+      - name: Verify EB health and smoke test /health
+        env:
+          ENV_NAME: ${{ secrets.EB_ENVIRONMENT_NAME }}
+        run: |
+          ENV_JSON=$(aws elasticbeanstalk describe-environments \
+            --environment-names "$ENV_NAME" \
+            --query 'Environments[0].{CNAME:CNAME,Status:Status,Health:Health,HealthStatus:HealthStatus}' \
+            --output json)
+
+          echo "$ENV_JSON"
+
+          STATUS=$(echo "$ENV_JSON" | jq -r '.Status')
+          HEALTH=$(echo "$ENV_JSON" | jq -r '.Health')
+          HEALTH_STATUS=$(echo "$ENV_JSON" | jq -r '.HealthStatus')
+          CNAME=$(echo "$ENV_JSON" | jq -r '.CNAME')
+
+          if [ "$STATUS" != "Ready" ]; then
+            echo "Environment status is not Ready: $STATUS"
+            exit 1
+          fi
+
+          if [ "$HEALTH" = "Red" ] || [ "$HEALTH_STATUS" = "Severe" ]; then
+            echo "Environment health is not acceptable: Health=$HEALTH HealthStatus=$HEALTH_STATUS"
+            exit 1
+          fi
+
+          if [ -z "$CNAME" ] || [ "$CNAME" = "null" ]; then
+            echo "Failed to resolve environment CNAME"
+            exit 1
+          fi
+
+          for attempt in 1 2 3 4 5; do
+            echo "Smoke test attempt $attempt: https://$CNAME/health"
+            if curl --fail --silent --show-error "https://$CNAME/health"; then
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Smoke test failed for https://$CNAME/health"
+          exit 1
