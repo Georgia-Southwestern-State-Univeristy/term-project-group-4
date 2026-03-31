@@ -133,8 +133,10 @@ export function initTripForm({ onTripSaved } = {}) {
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
         showToast('Trip saved successfully.', 'success');
       }
+
+      if (onTripSaved) await onTripSaved();
+      
       saveTripBtn.disabled = false;
-      if (onTripSaved) onTripSaved();
     } catch (err) {
       showToast(`Failed to save trip: ${err.message}`, 'error');
       console.error('Failed to save trip:', err);

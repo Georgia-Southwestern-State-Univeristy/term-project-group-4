@@ -78,14 +78,17 @@ Run the same checks locally that CI runs before requesting review.
 ### Option A: Use the repo scripts (preferred)
 - `npm run eslint`
 - `npm run test`
+- `npx playwright install` (first-time Playwright setup only)
+- `npm run test:e2e` (when changes affect the end-to-end workflow)
 
 ### Option B: Follow the README
 If you’re unsure what commands apply, follow the current instructions in `README.md`.
 
 ### Minimum local verification before opening/merging PR
 - Project runs locally
-- Lint/format passes
-- Tests pass
+- Lint passes
+- Unit tests pass
+- Run Playwright E2E when changes affect authentication, persistence, routing, or core workflow behavior
 
 > Note: PRs must show a passing check before merge.
 

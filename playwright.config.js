@@ -28,7 +28,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'npm run dev:full',
+      command: 'npm run dev:full:test',
       port: 5173,
       reuseExistingServer: false,
       timeout: 120000,

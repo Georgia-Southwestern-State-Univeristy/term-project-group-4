@@ -114,11 +114,11 @@ Currently, **only a single user role exists**:
 
 ### Test User Authentication
 
-In test environment (`NODE_ENV=test`), use the `x-test-user-id` header to simulate authenticated requests:
+In test environment (`NODE_ENV=test`), the backend supports header-based test authentication using `x-test-user-id`.
 
-```bash
-curl -X GET http://localhost:3000/api/trips \
-  -H "x-test-user-id: test-user-123"
-```
+This test-mode path is used for automated Playwright and API tests. It applies consistently across:
+- protected API routes
+- `GET /auth/user`
+- `GET /auth/logout`
 
-This bypasses OAuth and session requirements for automated testing.
+When a test-mode user is requested, the backend resolves that user against the database so normal ownership checks and trip persistence continue to behave like real authenticated usage.

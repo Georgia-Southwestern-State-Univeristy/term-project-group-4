@@ -11,7 +11,7 @@ import {
   getUserById,
   migrateLatest,
 } from './server/storage.js';
-import { requireAuth } from './server/auth.js';
+import { requireAuth, resolveAuthenticatedUser, isTestModeRequest } from './server/auth.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { log } from './server/logger.js';
@@ -20,6 +20,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -30,6 +31,8 @@ const PORT = process.env.PORT || 3000;
 const isTest = process.env.NODE_ENV === 'test';
 const isProduction = process.env.NODE_ENV === 'production';
 const distDir = path.resolve(process.cwd(), 'dist');
+const __filename = fileURLToPath(import.meta.url);
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
 
 function getConfiguredDbPath() {
   if (isTest) return ':memory:';
@@ -134,11 +137,12 @@ const getSessionSecret = () => {
   if (process.env.NODE_ENV === 'test') {
     return 'test-secret-key-do-not-use-in-production';
   }
-  if (!process.env.SESSION_SECRET) {
-    console.warn('⚠️  SESSION_SECRET not set. Using default value. Set SESSION_SECRET environment variable for production.');
-    return 'default-dev-secret-change-in-production';
+
+  if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET must be set in production.');
   }
-  return process.env.SESSION_SECRET;
+
+  return process.env.SESSION_SECRET || 'default-dev-secret-change-in-production';
 };
 
 app.use(session({
@@ -210,6 +214,14 @@ if (!isTest) {
 }
 
 app.get('/auth/logout', (req, res, next) => {
+  if (isTestModeRequest(req)) {
+    return res.status(200).json({ success: true, testMode: true });
+  }
+
+  if (typeof req.logout !== 'function') {
+    return res.status(200).json({ success: true });
+  }
+
   req.logout((error) => {
     if (error) return next(error);
 
@@ -222,16 +234,19 @@ app.get('/auth/logout', (req, res, next) => {
   });
 });
 
-app.get('/auth/user', (req, res) => {
+app.get('/auth/user', async (req, res) => {
   try {
-    if (req.user) {
-      res.json(req.user);
-    } else {
-      res.status(401).json({ error: 'Not authenticated' });
+    const user = await resolveAuthenticatedUser(req);
+
+    if (user) {
+      req.user = user;
+      return res.json(user);
     }
+
+    return res.status(401).json({ error: 'Not authenticated' });
   } catch (error) {
     console.error('Error in /auth/user:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -513,9 +528,13 @@ if (isProduction) {
 // Export app for testing
 export { app };
 
-if (!isTest) {
-  ensureProductionStorageReady();
+if (isDirectRun) {
+  if (isProduction) {
+    ensureProductionStorageReady();
+  }
+
   await migrateLatest();
+
   app.listen(PORT, () => {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

@@ -1,13 +1,52 @@
-export function requireAuth(req, res, next) {
-  // test bypass for automated tests
-  if (process.env.NODE_ENV === 'test' && req.headers['x-test-user-id']) {
-    req.user = { id: req.headers['x-test-user-id'] };
-    return next();
+import { db } from './storage.js';
+
+export function isTestModeRequest(req) {
+  return process.env.NODE_ENV === 'test' && !!req.headers['x-test-user-id'];
+}
+
+export async function resolveAuthenticatedUser(req) {
+  if (req.user) {
+    return req.user;
   }
 
-  if (req.isAuthenticated?.() && req.user) {
-    return next();
+  if (isTestModeRequest(req)) {
+    const id = req.headers['x-test-user-id'];
+    const createdAt = new Date().toISOString();
+
+    await db('users')
+      .insert({
+        id,
+        google_id: id,
+        email: `${id}@test.local`,
+        name: 'Playwright Test User',
+        picture: null,
+        created_at: createdAt,
+      })
+      .onConflict('id')
+      .merge({
+        google_id: id,
+        email: `${id}@test.local`,
+        name: 'Playwright Test User',
+        picture: null,
+      });
+
+    return db('users').where({ id }).first();
   }
 
-  return res.status(401).json({ error: 'Unauthorized' });
+  return null;
+}
+
+export async function requireAuth(req, res, next) {
+  try {
+    const user = await resolveAuthenticatedUser(req);
+
+    if (user) {
+      req.user = user;
+      return next();
+    }
+
+    return res.status(401).json({ error: 'Unauthorized' });
+  } catch (error) {
+    return next(error);
+  }
 }

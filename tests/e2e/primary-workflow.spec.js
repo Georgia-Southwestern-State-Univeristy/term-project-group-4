@@ -37,15 +37,10 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     });
 
     await saveBtn.click();
-    await page.waitForTimeout(2000);
 
-    const savedTripsList = page.locator('#saved-trips-list');
-    const tripsWithName = savedTripsList.locator(`span:has-text("${tripName}")`);
-
-    const tripCount = await tripsWithName.count();
-    expect(tripCount).toBe(1);
-
-    await expect(tripsWithName.first()).toBeVisible();
+    const tripRow = page.locator('#saved-trips-list li').filter({ hasText: tripName });
+    await expect(tripRow).toHaveCount(1, { timeout: 10000 });
+    await expect(tripRow.first()).toBeVisible();
   });
 
   test('user can create an outdoor trip with appropriate items', async ({ page }) => {
