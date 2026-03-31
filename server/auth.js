@@ -22,10 +22,18 @@ export async function resolveAuthenticatedUser(req) {
         name: 'Playwright Test User',
         picture: null,
       });
-
-      user = await db('users').where({ id }).first();
+    } else if (user.google_id !== id || user.name !== 'Playwright Test User') {
+      await db('users')
+        .where({ id })
+        .update({
+          google_id: id,
+          email: `${id}@test.local`,
+          name: 'Playwright Test User',
+          picture: null,
+        });
     }
 
+    user = await db('users').where({ id }).first();
     return user;
   }
 
