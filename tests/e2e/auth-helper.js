@@ -10,6 +10,19 @@ export const TEST_USER_ID = process.env.TEST_USER_ID || 'demo-user-123';
 export async function loginAsTestUser(page) {
   console.log(`Using test-mode auth with x-test-user-id=${TEST_USER_ID}`);
 
+  const response = await page.request.get('/auth/user', {
+    headers: { 'x-test-user-id': TEST_USER_ID },
+  });
+
+  console.log('Auth status endpoint returned:', response.status());
+
+  if (!response.ok()) {
+    throw new Error(`/auth/user returned ${response.status()} instead of 200 in test mode`);
+  }
+
+  const user = await response.json();
+  console.log('Authenticated as:', user.id);
+
   await page.goto('/');
   await page.waitForLoadState('networkidle');
 
@@ -25,8 +38,9 @@ export async function isLoggedIn(page) {
       headers: { 'x-test-user-id': TEST_USER_ID },
     });
 
+    console.log('Auth status endpoint returned:', response.status());
+
     if (!response.ok()) {
-      console.log('Auth status endpoint returned:', response.status());
       return false;
     }
 

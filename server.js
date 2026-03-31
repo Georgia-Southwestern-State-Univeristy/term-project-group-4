@@ -134,14 +134,12 @@ const getSessionSecret = () => {
   if (process.env.NODE_ENV === 'test') {
     return 'test-secret-key-do-not-use-in-production';
   }
-  if (isProduction && !process.env.SESSION_SECRET) {
-    throw new Error('SESSION_SECRET must be set in production. Refusing to start with an insecure default session secret.');
+
+  if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET must be set in production.');
   }
-  if (!process.env.SESSION_SECRET) {
-    console.warn('⚠️  SESSION_SECRET not set. Using default development value. Set SESSION_SECRET environment variable for shared environments.');
-    return 'default-dev-secret-change-in-production';
-  }
-  return process.env.SESSION_SECRET;
+
+  return process.env.SESSION_SECRET || 'default-dev-secret-change-in-production';
 };
 
 app.use(session({
@@ -214,8 +212,7 @@ if (!isTest) {
 
 app.get('/auth/logout', (req, res, next) => {
   if (isTestModeRequest(req)) {
-    req.user = null;
-    return res.status(200).json({ success: true, testMode: true });
+    return res.status(200).json({ success: true });
   }
 
   if (typeof req.logout !== 'function') {
@@ -240,13 +237,13 @@ app.get('/auth/user', (req, res) => {
 
     if (user) {
       req.user = user;
-      res.json(user);
-    } else {
-      res.status(401).json({ error: 'Not authenticated' });
+      return res.json(user);
     }
+
+    return res.status(401).json({ error: 'Not authenticated' });
   } catch (error) {
     console.error('Error in /auth/user:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

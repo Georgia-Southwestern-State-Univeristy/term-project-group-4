@@ -1,10 +1,5 @@
-function buildTestUser(userId) {
-  return {
-    id: userId,
-    google_id: userId,
-    name: 'Playwright Test User',
-    email: `${userId}@test.local`,
-  };
+export function isTestModeRequest(req) {
+  return process.env.NODE_ENV === 'test' && !!req.headers['x-test-user-id'];
 }
 
 export function resolveAuthenticatedUser(req) {
@@ -12,15 +7,15 @@ export function resolveAuthenticatedUser(req) {
     return req.user;
   }
 
-  if (process.env.NODE_ENV === 'test' && req.headers['x-test-user-id']) {
-    return buildTestUser(req.headers['x-test-user-id']);
+  if (isTestModeRequest(req)) {
+    return {
+      id: req.headers['x-test-user-id'],
+      displayName: 'Playwright Test User',
+      email: `${req.headers['x-test-user-id']}@test.local`,
+    };
   }
 
   return null;
-}
-
-export function isTestModeRequest(req) {
-  return process.env.NODE_ENV === 'test' && Boolean(req.headers['x-test-user-id']);
 }
 
 export function requireAuth(req, res, next) {
@@ -28,10 +23,6 @@ export function requireAuth(req, res, next) {
 
   if (user) {
     req.user = user;
-    return next();
-  }
-
-  if (req.isAuthenticated?.() && req.user) {
     return next();
   }
 
