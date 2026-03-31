@@ -35,12 +35,10 @@ test.describe('Integration Workflow: Save and Reload Trip', () => {
 
     await saveBtn.click();
 
-    await page.waitForTimeout(2000);
+    const tripContainer = page.locator('#saved-trips-list li').filter({ hasText: tripName });
+    await expect(tripContainer).toHaveCount(1, { timeout: 10000 });
 
-    const tripSpan = page.locator(`span:has-text("${tripName}")`);
-    const tripContainer = tripSpan.locator('xpath=ancestor::li');
-    const loadBtn = tripContainer.locator('button:has-text("Load")');
-
+    const loadBtn = tripContainer.first().locator('button:has-text("Load")');
     await loadBtn.click();
 
     await expect(page.locator('#trip-name')).toHaveValue(tripName);
