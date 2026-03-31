@@ -15,15 +15,12 @@ export async function resolveAuthenticatedUser(req) {
     let user = await db('users').where({ id }).first();
 
     if (!user) {
-      const createdAt = new Date().toISOString();
-
       await db('users').insert({
         id,
         google_id: id,
         email: `${id}@test.local`,
         name: 'Playwright Test User',
         picture: null,
-        created_at: createdAt,
       });
 
       user = await db('users').where({ id }).first();
