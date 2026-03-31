@@ -19,7 +19,7 @@ export async function resolveAuthenticatedUser(req) {
 
       await db('users').insert({
         id,
-        google_id: `test-${id}`,
+        google_id: id,
         email: `${id}@test.local`,
         name: 'Playwright Test User',
         picture: null,

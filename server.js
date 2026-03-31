@@ -234,20 +234,25 @@ app.get('/auth/logout', (req, res, next) => {
   });
 });
 
-app.get('/auth/user', async (req, res) => {
-  try {
-    const user = await resolveAuthenticatedUser(req);
-
-    if (user) {
-      req.user = user;
-      return res.json(user);
-    }
-
-    return res.status(401).json({ error: 'Not authenticated' });
-  } catch (error) {
-    console.error('Error in /auth/user:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+app.get('/auth/logout', (req, res, next) => {
+  if (isTestModeRequest(req)) {
+    return res.status(200).json({ success: true, testMode: true });
   }
+
+  if (typeof req.logout !== 'function') {
+    return res.status(200).json({ success: true });
+  }
+
+  req.logout((error) => {
+    if (error) return next(error);
+
+    req.session.destroy((sessionError) => {
+      if (sessionError) return next(sessionError);
+
+      res.clearCookie('connect.sid');
+      res.status(200).json({ success: true });
+    });
+  });
 });
 
 // GET /api/trips - List all trips
