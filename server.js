@@ -20,6 +20,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import session from 'express-session';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -30,6 +31,8 @@ const PORT = process.env.PORT || 3000;
 const isTest = process.env.NODE_ENV === 'test';
 const isProduction = process.env.NODE_ENV === 'production';
 const distDir = path.resolve(process.cwd(), 'dist');
+const __filename = fileURLToPath(import.meta.url);
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
 
 function getConfiguredDbPath() {
   if (isTest) return ':memory:';
@@ -525,9 +528,13 @@ if (isProduction) {
 // Export app for testing
 export { app };
 
-if (!isTest) {
-  ensureProductionStorageReady();
+if (isDirectRun) {
+  if (isProduction) {
+    ensureProductionStorageReady();
+  }
+
   await migrateLatest();
+
   app.listen(PORT, () => {
     console.log(`Trip Manager API running on http://localhost:${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
