@@ -12,6 +12,8 @@ For this project, item **B** is centered on the hosted environment first. Local 
 - URL: `https://spcg.zentrofi.com`
 - Requirement: Reviewer should be able to validate core workflow without local setup
 
+Reviewer first click: `Login with Google` on the hosted landing page.
+
 ## What "First Run" Means for Hosted Beta
 
 "First run" does **not** mean booting local servers. It means the first-time actions a reviewer takes on the live app to verify:
@@ -42,6 +44,17 @@ For this project, item **B** is centered on the hosted environment first. Local 
 12. (Optional sanity) Delete the trip and confirm it is removed.
 
 Pass criteria: Steps complete without major errors and saved data persists across page reload.
+
+## Quick Smoke Test (2-3 Minutes)
+
+Use this when time is limited during review:
+
+1. Open `https://spcg.zentrofi.com` and verify HTTPS lock.
+2. Click `Login with Google` and confirm return to app.
+3. Create one trip, click `Generate Checklist`, then `Save Trip`.
+4. Reload page and `Load` the saved trip.
+
+Smoke pass criteria: login succeeds, one trip can be saved, and the saved trip still loads after refresh.
 
 ## Required Elastic Beanstalk Environment Variables (Runtime)
 
@@ -81,6 +94,17 @@ Used by `.github/workflows/deploy-eb.yaml`:
 5. Run migrations in deployed environment (`npm run db:migrate`) if not already executed by deployment process.
 6. Confirm app can write to `SQLITE_PATH=/data/trips.db`.
 
+## Failure Signals and First Checks
+
+- Symptom: browser shows TLS/certificate warning.
+- First check: confirm DNS points to the active EB load balancer and certificate covers `spcg.zentrofi.com`.
+
+- Symptom: login fails or redirects incorrectly.
+- First check: confirm OAuth authorized origin and callback include `https://spcg.zentrofi.com` and `/auth/google/callback`.
+
+- Symptom: app loads but save/load fails.
+- First check: confirm `/data` is mounted, `EBS_VOLUME_ID` is set, and migrations were applied.
+
 ## Seed Data and Test Accounts
 
 - Seed data is not required for baseline reviewer workflow.
@@ -96,6 +120,12 @@ Record at least one team-verified run of this exact checklist with:
 - URL validated (`https://spcg.zentrofi.com`)
 - CI run link associated with deployed version
 - Outcome: pass/fail + brief notes
+
+Minimum evidence to attach in Week 12:
+
+- One recent passing CI run link for the deployed commit
+- One completed reviewer checklist run (or smoke test) with pass/fail result
+- Deployed version identifier used during verification
 
 Suggested evidence table:
 
