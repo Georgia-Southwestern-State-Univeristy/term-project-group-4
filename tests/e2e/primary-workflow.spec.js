@@ -70,23 +70,25 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await page.click('button:has-text("Generate Checklist")');
     await page.waitForSelector('#checklist-container', { timeout: 5000 });
 
-    // Get first 3 checklist checkboxes individually
-    const checkbox0 = page.locator('#checklist-container input[type="checkbox"]').nth(0);
-    const checkbox1 = page.locator('#checklist-container input[type="checkbox"]').nth(1);
+    // Verify checklist rendered with at least 2 items before proceeding
+    const checkboxes = page.locator('#checklist-container input[type="checkbox"]');
+    const checkboxCount = await checkboxes.count();
+    expect(checkboxCount).toBeGreaterThanOrEqual(2);
+
+    // Get first 2 checklist checkboxes individually
+    const checkbox0 = checkboxes.nth(0);
+    const checkbox1 = checkboxes.nth(1);
     
     // Mark first item packed
     await checkbox0.check();
-    await page.waitForTimeout(300);
     await expect(checkbox0).toBeChecked();
     
     // Mark second item packed
     await checkbox1.check();
-    await page.waitForTimeout(300);
     await expect(checkbox1).toBeChecked();
     
     // Uncheck first item (user changed mind)
     await checkbox0.uncheck();
-    await page.waitForTimeout(300);
     await expect(checkbox0).not.toBeChecked();
     await expect(checkbox1).toBeChecked();
 
@@ -101,6 +103,21 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     // Verify trip saved to list
     const tripRow = page.locator('#saved-trips-list li').filter({ hasText: tripName });
     await expect(tripRow).toHaveCount(1, { timeout: 10000 });
+
+    // Load the trip to verify packing state persisted
+    const loadBtn = tripRow.first().locator('button:has-text("Load")');
+    await loadBtn.click();
+
+    // Verify checklist is rendered again with at least 2 items
+    const reloadedCheckboxes = page.locator('#checklist-container input[type="checkbox"]');
+    const reloadedCheckboxCount = await reloadedCheckboxes.count();
+    expect(reloadedCheckboxCount).toBeGreaterThanOrEqual(2);
+
+    // Verify packed/unpacked states persisted
+    const reloadedCheckbox0 = reloadedCheckboxes.nth(0);
+    const reloadedCheckbox1 = reloadedCheckboxes.nth(1);
+    await expect(reloadedCheckbox0).not.toBeChecked(); // was unchecked
+    await expect(reloadedCheckbox1).toBeChecked(); // was checked
   });
 
   test('user can delete a trip from the saved trips list', async ({ page }) => {
@@ -138,10 +155,7 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     const deleteBtn = tripRow.first().locator('button:has-text("Delete")');
     await deleteBtn.click();
 
-    // Wait a bit for dialog to be handled and deletion to complete
-    await page.waitForTimeout(500);
-
-    // Verify trip is removed from the list
+    // Verify trip is removed from the list (waits for actual removal)
     await expect(page.locator('#saved-trips-list li').filter({ hasText: tripName })).toHaveCount(0, { timeout: 5000 });
   });
 });

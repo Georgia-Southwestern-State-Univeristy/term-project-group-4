@@ -141,7 +141,7 @@ This Beta is supported by **46 automated tests** covering critical user workflow
 
 | Workflow | Unit Tests | E2E Tests | Status |
 |----------|-----------|-----------|--------|
-| **1. User Authentication** | 6 auth tests | E2E login flow | ✅ Protected |
+| **1. User Authentication** | 6 auth tests | test-mode authentication | ✅ Protected |
 | **2. Create Trip** | POST validation (8 tests) | Beach/Outdoor creation (2 tests) | ✅ Protected |
 | **3. Generate Checklist** | 7 generator tests | Form → checklist render (2 tests) | ✅ Protected |
 | **4. Pack Items (Toggle Checklist)** | PUT tests | **NEW E2E test** | ✅ **Protected (NEW)** |
