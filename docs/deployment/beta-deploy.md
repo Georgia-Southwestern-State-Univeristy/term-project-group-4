@@ -16,12 +16,16 @@ Reviewer first click: `Login with Google` on the hosted landing page.
 
 ## What "First Run" Means for Hosted Beta
 
-"First run" does **not** mean booting local servers. It means the first-time actions a reviewer takes on the live app to verify:
+For Week 12 Item B, the reproducible run path is the hosted Beta environment (`https://spcg.zentrofi.com`).
+
+"First run" means the first-time reviewer validation flow on the deployed system to verify:
 
 - HTTPS and basic availability
 - Authentication flow
 - Core trip workflow behavior
 - Persistence behavior after reload
+
+Local developer startup steps are documented in `README.md` and are outside the scope of this hosted-review checklist.
 
 ## Prerequisites for Reviewer
 
@@ -38,12 +42,13 @@ Reviewer first click: `Login with Google` on the hosted landing page.
 6. Enter a trip name, destination type, and duration.
 7. Click `Generate Checklist`.
 8. Click `Save Trip`.
-9. Confirm a success state is shown and trip appears in `Saved Trips`.
+9. Confirm success feedback appears (toast and saved-state label) and the trip appears in `Saved Trips`.
 10. Reload the page.
 11. Click `Load` on the saved trip and confirm data/checklist round-trips correctly.
 12. (Optional sanity) Delete the trip and confirm it is removed.
+13. Confirm delete feedback appears (success toast).
 
-Pass criteria: Steps complete without major errors and saved data persists across page reload.
+Pass criteria: Steps complete without major errors, success feedback (toasts/saved-state label) appears for key actions, and saved data persists across page reload.
 
 ## Quick Smoke Test (2-3 Minutes)
 
@@ -51,10 +56,12 @@ Use this when time is limited during review:
 
 1. Open `https://spcg.zentrofi.com` and verify HTTPS lock.
 2. Click `Login with Google` and confirm return to app.
-3. Create one trip, click `Generate Checklist`, then `Save Trip`.
-4. Reload page and `Load` the saved trip.
+3. Create one trip, click `Generate Checklist`, then click `Save Trip` once (initial save).
+4. Toggle one checklist item packed/unpacked and confirm the trip remains in a saved state (`Saved! (ID: ...)` label).
+5. Reload page and `Load` the saved trip.
+6. Delete the trip from `Saved Trips`, confirm it is removed, and confirm success toast feedback appears.
 
-Smoke pass criteria: login succeeds, one trip can be saved, and the saved trip still loads after refresh.
+Smoke pass criteria: login succeeds, initial trip save succeeds with visible feedback, checklist toggle works without requiring an additional save click, the trip loads correctly after refresh, and delete removes the trip with visible success feedback.
 
 ## Required Elastic Beanstalk Environment Variables (Runtime)
 
@@ -74,6 +81,7 @@ Notes:
 - `SQLITE_PATH` is required in production startup checks.
 - If `SQLITE_PATH` points under `/data`, the app expects `/data` to be mounted.
 - Secrets are intentionally not committed to repository files.
+- `EB_ENVIRONMENT_NAME` is not an app runtime variable; it is a GitHub Actions deploy secret.
 
 ## Required GitHub Repository Secrets (CD Workflow)
 
@@ -84,6 +92,17 @@ Used by `.github/workflows/deploy-eb.yaml`:
 - `EB_DEPLOY_BUCKET`
 - `EB_APPLICATION_NAME`
 - `EB_ENVIRONMENT_NAME`
+- `PROD_BASE_URL` (used by post-deploy `/health` smoke check)
+
+Currently present but not required by deploy workflow:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `SESSION_SECRET`
+- `TEST_EMAIL`
+- `TEST_PASSWORD`
+
+Note: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `SESSION_SECRET` are required in Elastic Beanstalk environment properties at runtime, even though the CD workflow does not read them directly from GitHub secrets.
 
 ## Database and Setup Steps (Hosted Environment)
 
