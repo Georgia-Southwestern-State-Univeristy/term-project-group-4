@@ -99,7 +99,6 @@ jobs:
     name: E2E Tests (Playwright)
     needs: [changes, lint]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Skip E2E for docs-only PR
         if: needs.changes.outputs.docs_only == 'true'
