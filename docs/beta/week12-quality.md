@@ -149,8 +149,7 @@ This Beta is supported by **46 automated tests** covering critical user workflow
 | **6. Load Saved Trip** | GET isolation test | E2E load & form repopulation | ✅ Protected |
 | **7. Edit Trip** | PUT update tests (9 tests) | N/A (unit depth sufficient) | ✅ Protected |
 | **8. Delete Trip** | DELETE cascade tests (5 tests) | **NEW E2E delete test** | ✅ **Protected (NEW)** |
-| **9. User Isolation** | Auth enforcement (6 tests) | E2E login (1 test) | ✅ Protected |
-| **10. Input Validation** | All CRUD endpoints | E2E failure path (1 test) | ✅ Protected |
+| **09. Input Validation** | All CRUD endpoints | E2E failure path (1 test) | ✅ Protected |
 
 ---
 
@@ -174,9 +173,10 @@ Test Files  3 passed (3)
 ```
 
 **Recent Commits with Passing CI:**
-- `1e64109` (HEAD -> main): Merge pull request #108 (week12/update-smoke-test)
+- [PR #110](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/110): Week 12 E2E testing improvements and quality documentation
+- [PR #108](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/108) (`1e64109`): Merge pull request - week12/update-smoke-test
 - `6693515`: Correction to smoke test
-- `e7884d4`: Merge pull request #107 (week12/repo-hygiene-fixes)
+- [PR #107](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/107) (`e7884d4`): Merge pull request - week12/repo-hygiene-fixes
 
 All recent merges to main include passing test suites. CI pipeline enforces this requirement before merge.
 
