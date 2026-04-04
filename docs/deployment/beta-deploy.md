@@ -146,6 +146,11 @@ Minimum evidence to attach in Week 12:
 - One completed reviewer checklist run (or smoke test) with pass/fail result
 - Deployed version identifier used during verification
 
+Current run links available for evidence (update if a newer deploy is used):
+
+- Deployed commit smoke/deploy run (main): https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions/runs/23986785600
+- Branch CI run for this deliverable doc update: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions/runs/23930974386
+
 Suggested evidence table:
 
 | Date | Verifier | Deployed Version | CI Run Link | Result | Notes |
