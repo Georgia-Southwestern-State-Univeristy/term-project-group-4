@@ -63,7 +63,7 @@ This document fulfills Week 12 item F:
 ## Updated Board / Milestone Link
 
 - Project board view: https://github.com/orgs/Georgia-Southwestern-State-Univeristy/projects/26/views/1
-- Final sprint milestone plan link: Pending Week 13 planning update (add final board/milestone URL before Week 12 package submission).
+- Final sprint milestone plan: tracked on the same Week 13-15 project board view above.
 
 ## Engineering Focus for Final Phase
 
