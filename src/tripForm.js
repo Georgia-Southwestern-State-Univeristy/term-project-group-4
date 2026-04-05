@@ -166,14 +166,14 @@ export function initTripForm({ onTripSaved } = {}) {
       checklistSection.hidden = false;
       renderChecklist(currentChecklist);
       flashChecklistUpdated();
-      saveTripBtn.disabled = false;
-
+      
       if (isEditingExistingTrip) {
         saveTripBtn.textContent = 'Update Trip';
-        // Mark as having changes since checklist was regenerated
-        hasChanges = true;
+        // Let checkForChanges() detect if the checklist actually changed
+        checkForChanges();
       } else {
         saveTripBtn.textContent = 'Save Trip';
+        saveTripBtn.disabled = false;
       }
     } finally {
       setChecklistLoading(false);
