@@ -11,7 +11,6 @@ import { showToast } from './toast.js';
 export function initTripForm({ onTripSaved } = {}) {
   const form = document.getElementById('trip-form');
   const checklistSection = document.getElementById('checklist-section');
-  const checklistLoading = document.getElementById('checklist-loading');
   const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
 
@@ -27,10 +26,6 @@ export function initTripForm({ onTripSaved } = {}) {
   }
 
   function setChecklistLoading(isLoading) {
-    if (checklistLoading) {
-      checklistLoading.hidden = !isLoading;
-    }
-
     if (generateChecklistBtn) {
       generateChecklistBtn.disabled = isLoading;
       generateChecklistBtn.textContent = isLoading ? 'Generating...' : 'Generate Checklist';
