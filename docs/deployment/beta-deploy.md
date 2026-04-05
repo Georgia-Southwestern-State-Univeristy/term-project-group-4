@@ -151,11 +151,11 @@ Current run links available for evidence (update if a newer deploy is used):
 - Deployed commit smoke/deploy run (main): https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions/runs/23986785600
 - Branch CI run for this deliverable doc update: https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions/runs/23930974386
 
-Suggested evidence table:
+Week 12 evidence log:
 
 | Date | Verifier | Deployed Version | CI Run Link | Result | Notes |
 |---|---|---|---|---|---|
-| YYYY-MM-DD | Name | version-label | link | Pass/Fail | short note |
+| 2026-04-03 20:15 MST (Arizona) | Jason | main @ 1b51fa3 | https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/actions/runs/23986785600 | Pass | Full hosted end-to-end reviewer flow completed successfully: login, generate checklist, save, reload/load, toggle packed state, and delete with success feedback. |
 
 ## Scope Boundary for Week 12 Item B
 
