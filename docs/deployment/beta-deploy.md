@@ -35,7 +35,7 @@ Local developer startup steps are documented in `README.md` and are outside the 
 ## Hosted Validation Checklist (Reviewer)
 
 1. Open `https://spcg.zentrofi.com`.
-2. Confirm HTTPS lock icon and no certificate warning.
+2. Confirm the URL uses HTTPS (`https://spcg.zentrofi.com`) and no browser security warning is shown. In Chrome, click the "View site information" icon next to the address bar and verify the connection is secure.
 3. Optionally open `https://spcg.zentrofi.com/health` and confirm status response is returned.
 4. On the app page, click `Login with Google` first.
 5. Complete Google OAuth and return to the app.
@@ -43,18 +43,19 @@ Local developer startup steps are documented in `README.md` and are outside the 
 7. Click `Generate Checklist`.
 8. Click `Save Trip`.
 9. Confirm success feedback appears (toast and saved-state label) and the trip appears in `Saved Trips`.
-10. Reload the page.
-11. Click `Load` on the saved trip and confirm data/checklist round-trips correctly.
-12. (Optional sanity) Delete the trip and confirm it is removed.
-13. Confirm delete feedback appears (success toast).
+10. Toggle at least one checklist item packed/unpacked and confirm the saved-state label remains visible.
+11. Reload the page.
+12. Click `Load` on the saved trip and confirm data/checklist round-trips correctly, including the toggled packed state.
+13. (Optional sanity) Delete the trip and confirm it is removed.
+14. Confirm delete feedback appears (success toast).
 
-Pass criteria: Steps complete without major errors, success feedback (toasts/saved-state label) appears for key actions, and saved data persists across page reload.
+Pass criteria: Steps complete without major errors, success feedback (toasts/saved-state label) appears for key actions, packed/unpacked toggles are reflected after load, and saved data persists across page reload.
 
 ## Quick Smoke Test (2-3 Minutes)
 
 Use this when time is limited during review:
 
-1. Open `https://spcg.zentrofi.com` and verify HTTPS lock.
+1. Open `https://spcg.zentrofi.com` and verify HTTPS is active. In Chrome, use the "View site information" icon next to the address bar to confirm the connection is secure.
 2. Click `Login with Google` and confirm return to app.
 3. Create one trip, click `Generate Checklist`, then click `Save Trip` once (initial save).
 4. Toggle one checklist item packed/unpacked and confirm the trip remains in a saved state (`Saved! (ID: ...)` label).
