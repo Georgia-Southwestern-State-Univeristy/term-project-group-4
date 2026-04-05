@@ -14,6 +14,7 @@ export function initTripForm({ onTripSaved } = {}) {
   const checklistLoading = document.getElementById('checklist-loading');
   const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
+  const checklistContainer = document.getElementById('checklist-container');
 
   let currentChecklist = null;
   let savedTripId = null;
@@ -35,6 +36,21 @@ export function initTripForm({ onTripSaved } = {}) {
       generateChecklistBtn.disabled = isLoading;
       generateChecklistBtn.textContent = isLoading ? 'Generating...' : 'Generate Checklist';
     }
+  }
+
+  function flashChecklistUpdated() {
+    if (!checklistContainer) return;
+
+    checklistContainer.classList.remove('checklist-updated');
+
+    // Force reflow so the animation can restart on repeated generations
+    void checklistContainer.offsetWidth;
+
+    checklistContainer.classList.add('checklist-updated');
+
+    setTimeout(() => {
+      checklistContainer.classList.remove('checklist-updated');
+    }, 400);
   }
 
   const autoSaveChecklist = debounce(async (checklist) => {
@@ -97,6 +113,7 @@ export function initTripForm({ onTripSaved } = {}) {
       currentChecklist = generateChecklist(tripParams);
       checklistSection.hidden = false;
       renderChecklist(currentChecklist);
+      flashChecklistUpdated();
       saveTripBtn.disabled = false;
 
       if (savedTripId) {
