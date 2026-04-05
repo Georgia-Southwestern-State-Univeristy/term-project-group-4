@@ -154,6 +154,10 @@ input[type="checkbox"] {
   font-weight: 600;
 }
 
+.loading-indicator[hidden] {
+  display: none !important;
+}
+
 .spinner {
   width: 1rem;
   height: 1rem;
