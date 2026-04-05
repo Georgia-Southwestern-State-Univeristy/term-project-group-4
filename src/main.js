@@ -4,6 +4,31 @@ import { showToast } from './toast.js';
 
 let currentUser = null;
 
+function getAuthErrorMessage(errorCode) {
+  switch (errorCode) {
+    case 'google_login_failed':
+      return 'Google login failed. Please try again.';
+    default:
+      return 'Login failed. Please try again.';
+  }
+}
+
+function handleAuthErrorFromQuery() {
+  const url = new URL(window.location.href);
+  const authError = url.searchParams.get('authError');
+
+  if (!authError) {
+    return;
+  }
+
+  const message = getAuthErrorMessage(authError);
+  showToast(message, 'error');
+
+  // Clean up the URL so refresh/back navigation does not keep replaying the error.
+  url.searchParams.delete('authError');
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 async function checkAuthStatus() {
   try {
     const response = await fetch('/auth/user');
@@ -113,6 +138,8 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
 }
 
 async function init() {
+  handleAuthErrorFromQuery();
+  
   const isAuthenticated = await checkAuthStatus();
 
   if (!isAuthenticated) {

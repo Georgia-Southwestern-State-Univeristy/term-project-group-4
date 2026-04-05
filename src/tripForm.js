@@ -11,10 +11,10 @@ import { showToast } from './toast.js';
 export function initTripForm({ onTripSaved } = {}) {
   const form = document.getElementById('trip-form');
   const checklistSection = document.getElementById('checklist-section');
-  const checklistLoading = document.getElementById('checklist-loading');
   const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
   const editingContext = document.getElementById('editing-context');
+  const checklistContainer = document.getElementById('checklist-container');
 
   let currentChecklist = null;
   let savedTripId = null;
@@ -72,14 +72,25 @@ export function initTripForm({ onTripSaved } = {}) {
   }
 
   function setChecklistLoading(isLoading) {
-    if (checklistLoading) {
-      checklistLoading.hidden = !isLoading;
-    }
-
     if (generateChecklistBtn) {
       generateChecklistBtn.disabled = isLoading;
       generateChecklistBtn.textContent = isLoading ? 'Generating...' : 'Generate Checklist';
     }
+  }
+
+  function flashChecklistUpdated() {
+    if (!checklistContainer) return;
+
+    checklistContainer.classList.remove('checklist-updated');
+
+    // Force reflow so the animation can restart on repeated generations
+    void checklistContainer.offsetWidth;
+
+    checklistContainer.classList.add('checklist-updated');
+
+    setTimeout(() => {
+      checklistContainer.classList.remove('checklist-updated');
+    }, 400);
   }
 
   const autoSaveChecklist = debounce(async (checklist) => {
@@ -153,6 +164,7 @@ export function initTripForm({ onTripSaved } = {}) {
       currentChecklist = generateChecklist(tripParams);
       checklistSection.hidden = false;
       renderChecklist(currentChecklist);
+      flashChecklistUpdated();
       saveTripBtn.disabled = false;
 
       if (isEditingExistingTrip) {
