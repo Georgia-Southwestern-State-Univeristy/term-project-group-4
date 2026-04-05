@@ -111,7 +111,7 @@ Note: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `SESSION_SECRET` are requi
 2. Ensure EB env property `EBS_VOLUME_ID` is set correctly.
 3. Deploy application version to EB.
 4. Predeploy hook attaches/mounts EBS volume at `/data`.
-5. Run migrations in deployed environment (`npm run db:migrate`) if not already executed by deployment process.
+5. Confirm migrations were executed by the EB deployment hook (expected default behavior). Run `npm run db:migrate` manually only if deployment logs show migrations did not run.
 6. Confirm app can write to `SQLITE_PATH=/data/trips.db`.
 
 ## Failure Signals and First Checks
