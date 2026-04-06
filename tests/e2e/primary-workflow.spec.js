@@ -43,6 +43,37 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await expect(tripRow.first()).toBeVisible();
   });
 
+  test('form fields clear after saving a new trip', async ({ page }) => {
+    const timestamp = Date.now();
+    const tripName = `Reset Test Trip - ${timestamp}`;
+
+    await page.fill('#trip-name', tripName);
+    await page.selectOption('#destination-type', 'beach');
+    await page.fill('#duration', '4');
+
+    await page.click('button:has-text("Generate Checklist")');
+    await page.waitForSelector('#checklist-container', { timeout: 5000 });
+
+    const saveBtn = page.locator('#save-trip-btn');
+    await page.waitForFunction(() => {
+      const btn = document.querySelector('#save-trip-btn');
+      return btn && !btn.disabled;
+    });
+    await saveBtn.click();
+
+    // New-trip save should reset the form for the next entry.
+    await expect(page.locator('#trip-name')).toHaveValue('');
+    await expect(page.locator('#destination-type')).toHaveValue('');
+    await expect(page.locator('#duration')).toHaveValue('');
+    await expect(page.locator('#checklist-section')).toHaveAttribute('hidden', '');
+    await expect(saveBtn).toBeDisabled();
+    await expect(saveBtn).toHaveText('Save Trip');
+
+    // Trip remains persisted and loadable from saved list.
+    const tripRow = page.locator('#saved-trips-list li').filter({ hasText: tripName });
+    await expect(tripRow).toHaveCount(1, { timeout: 10000 });
+  });
+
   test('user can create an outdoor trip with appropriate items', async ({ page }) => {
     const timestamp = Date.now();
     const tripName = `Camping Adventure - ${timestamp}`;
@@ -189,6 +220,11 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     // Load the trip to verify button state changes
     const loadBtn = tripRow.first().locator('button:has-text("Load")');
     await loadBtn.click();
+
+    // Ensure load action has populated form values before checking context UI.
+    await expect(page.locator('#trip-name')).toHaveValue(tripName);
+    await expect(page.locator('#destination-type')).toHaveValue('beach');
+    await expect(page.locator('#duration')).toHaveValue('4');
 
     // Verify editing context is displayed
     const editingContext = page.locator('#editing-context');
