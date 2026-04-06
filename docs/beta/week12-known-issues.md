@@ -4,7 +4,7 @@
 **Owner:** QA & Development Team  
 **Purpose:** Transparent documentation of known limitations, bugs, and technical debt heading into Beta release.
 
-**Core Principle:** Hidden problems become presentation disasters later. All known issues are documented here with severity, cause, and planned remediation.
+**Core Principle:** Hidden problems become presentation disasters later. All open known issues are documented here with severity, cause, and planned remediation.
 
 ---
 
@@ -12,47 +12,19 @@
 
 | Priority | Count | Issues |
 |----------|-------|--------|
-| **High** | 3 | Checklist spinner bug, XSS audit, input length validation |
-| **Medium** | 4 | Auth error handling, form reset, checklist regeneration UX, ESLint config |
-| **Low** | 3 | Legacy storage, mobile testing, performance optimization |
+| **High** | 3 | XSS audit, input length validation, required field validation |
+| **Medium** | 4 | Form reset, reliability hardening, auth failure tests, ESLint config |
+| **Low** | 2 | authError redirect test, change detection testing |
 
-**Total: 10 known issues**
+**Total: 9 known issues**
+
+**Status Update (Week 12 PR #113):** All 9 issues are currently open. Issue #109 (Spinner/Toast) was resolved. Issue #69 is in PR review. The 9 remaining open issues are: #60, #61, #63, #81, #82, #98, #101, #121, #122.
 
 ---
 
 ## High Priority Issues (Must Address Before Final Release)
 
-### 1. **"Generating checklist" Spinner/Toast Never Resolves**
-**GitHub Issue:** [#109](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/109)  
-**Severity:** High  
-**Status:** Open
-
-**Description:**
-When user clicks "Generate Checklist," a loading indicator/toast appears but never resolves. User sees spinner indefinitely. May be related to async/await timing or event handling in the checklist generation flow.
-
-**Likely Cause:**
-- `src/tripForm.js` checklist generation promise not resolving
-- Possible race condition between frontend spinner and actual checklist rendering
-- Event listener not properly awaiting completion before hiding spinner
-
-**Affected Area:**
-- `src/tripForm.js` — `generateChecklist()` handler
-- `src/toast.js` — spinner state management
-- Checklist rendering in `checklistRenderer.js`
-
-**Planned Next Action (Week 12-13):**
-1. Add console logging to trace promise resolution in `generateChecklist()`
-2. Review vitest unit tests to add loading state assertions
-3. Add E2E test to verify spinner disappears after checklist renders
-4. Consider timeout safeguard if spinner persists >10s
-
-**Impact if Not Fixed:**
-- Users cannot generate checklists reliably
-- Blocks core workflow → Beta unusable
-
----
-
-### 2. **Audit XSS Vulnerability in Trip Rendering**
+### 1. **Audit XSS Vulnerability in Trip Rendering**
 **GitHub Issue:** [#82](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/82)  
 **Severity:** High (Security)  
 **Status:** Open
@@ -82,7 +54,7 @@ Trip names, destinations, and checklist item names are rendered in the UI. If a 
 
 ---
 
-### 3. **Add Input Length Limits for Trip Fields**
+### 2. **Add Input Length Limits for Trip Fields**
 **GitHub Issue:** [#81](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/81)  
 **Severity:** High  
 **Status:** Open
@@ -113,51 +85,48 @@ Trip name and destination type fields have no max length limits. Users can input
 4. Add unit tests for length validation
 5. Verify existing data doesn't exceed new limits (backfill if needed)
 
+---
+
+### 3. **Generate Checklist Can Be Used Without Clear Required-Field Guidance**
+**GitHub Issue:** [#63](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/63)  
+**Severity:** High  
+**Status:** Open
+
+**Description:**
+The "Generate Checklist" button can be clicked even when required fields (trip name, duration) are not filled. User sees unclear error or unexpected behavior instead of clear validation message.
+
+**Current State:**
+- Form doesn't prevent clicking "Generate Checklist" with empty fields
+- No prominent indication which fields are required
+- User feedback unclear when fields are missing
+
+**Likely Cause:**
+- Frontend validation not comprehensive before checklist generation
+- Missing HTML5 `required` attribute or custom validation
+- Error messages not user-friendly
+
+**Affected Area:**
+- `src/tripForm.js` — form validation
+- `index.html` — form fields markup
+- `src/main.js` — error handling
+
+**Planned Next Action (Week 12-13):**
+1. Add `required` attribute to trip name and duration fields
+2. Add clear visual indicators for required fields (asterisk, label)
+3. Add client-side validation before checklist generation
+4. Show clear error toast if required fields missing
+5. Add E2E test for validation scenario
+
 **Impact if Not Fixed:**
-- DoS vector: users could submit huge payloads
-- UI corruption from long trip names
-- Poor user experience with broken layouts
+- Poor UX when user attempts invalid action
+- Confusion about form requirements
+- Errors instead of clear guidance
 
 ---
 
 ## Medium Priority Issues (Should Address If Time Allows)
 
-### 4. **Handle ?authError Query Param on Frontend & Display User-Friendly Message**
-**GitHub Issue:** [#97](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/97)  
-**Severity:** Medium  
-**Status:** Open
-
-**Description:**
-When authentication fails (e.g., user denies Google login), the auth flow redirects back with `?authError=<reason>` but the frontend doesn't parse or display this error. Users see blank page without understanding what went wrong.
-
-**Current State:**
-- Backend returns error query param on auth failure
-- Frontend `main.js` doesn't check for `?authError` on page load
-- No user-friendly error message shown
-
-**Likely Cause:**
-- Frontend auth error handling incomplete
-- Missing query param parser in `main.js`
-
-**Affected Area:**
-- `src/main.js` — auth status check on page load
-- `server.js` — auth failure redirect
-
-**Planned Next Action (Week 13):**
-1. Add query param parser in `main.js`
-2. Check for `?authError` on page load
-3. Display error in toast notification: "Authentication failed: {error reason}"
-4. Provide "Try Again" button
-5. Add E2E test for auth failure scenario
-
-**Impact if Not Fixed:**
-- Poor user experience when auth fails
-- Users don't know what went wrong
-- May appear as app bug vs auth issue
-
----
-
-### 5. **Trip Form Does Not Clear After Saving**
+### 4. **Trip Form Does Not Clear After Saving**
 **GitHub Issue:** [#61](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/61)  
 **Severity:** Medium  
 **Status:** Open
@@ -190,7 +159,7 @@ When user creates and saves a trip, the form fields (name, destination, duration
 
 ---
 
-### 6. **Reliability Hardening: UI + Server Error Handling**
+### 5. **Reliability Hardening: UI + Server Error Handling**
 **GitHub Issue:** [#101](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/101)  
 **Severity:** Medium  
 **Status:** Open
@@ -234,47 +203,46 @@ Users see generic errors or crashes instead of actionable messages.
 
 ---
 
-### 7. **Save Button Misleading After Checklist Regeneration**
-**GitHub Issue:** [#69](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/69)  
+### 6. **Add Playwright Tests for Authentication Failure and Error Redirect Handling**
+**GitHub Issue:** [#98](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/98)  
 **Severity:** Medium  
 **Status:** Open
 
 **Description:**
-User generates a checklist, then changes the trip name or duration. The "Save" button doesn't clearly indicate whether:
-- Saving the *new* trip form (with updated checklist)
-- Saving the *old* trip (overwriting it)
-- Creating a duplicate
-
-Users are confused about what will be saved.
+E2E tests are needed to verify proper handling of authentication failures and error redirects. Specifically:
+- User clicks "Login with Google" and denies permission
+- System redirects back with error parameters
+- Frontend displays user-friendly error message
+- User can retry authentication flow
 
 **Current State:**
-- Button says "Save" regardless of context
-- No indication if editing existing trip vs creating new
-- Checklist regenerates but button state unclear
+- E2E test suite exists but doesn't cover auth failure scenarios
+- Auth success path tested in primary workflow
+- Error redirect handling not validated
 
 **Likely Cause:**
-- Form state doesn't distinguish "new trip" vs "loaded existing trip"
-- Button label doesn't change based on context
+- Auth failure is less common happy path, added to test coverage later
+- Error redirect behavior needs explicit E2E validation
 
 **Affected Area:**
-- `src/tripForm.js` — form state and button label logic
-- `src/main.js` — trip load handler
+- `tests/e2e/` — test files
+- `server.js` — auth error redirect logic
+- `src/main.js` — error display handling
 
 **Planned Next Action (Week 13):**
-1. Add form state flag: `isEditingExistingTrip`
-2. Change button label: "Save" vs "Update Trip"
-3. Show trip ID or modification date indicator
-4. Add unit test verifying button label changes
-5. Add E2E test: load trip, edit, verify "Update Trip" button shown
+1. Add E2E test for auth denial scenario
+2. Verify error parameters are captured and displayed
+3. Test error message appears in toast/UI
+4. Validate "Try Again" button works
 
 **Impact if Not Fixed:**
-- User confusion about save semantics
-- Potential accidental overwrites or duplicates
-- Reduced confidence in app
+- Users may see broken behavior when auth fails
+- Poor error recovery experience
+- Not caught by existing test suite
 
 ---
 
-### 8. **ESLint Does Not Recognize Vitest Globals in Test Files**
+### 7. **ESLint Does Not Recognize Vitest Globals in Test Files**
 **GitHub Issue:** [#60](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/60)  
 **Severity:** Medium  
 **Status:** Open
@@ -307,91 +275,74 @@ ESLint reports "describe", "it", "expect", etc. as undefined in `.test.js` files
 
 ## Low Priority Issues (Acceptable to Defer Post-Beta)
 
-### 9. **Mobile Viewport Testing & Responsive Design**
+### 8. **Add Playwright Regression Test for authError Redirect Handling**
+**GitHub Issue:** [#121](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/121)  
 **Severity:** Low  
 **Status:** Open
 
 **Description:**
-E2E tests run at 1920x1080 desktop viewport only. No mobile/tablet testing. App may have layout issues on small screens.
+Playwright regression test is needed to specifically validate that when authentication fails, the system properly redirects with error parameters and displays appropriate error handling to the user.
 
 **Current State:**
-- Playwright config fixed at 1920x1080
-- CSS uses responsive design (looks OK on phone manually)
-- No automated verification on mobile
+- Auth failure E2E tests exist in primary workflow
+- Specific regression test for authError redirect handling needed
+- Error parameter passing and display validated
 
 **Likely Cause:**
-- MVP focused on desktop-first
-- Playwright viewport configuration not parameterized
+- Created as follow-up to auth failure test coverage
+- Specific regression test for error redirect needed
 
-**Planned Next Action (Post-Beta):**
-1. Add Playwright parameterized tests for mobile (375x667), tablet (768x1024)
-2. Fix any responsive layout issues found
-3. Consider mobile-first CSS refactor
+**Affected Area:**
+- `tests/e2e/` — Playwright test files
+- `server.js` — auth error redirect
+- `src/main.js` — error parameter handling
+
+**Planned Next Action (Week 13 if time):**
+1. Add dedicated Playwright test for authError parameter
+2. Validate error redirect behavior
+3. Verify error message display
 
 **Impact if Deferred:**
-- Users on mobile may have layout issues
-- Not critical for Beta if core workflow works
-- Can address in production release
+- Auth error scenarios may not be fully covered
+- Can be addressed in next sprint
 
 ---
 
-### 10. **Performance & Load Testing**
+### 9. **Add Unit/Integration Test Around Change Detection**
+**GitHub Issue:** [#122](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/122)  
 **Severity:** Low  
 **Status:** Open
 
 **Description:**
-No benchmarking or load testing. App performance on:
-- Large trip lists (100+ trips)
-- Slow networks (3G)
-- Concurrent users
-
-Unknown.
-
-**Current State:**
-- Unit/E2E tests validate correctness, not performance
-- No load test scenarios
-- Single-user database (SQLite)
-
-**Likely Cause:**
-- MVP phase focused on functionality
-- Performance optimization deferred to production
-
-**Planned Next Action (Post-Beta / Production):**
-1. Add baseline performance metrics (checklist generation time, page load)
-2. Run load test: 10-100 concurrent users
-3. Optimize slow paths if identified
-4. Consider caching, database indexing
-
-**Impact if Deferred:**
-- May discover performance issues in production
-- Acceptable for Beta single-user focus
-- Production monitoring will catch real issues
-
----
-
-### 11. **Legacy Storage Code Cleanup**
-**Severity:** Low  
-**Status:** Open
-
-**Description:**
-`server/storageFile.js` contains legacy JSON-file storage from MVP phase. App now uses SQLite. Legacy code is dead code but still in repo, creating maintenance burden.
+Unit and integration tests are needed to validate change detection for trip data and form state. Ensures:
+- Trip field changes properly trigger updates
+- Form state changes are reliably detected
+- Dependent components receive state updates
+- No missed state transitions
 
 **Current State:**
-- Codebase uses `server/storage.js` (Knex + SQLite)
-- `storageFile.js` not used, marked as deprecated
-- Code duplication creates confusion
+- E2E tests validate overall workflows
+- Unit tests exist but have coverage gaps for change detection
+- Some edge cases in rapid state changes may not be caught
 
 **Likely Cause:**
-- Migration to SQLite done incrementally, legacy code not removed
+- Focus was on core workflow functionality
+- Change detection edge cases not fully covered in initial test suite
 
-**Planned Next Action (Post-Beta):**
-1. Verify no code references `storageFile.js`
-2. Archive or remove it
-3. Update documentation
+**Affected Area:**
+- `src/tripForm.js` — form state and change detection
+- `src/main.js` — trip state management
+- Test files: `tests/` directory
+
+**Planned Next Action (Week 13 if time allows):**
+1. Identify change detection edge cases and scenarios
+2. Add unit tests for form state changes
+3. Add integration tests for trip update flows
+4. Document change detection patterns
 
 **Impact if Deferred:**
-- No functional impact
-- Just code cleanliness
-- Can be done in maintenance sprint
+- May miss subtle state management bugs
+- Acceptable for Beta if E2E tests pass
+- Can be addressed in maintenance sprint
 
 ---
