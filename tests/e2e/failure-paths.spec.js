@@ -21,13 +21,16 @@ test.describe('Failure Paths: Input Validation', () => {
     await page.waitForLoadState('networkidle');
 
     const tripNameInput = page.locator('#trip-name');
-    await tripNameInput.fill('     ');
+    await tripNameInput.fill('Temporary Valid Name');
 
     await page.selectOption('#destination-type', 'beach');
     await page.fill('#duration', '5');
 
     await page.click('button:has-text("Generate Checklist")');
     await page.waitForSelector('#checklist-container', { timeout: 5000 });
+
+    // After checklist generation, make name invalid and verify save is rejected.
+    await tripNameInput.fill('     ');
 
     const checklistItems = await page.locator('#checklist-container label').allTextContents();
     expect(checklistItems.length).toBeGreaterThan(0);
@@ -45,5 +48,19 @@ test.describe('Failure Paths: Input Validation', () => {
 
     const toastText = await errorToast.textContent();
     expect(toastText).toContain('Failed to save trip');
+  });
+
+  test('generate checklist stays disabled until required fields are complete', async ({ page }) => {
+    const generateBtn = page.locator('button:has-text("Generate Checklist")');
+
+    await expect(generateBtn).toBeDisabled();
+    await page.fill('#trip-name', 'Guidance Test Trip');
+    await expect(generateBtn).toBeDisabled();
+
+    await page.selectOption('#destination-type', 'city');
+    await expect(generateBtn).toBeDisabled();
+
+    await page.fill('#duration', '3');
+    await expect(generateBtn).toBeEnabled();
   });
 });
