@@ -15,7 +15,6 @@ export function initTripForm({ onTripSaved } = {}) {
   const saveTripBtn = document.getElementById('save-trip-btn');
   const editingContext = document.getElementById('editing-context');
   const checklistContainer = document.getElementById('checklist-container');
-  const editingContext = document.getElementById('editing-context');
 
   let currentChecklist = null;
   let savedTripId = null;
