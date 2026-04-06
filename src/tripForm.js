@@ -14,6 +14,7 @@ export function initTripForm({ onTripSaved } = {}) {
   const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
   const checklistContainer = document.getElementById('checklist-container');
+  const progressText = document.getElementById('progress-text');
 
   let currentChecklist = null;
   let savedTripId = null;
@@ -46,6 +47,18 @@ export function initTripForm({ onTripSaved } = {}) {
     setTimeout(() => {
       checklistContainer.classList.remove('checklist-updated');
     }, 400);
+  }
+
+  function resetFormAfterCreateSave() {
+    form.reset();
+    checklistSection.hidden = true;
+    if (checklistContainer) checklistContainer.innerHTML = '';
+    if (progressText) progressText.textContent = '';
+
+    currentChecklist = null;
+    savedTripId = null;
+    saveTripBtn.disabled = true;
+    saveTripBtn.textContent = 'Save Trip';
   }
 
   const autoSaveChecklist = debounce(async (checklist) => {
@@ -141,14 +154,19 @@ export function initTripForm({ onTripSaved } = {}) {
         showToast('Trip updated successfully.', 'success');
       } else {
         const saved = await saveTripToServer(tripData);
-        savedTripId = saved.id;
+        const savedId = saved.id;
         saveTripBtn.textContent = `Saved! (ID: ${saved.id.slice(0, 8)}…)`;
         showToast('Trip saved successfully.', 'success');
+
+        // After creating a new trip, reset the form for the next trip entry.
+        savedTripId = savedId;
+        resetFormAfterCreateSave();
       }
 
       if (onTripSaved) await onTripSaved();
-      
-      saveTripBtn.disabled = false;
+
+      // Keep disabled after new-trip reset; re-enable only for loaded/edit trips.
+      saveTripBtn.disabled = !savedTripId;
     } catch (err) {
       showToast(`Failed to save trip: ${err.message}`, 'error');
       console.error('Failed to save trip:', err);
