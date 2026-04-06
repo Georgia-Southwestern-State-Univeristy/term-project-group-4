@@ -12,13 +12,13 @@
 
 | Priority | Count | Issues |
 |----------|-------|--------|
-| **High** | 3 | XSS audit, input length validation, required field validation |
-| **Medium** | 4 | Form reset, reliability hardening, auth failure tests, ESLint config |
+| **High** | 2 | XSS audit, input length validation |
+| **Medium** | 2 | Reliability hardening, auth failure tests |
 | **Low** | 2 | authError redirect test, change detection testing |
 
-**Total: 9 known issues**
+**Total: 6 known issues**
 
-**Status Update (Week 12 PR #113):** All 9 issues are currently open. Issue #109 (Spinner/Toast) was resolved. Issue #69 is in PR review. The 9 remaining open issues are: #60, #61, #63, #81, #82, #98, #101, #121, #122.
+**Status Update (Week 12 PR #113):** 6 issues remain open. Issues #109 (Spinner/Toast), #69, #60, #61, #63 are resolved or in PR review. The 6 remaining open issues are: #81, #82, #98, #101, #121, #122.
 
 ---
 
@@ -87,79 +87,9 @@ Trip name and destination type fields have no max length limits. Users can input
 
 ---
 
-### 3. **Generate Checklist Can Be Used Without Clear Required-Field Guidance**
-**GitHub Issue:** [#63](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/63)  
-**Severity:** High  
-**Status:** Open
-
-**Description:**
-The "Generate Checklist" button can be clicked even when required fields (trip name, duration) are not filled. User sees unclear error or unexpected behavior instead of clear validation message.
-
-**Current State:**
-- Form doesn't prevent clicking "Generate Checklist" with empty fields
-- No prominent indication which fields are required
-- User feedback unclear when fields are missing
-
-**Likely Cause:**
-- Frontend validation not comprehensive before checklist generation
-- Missing HTML5 `required` attribute or custom validation
-- Error messages not user-friendly
-
-**Affected Area:**
-- `src/tripForm.js` — form validation
-- `index.html` — form fields markup
-- `src/main.js` — error handling
-
-**Planned Next Action (Week 12-13):**
-1. Add `required` attribute to trip name and duration fields
-2. Add clear visual indicators for required fields (asterisk, label)
-3. Add client-side validation before checklist generation
-4. Show clear error toast if required fields missing
-5. Add E2E test for validation scenario
-
-**Impact if Not Fixed:**
-- Poor UX when user attempts invalid action
-- Confusion about form requirements
-- Errors instead of clear guidance
-
----
-
 ## Medium Priority Issues (Should Address If Time Allows)
 
-### 4. **Trip Form Does Not Clear After Saving**
-**GitHub Issue:** [#61](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/61)  
-**Severity:** Medium  
-**Status:** Open
-
-**Description:**
-When user creates and saves a trip, the form fields (name, destination, duration) are not cleared. The old trip data remains visible, creating confusion about whether the form is ready for a new trip or if the previous data will be saved again.
-
-**Current State:**
-- Save succeeds and trip appears in saved list
-- Form keeps old values
-- User must manually clear fields to create new trip
-
-**Likely Cause:**
-- `tripForm.js` save handler doesn't reset form after successful save
-- Missing `form.reset()` call
-
-**Affected Area:**
-- `src/tripForm.js` — `handleFormSubmit()` or save callback
-
-**Planned Next Action (Week 13):**
-1. Add `form.reset()` call after successful save
-2. Also clear checklist container (`#checklist-container`)
-3. Add E2E test: create trip, save, verify form is empty for next trip
-4. Optional: show success toast "Trip saved! Form cleared."
-
-**Impact if Not Fixed:**
-- UX confusion after each save
-- Users might accidentally save duplicate trips
-- Reduced usability
-
----
-
-### 5. **Reliability Hardening: UI + Server Error Handling**
+### 3. **Reliability Hardening: UI + Server Error Handling**
 **GitHub Issue:** [#101](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/101)  
 **Severity:** Medium  
 **Status:** Open
@@ -203,7 +133,7 @@ Users see generic errors or crashes instead of actionable messages.
 
 ---
 
-### 6. **Add Playwright Tests for Authentication Failure and Error Redirect Handling**
+### 4. **Add Playwright Tests for Authentication Failure and Error Redirect Handling**
 **GitHub Issue:** [#98](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/98)  
 **Severity:** Medium  
 **Status:** Open
@@ -242,40 +172,9 @@ E2E tests are needed to verify proper handling of authentication failures and er
 
 ---
 
-### 7. **ESLint Does Not Recognize Vitest Globals in Test Files**
-**GitHub Issue:** [#60](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/60)  
-**Severity:** Medium  
-**Status:** Open
-
-**Description:**
-ESLint reports "describe", "it", "expect", etc. as undefined in `.test.js` files, even though Vitest provides these globals. Creates false lint errors.
-
-**Current State:**
-- `eslint.config.js` doesn't configure Vitest environment
-- Linter fails on valid Vitest code
-
-**Likely Cause:**
-- ESLint config missing Vitest globals configuration
-- Vitest globals not registered in ESLint
-
-**Affected Area:**
-- `eslint.config.js` — environment configuration
-
-**Planned Next Action (Week 12):**
-1. Update `eslint.config.js` to add Vitest globals
-2. Verify `describe`, `it`, `expect` no longer show as errors in test files
-3. Run `npm run eslint` and confirm no false positives
-
-**Impact if Not Fixed:**
-- Noisy lint output
-- False errors make real issues harder to spot
-- Reduces confidence in linter
-
----
-
 ## Low Priority Issues (Acceptable to Defer Post-Beta)
 
-### 8. **Add Playwright Regression Test for authError Redirect Handling**
+### 5. **Add Playwright Regression Test for authError Redirect Handling**
 **GitHub Issue:** [#121](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/121)  
 **Severity:** Low  
 **Status:** Open
@@ -308,7 +207,7 @@ Playwright regression test is needed to specifically validate that when authenti
 
 ---
 
-### 9. **Add Unit/Integration Test Around Change Detection**
+### 6. **Add Unit/Integration Test Around Change Detection**
 **GitHub Issue:** [#122](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/122)  
 **Severity:** Low  
 **Status:** Open
