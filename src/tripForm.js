@@ -14,9 +14,26 @@ export function initTripForm({ onTripSaved } = {}) {
   const generateChecklistBtn = form.querySelector('button[type="submit"]');
   const saveTripBtn = document.getElementById('save-trip-btn');
   const checklistContainer = document.getElementById('checklist-container');
+  const nameInput = form.elements['name'];
+  const destinationInput = form.elements['destinationType'];
+  const durationInput = form.elements['duration'];
 
   let currentChecklist = null;
   let savedTripId = null;
+  let isGeneratingChecklist = false;
+  function isChecklistFormReady() {
+    const hasName = !!nameInput?.value?.trim();
+    const hasDestination = !!destinationInput?.value;
+    const hasDuration = !!durationInput?.value;
+    return hasName && hasDestination && hasDuration && form.checkValidity();
+  }
+
+  function updateGenerateButtonState() {
+    if (!generateChecklistBtn) return;
+    generateChecklistBtn.disabled = isGeneratingChecklist || !isChecklistFormReady();
+    generateChecklistBtn.textContent = isGeneratingChecklist ? 'Generating...' : 'Generate Checklist';
+  }
+
 
   function debounce(fn, delay) {
     let timer = null;
@@ -27,10 +44,8 @@ export function initTripForm({ onTripSaved } = {}) {
   }
 
   function setChecklistLoading(isLoading) {
-    if (generateChecklistBtn) {
-      generateChecklistBtn.disabled = isLoading;
-      generateChecklistBtn.textContent = isLoading ? 'Generating...' : 'Generate Checklist';
-    }
+    isGeneratingChecklist = isLoading;
+    updateGenerateButtonState();
   }
 
   function flashChecklistUpdated() {
@@ -88,7 +103,12 @@ export function initTripForm({ onTripSaved } = {}) {
       saveTripBtn.disabled = true;
     }
     saveTripBtn.textContent = `Saved! (ID: ${savedTripId.slice(0, 8)}…)`;
+    updateGenerateButtonState();
   }
+
+  ['input', 'change'].forEach((eventName) => {
+    form.addEventListener(eventName, updateGenerateButtonState);
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -156,6 +176,8 @@ export function initTripForm({ onTripSaved } = {}) {
       saveTripBtn.disabled = false;
     }
   });
+
+  updateGenerateButtonState();
 
   return { loadTrip };
 }
