@@ -41,6 +41,16 @@ form {
 
 label { font-weight: 600; font-size: 0.9rem; }
 
+.required-note {
+  margin-bottom: 0.25rem;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.required-marker {
+  color: #dc2626;
+}
+
 select,
 input[type="number"],
 input[type="text"] {
@@ -77,6 +87,12 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background: #2563eb;
+}
+
+button[type="submit"]:disabled {
+  background: #bfdbfe;
+  color: #eff6ff;
+  cursor: not-allowed;
 }
 
 #save-trip-btn {
