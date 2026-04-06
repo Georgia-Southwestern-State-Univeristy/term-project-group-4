@@ -46,19 +46,19 @@ This document fulfills Week 12 item F:
 ## Top 5 Priorities for Weeks 13-15
 
 1. Finalize and enforce release-quality CI policy.
-- Ensure required checks are consistently enforced for final-release branches.
+Ensure required checks are consistently enforced for final-release branches.
 
-2. Close remaining test reliability gaps.
-- Replace brittle waits in E2E tests and strengthen persistence checks for destructive actions.
+2. Expand failure-path and auth-edge automated coverage.
+Add and harden Playwright coverage for auth-error redirects, failure messaging, and destructive-action recovery paths.
 
-3. Complete Week 12 evidence fields with live data.
-- Add CI run links, team verification records, and deployed commit mapping.
+3. Add regression protection for save/update state transitions.
+Add focused unit/integration coverage for create-vs-edit mode, change detection, and button-state consistency.
 
 4. Harden deployment and operational runbook.
-- Validate rollback steps, env-var completeness, and post-deploy health checks.
+Validate rollback steps, environment-variable completeness, and post-deploy health checks.
 
-5. Final docs/repo polish for external review.
-- Align README, release notes, known issues triage, and final sprint artifacts with current system reality.
+5. Final docs and repo polish for external review.
+Align README, release notes, known-issues triage, and final sprint artifacts with current system behavior.
 
 ## Updated Board / Milestone Link
 
