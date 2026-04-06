@@ -7,13 +7,10 @@ This Beta release marks the transition from initial feature implementation (Week
 
 ## Release Information
 
-- **Release Name:** Smart Packing Checklist Generator Beta
-- **Release Tag:** `{{BETA_RELEASE_TAG}}`
-  _Suggested format: `beta-v0.1`_
-- **Release Date:** `{{RELEASE_DATE}}`
-- **GitHub Release Page:** `{{GITHUB_RELEASE_LINK}}`
-
-> Note: The final tag and release link will be added once all approved corrections are merged to `main` and the Beta release is cut.
+- **Release Name:** `Smart Packing Checklist Generator Beta`
+- **Release Tag:** `beta-v0.1`
+- **Release Date:** `April 6, 2026`
+- **GitHub Release Page:** `https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/releases/tag/beta-v0.1`
 
 ---
 
@@ -28,12 +25,15 @@ This Beta release marks the transition from initial feature implementation (Week
 ### Trip creation and checklist generation
 - Users can enter trip details and generate packing checklists
 - Checklist generation is based on destination type and duration
+- Generate Checklist button is gated by required-field validation
 
 ### Trip saving, loading, and updating
 - Trips can be saved to persistent storage (SQLite via Knex)
 - Saved trips can be loaded back into the form
 - Trip data persists across sessions
 - Existing trips can be updated and resaved
+- Form resets automatically after creating a new trip
+- Edit mode is supported for loaded trips
 
 ### Packed/unpacked checklist workflow
 - Users can toggle checklist items packed/unpacked
@@ -53,7 +53,7 @@ This Beta release marks the transition from initial feature implementation (Week
 ### Automated testing and CI
 - Unit tests for checklist generation
 - API/integration tests for validation, authentication, and CRUD behavior
-- Playwright E2E tests covering core user workflows
+- Playwright E2E tests covering core user workflows and failure paths
 - CI pipeline for linting, testing, and deployment validation
 
 ---
@@ -95,18 +95,24 @@ This section highlights key bug fixes, reliability improvements, and UX correcti
 - Fixed checklist loading indicator not resolving due to CSS/visibility issue (#109)
 - Simplified loading behavior for near-instant checklist generation
 
+### Developer experience improvements
+- Fixed ESLint false-positive errors for Vitest globals (#60)
+
 ---
 
 ## Known Limitations Still Present
 
 The Beta release is stable and functional, but the following known limitations remain:
 
-### Open issues
+### Open issues (7 total)
+
 - **#81:** Add input length limits for trip fields
 - **#82:** Audit XSS vulnerability in trip rendering
 - **#98:** Add Playwright tests for authentication failure handling
-- **#101:** Remaining error-handling consistency improvements
-- **#60:** ESLint/Vitest globals developer-experience cleanup
+- **#101:** Reliability and error-handling improvements
+- **#121:** Add regression test for authError redirect handling
+- **#122:** Add unit/integration test coverage for change detection
+- **#126:** Flaky edit-mode UI state after loading saved trip
 
 ---
 
@@ -118,17 +124,3 @@ This Beta release is supported by:
 - Health endpoint validation
 - CI/CD pipeline execution for build, test, and deployment
 - Unit, integration, and E2E test coverage
-
----
-
-## Final Release Metadata To Fill In Before Publishing
-
-Replace placeholders before creating the release:
-
-- `{{BETA_RELEASE_TAG}}`
-- `{{RELEASE_DATE}}`
-- `{{GITHUB_RELEASE_LINK}}`
-
-Optional additions:
-- deployed commit hash on `main`
-- CI run URL associated with the release
