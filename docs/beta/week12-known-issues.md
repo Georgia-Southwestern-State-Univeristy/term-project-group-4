@@ -13,12 +13,12 @@
 | Priority | Count | Issues |
 |----------|-------|--------|
 | **High** | 2 | XSS audit, input length validation |
-| **Medium** | 2 | Reliability hardening, auth failure tests |
+| **Medium** | 3 | Reliability hardening, auth failure tests, edit-mode UI consistency |
 | **Low** | 2 | authError redirect test, change detection testing |
 
-**Total: 6 known issues**
+**Total: 7 known issues**
 
-**Status Update (Week 12 PR #113):** The 6 remaining open issues are: #81, #82, #98, #101, #121, #122.
+**Status Update (Week 12 PR #113):** The 7 remaining open issues are: #81, #82, #98, #101, #121, #122, #126.
 
 ---
 
@@ -172,9 +172,36 @@ E2E tests are needed to verify proper handling of authentication failures and er
 
 ---
 
+### 5. **Flaky Edit-Mode UI After Loading Saved Trip**
+**GitHub Issue:** #126  
+**Severity:** Medium  
+**Status:** Open
+
+**Description:**
+Loading a saved trip can produce inconsistent UI state:
+- Editing context may not display correctly
+- Save button may remain in "Saved!" state instead of "Update Trip"
+
+**Expected Behavior:**
+- Editing context shows "Editing: <trip name>"
+- Save button shows "Update Trip"
+- Button state reflects change detection
+
+**Affected Area:**
+- src/tripForm.js
+- src/main.js
+- tests/e2e/primary-workflow.spec.js
+
+**Impact if Not Fixed:**
+- Confusing edit behavior
+- Inconsistent UI state
+- Potential regression risk in save/update flow
+
+---
+
 ## Low Priority Issues (Acceptable to Defer Post-Beta)
 
-### 5. **Add Playwright Regression Test for authError Redirect Handling**
+### 6. **Add Playwright Regression Test for authError Redirect Handling**
 **GitHub Issue:** [#121](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/121)  
 **Severity:** Low  
 **Status:** Open
@@ -207,7 +234,7 @@ Playwright regression test is needed to specifically validate that when authenti
 
 ---
 
-### 6. **Add Unit/Integration Test Around Change Detection**
+### 7. **Add Unit/Integration Test Around Change Detection**
 **GitHub Issue:** [#122](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/122)  
 **Severity:** Low  
 **Status:** Open
