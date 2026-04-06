@@ -18,7 +18,7 @@
 
 **Total: 6 known issues**
 
-**Status Update (Week 12 PR #113):** 6 issues remain open. Issues #109 (Spinner/Toast), #69, #60, #61, #63 are resolved or in PR review. The 6 remaining open issues are: #81, #82, #98, #101, #121, #122.
+**Status Update (Week 12 PR #113):** The 6 remaining open issues are: #81, #82, #98, #101, #121, #122.
 
 ---
 
