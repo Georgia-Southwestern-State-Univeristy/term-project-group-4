@@ -4,6 +4,31 @@ import { showToast } from './toast.js';
 
 let currentUser = null;
 
+function getAuthErrorMessage(errorCode) {
+  switch (errorCode) {
+    case 'google_login_failed':
+      return 'Google login failed. Please try again.';
+    default:
+      return 'Login failed. Please try again.';
+  }
+}
+
+function handleAuthErrorFromQuery() {
+  const url = new URL(window.location.href);
+  const authError = url.searchParams.get('authError');
+
+  if (!authError) {
+    return;
+  }
+
+  const message = getAuthErrorMessage(authError);
+  showToast(message, 'error');
+
+  // Clean up the URL so refresh/back navigation does not keep replaying the error.
+  url.searchParams.delete('authError');
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 async function checkAuthStatus() {
   try {
     const response = await fetch('/auth/user');
@@ -89,10 +114,23 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
 
     const loadBtn = document.createElement('button');
     loadBtn.textContent = 'Load';
-    loadBtn.addEventListener('click', () => loadTrip(trip));
+    loadBtn.type = 'button';
+    loadBtn.addEventListener('click', () => {
+      const editingContext = document.getElementById('editing-context');
+      const saveTripBtn = document.getElementById('save-trip-btn');
+      if (editingContext) {
+        editingContext.textContent = `Editing: ${trip.name}`;
+        editingContext.hidden = false;
+      }
+      loadTrip(trip);
+      if (saveTripBtn) {
+        saveTripBtn.textContent = 'Update Trip';
+      }
+    });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
+    deleteBtn.type = 'button';
     deleteBtn.className = 'delete-btn';
     deleteBtn.addEventListener('click', () => {
       const confirmed = window.confirm(`Delete trip "${trip.name}"? This cannot be undone.`);
@@ -113,6 +151,8 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
 }
 
 async function init() {
+  handleAuthErrorFromQuery();
+  
   const isAuthenticated = await checkAuthStatus();
 
   if (!isAuthenticated) {
