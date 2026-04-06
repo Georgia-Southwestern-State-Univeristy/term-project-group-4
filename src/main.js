@@ -114,10 +114,23 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
 
     const loadBtn = document.createElement('button');
     loadBtn.textContent = 'Load';
-    loadBtn.addEventListener('click', () => loadTrip(trip));
+    loadBtn.type = 'button';
+    loadBtn.addEventListener('click', () => {
+      const editingContext = document.getElementById('editing-context');
+      const saveTripBtn = document.getElementById('save-trip-btn');
+      if (editingContext) {
+        editingContext.textContent = `Editing: ${trip.name}`;
+        editingContext.hidden = false;
+      }
+      loadTrip(trip);
+      if (saveTripBtn) {
+        saveTripBtn.textContent = 'Update Trip';
+      }
+    });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
+    deleteBtn.type = 'button';
     deleteBtn.className = 'delete-btn';
     deleteBtn.addEventListener('click', () => {
       const confirmed = window.confirm(`Delete trip "${trip.name}"? This cannot be undone.`);
