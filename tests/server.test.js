@@ -52,8 +52,13 @@ describe('Authentication enforcement', () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
     expect(res.body.environment).toBe('test');
+    expect(typeof res.body.requestId).toBe('string');
+    expect(res.body.requestId.length).toBeGreaterThan(0);
+    expect(typeof res.body.uptimeSeconds).toBe('number');
+    expect(res.body.config.valid).toBe(true);
     expect(res.body.database.path).toBe(':memory:');
     expect(res.body.database.writable).toBe(true);
+    expect(res.headers['x-request-id']).toBe(res.body.requestId);
   });
 
   it('returns 401 when GET /api/trips is called without auth', async () => {
@@ -69,6 +74,31 @@ describe('Authentication enforcement', () => {
       checklist: [],
     });
     expect(res.status).toBe(401);
+    expect(typeof res.headers['x-request-id']).toBe('string');
+  });
+});
+
+describe('Observability behavior', () => {
+  it('reuses caller-provided x-request-id for correlation', async () => {
+    const requestId = 'obs-test-request-id-123';
+
+    const res = await request(app)
+      .get('/health')
+      .set('x-request-id', requestId);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['x-request-id']).toBe(requestId);
+    expect(res.body.requestId).toBe(requestId);
+  });
+
+  it('returns requestId in not-found responses', async () => {
+    const res = await request(app).get('/route-that-does-not-exist');
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Not found');
+    expect(typeof res.body.requestId).toBe('string');
+    expect(res.body.requestId.length).toBeGreaterThan(0);
+    expect(res.headers['x-request-id']).toBe(res.body.requestId);
   });
 });
 

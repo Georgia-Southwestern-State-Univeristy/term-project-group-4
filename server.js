@@ -14,7 +14,7 @@ import {
 import { requireAuth, resolveAuthenticatedUser, isTestModeRequest } from './server/auth.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-import { log } from './server/logger.js';
+import { log, logger } from './server/logger.js';
 import { v4 as uuidv4 } from 'uuid';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -31,8 +31,46 @@ const PORT = process.env.PORT || 3000;
 const isTest = process.env.NODE_ENV === 'test';
 const isProduction = process.env.NODE_ENV === 'production';
 const distDir = path.resolve(process.cwd(), 'dist');
+const appVersion = process.env.npm_package_version || 'unknown';
 const __filename = fileURLToPath(import.meta.url);
 const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+
+function resolveRequestId(req) {
+  if (req.requestId) return req.requestId;
+
+  const headerRequestId = req.headers['x-request-id'];
+  if (typeof headerRequestId === 'string' && headerRequestId.trim()) {
+    return headerRequestId.trim();
+  }
+
+  return uuidv4();
+}
+
+function getMissingStartupConfigKeys() {
+  const missing = [];
+
+  if (!isTest) {
+    if (!process.env.GOOGLE_CLIENT_ID) missing.push('GOOGLE_CLIENT_ID');
+    if (!process.env.GOOGLE_CLIENT_SECRET) missing.push('GOOGLE_CLIENT_SECRET');
+  }
+
+  if (isProduction) {
+    if (!process.env.SESSION_SECRET) missing.push('SESSION_SECRET');
+    if (!process.env.SQLITE_PATH) missing.push('SQLITE_PATH');
+  }
+
+  return missing;
+}
+
+function validateStartupConfig() {
+  const missingKeys = getMissingStartupConfigKeys();
+  if (missingKeys.length === 0) return;
+
+  throw new Error(
+    `Missing required configuration: ${missingKeys.join(', ')}. ` +
+      'Update your environment variables before starting the server.',
+  );
+}
 
 function getConfiguredDbPath() {
   if (isTest) return ':memory:';
@@ -168,13 +206,44 @@ if (!isTest) {
 
 app.use(express.json());
 
+// Correlate request/response logs and surface request IDs to clients for support debugging.
+app.use((req, res, next) => {
+  const requestId = resolveRequestId(req);
+  req.requestId = requestId;
+  res.setHeader('x-request-id', requestId);
+
+  const startedAt = process.hrtime.bigint();
+  res.on('finish', () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    logger.info({
+      timestamp: new Date().toISOString(),
+      requestId,
+      action: 'HTTP_REQUEST',
+      status: 'COMPLETE',
+      details: {
+        method: req.method,
+        path: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: Number(durationMs.toFixed(2)),
+        userId: req.user?.id || null,
+      },
+    });
+  });
+
+  next();
+});
+
 app.get('/health', (req, res) => {
   const dbStatus = getDbPathStatus();
   const statusCode = dbStatus.writable ? 200 : 503;
+  const missingConfig = getMissingStartupConfigKeys();
 
   const baseResponse = {
     status: dbStatus.writable ? 'ok' : 'degraded',
     environment: process.env.NODE_ENV || 'development',
+    version: appVersion,
+    requestId: resolveRequestId(req),
+    uptimeSeconds: Math.floor(process.uptime()),
   };
 
   // In production, avoid exposing internal filesystem paths or low-level errors.
@@ -184,11 +253,18 @@ app.get('/health', (req, res) => {
         database: {
           writable: dbStatus.writable,
         },
+        config: {
+          valid: missingConfig.length === 0,
+        },
       }
     : {
         ...baseResponse,
         // In non-production, include full database status for easier debugging.
         database: dbStatus,
+        config: {
+          valid: missingConfig.length === 0,
+          missing: missingConfig,
+        },
       };
 
   res.status(statusCode).json(responseBody);
@@ -235,6 +311,7 @@ app.get('/auth/logout', (req, res, next) => {
 });
 
 app.get('/auth/user', async (req, res) => {
+  const requestId = resolveRequestId(req);
   try {
     const user = await resolveAuthenticatedUser(req);
 
@@ -245,14 +322,18 @@ app.get('/auth/user', async (req, res) => {
 
     return res.status(401).json({ error: 'Not authenticated' });
   } catch (error) {
-    console.error('Error in /auth/user:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    await log(requestId, 'AUTH_USER', 'ERROR', {
+      reason: error.message,
+      errorType: error.constructor?.name,
+      stack: error.stack?.split('\n').slice(0, 3),
+    });
+    return res.status(500).json({ error: 'Internal server error', requestId });
   }
 });
 
 // GET /api/trips - List all trips
 app.get('/api/trips', requireAuth, async (req, res) => {
-  const requestId = req.headers['x-request-id'] || uuidv4();
+  const requestId = resolveRequestId(req);
   try {
     await log(requestId, 'GET_TRIPS', 'START');
     const trips = await getAllTrips(req.user.id);
@@ -270,7 +351,7 @@ app.get('/api/trips', requireAuth, async (req, res) => {
 
 // GET /api/trips/:tripId - Get a single trip by ID
 app.get('/api/trips/:tripId', requireAuth, async (req, res) => {
-  const requestId = req.headers['x-request-id'] || uuidv4();
+  const requestId = resolveRequestId(req);
   const { tripId } = req.params;
 
   try {
@@ -305,7 +386,7 @@ app.get('/api/trips/:tripId', requireAuth, async (req, res) => {
 
 // POST /api/saveTrip - Create new trip with checklist
 app.post('/api/saveTrip', requireAuth, async (req, res) => {
-  const requestId = req.headers['x-request-id'] || uuidv4();
+  const requestId = resolveRequestId(req);
 
   try {
     const { name, destinationType, duration, checklist } = req.body;
@@ -403,7 +484,7 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
 
 // PUT /api/trips/:tripId - Update trip with checklist
 app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
-  const requestId = req.headers['x-request-id'] || uuidv4();
+  const requestId = resolveRequestId(req);
   const { tripId } = req.params;
 
   try {
@@ -499,13 +580,23 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
 
 // DELETE /api/trips/:tripId - Delete a trip
 app.delete('/api/trips/:tripId', requireAuth, async (req, res) => {
+  const requestId = resolveRequestId(req);
   try {
     await deleteTrip(req.params.tripId, req.user.id);
     res.status(204).end();
   } catch (error) {
     if (error.code === 'TRIP_NOT_FOUND') {
+      await log(requestId, 'DELETE_TRIP', 'NOT_FOUND', {
+        tripId: req.params.tripId,
+      });
       return res.status(404).json({ error: 'Trip not found' });
     }
+    await log(requestId, 'DELETE_TRIP', 'ERROR', {
+      tripId: req.params.tripId,
+      reason: error.message,
+      errorType: error.constructor?.name,
+      stack: error.stack?.split('\n').slice(0, 3),
+    });
     res.status(500).json({ error: 'Failed to delete trip' });
   }
 });
@@ -525,10 +616,36 @@ if (isProduction) {
   });
 }
 
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found', requestId: resolveRequestId(req) });
+});
+
+app.use(async (error, req, res, next) => {
+  const requestId = resolveRequestId(req);
+  await log(requestId, 'UNHANDLED_ERROR', 'ERROR', {
+    method: req.method,
+    path: req.originalUrl,
+    reason: error.message,
+    errorType: error.constructor?.name,
+    stack: error.stack?.split('\n').slice(0, 3),
+  });
+
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  return res.status(500).json({
+    error: 'Internal server error',
+    requestId,
+  });
+});
+
 // Export app for testing
 export { app };
 
 if (isDirectRun) {
+  validateStartupConfig();
+
   if (isProduction) {
     ensureProductionStorageReady();
   }
@@ -536,15 +653,24 @@ if (isDirectRun) {
   await migrateLatest();
 
   app.listen(PORT, () => {
-    console.log(`Trip Manager API running on http://localhost:${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`SQLite path: ${getConfiguredDbPath()}`);
-    console.log('Endpoints:');
-    console.log('  GET    /health');
-    console.log('  GET    /api/trips');
-    console.log('  GET    /api/trips/{tripId}');
-    console.log('  POST   /api/saveTrip');
-    console.log('  PUT    /api/trips/{tripId}');
-    console.log('  DELETE /api/trips/{tripId}');
+    logger.info({
+      timestamp: new Date().toISOString(),
+      action: 'SERVER_START',
+      status: 'SUCCESS',
+      details: {
+        url: `http://localhost:${PORT}`,
+        environment: process.env.NODE_ENV || 'development',
+        sqlitePath: getConfiguredDbPath(),
+        version: appVersion,
+        endpoints: [
+          'GET /health',
+          'GET /api/trips',
+          'GET /api/trips/{tripId}',
+          'POST /api/saveTrip',
+          'PUT /api/trips/{tripId}',
+          'DELETE /api/trips/{tripId}',
+        ],
+      },
+    });
   });
 }
