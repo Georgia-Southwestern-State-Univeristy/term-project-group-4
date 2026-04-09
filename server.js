@@ -35,31 +35,54 @@ const appVersion = process.env.npm_package_version || 'unknown';
 const __filename = fileURLToPath(import.meta.url);
 const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
 
+const MAX_REQUEST_ID_LENGTH = 128;
+const REQUEST_ID_HEADER_VALUE_PATTERN = /^[A-Za-z0-9._-]+$/;
+
+function isMissingConfigValue(key) {
+  const value = process.env[key];
+  return typeof value !== 'string' || value.trim() === '';
+}
+
+function getRequiredStartupConfigKeys() {
+  const required = [];
+
+  if (!isTest) {
+    required.push('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET');
+  }
+
+  if (isProduction) {
+    required.push('SESSION_SECRET', 'SQLITE_PATH');
+  }
+
+  return required;
+}
+
+function getSafeRequestId(value) {
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > MAX_REQUEST_ID_LENGTH ||
+    !REQUEST_ID_HEADER_VALUE_PATTERN.test(value)
+  ) {
+    return uuidv4();
+  }
+
+  return value;
+}
+
 function resolveRequestId(req) {
   if (req.requestId) return req.requestId;
 
   const headerRequestId = req.headers['x-request-id'];
-  if (typeof headerRequestId === 'string' && headerRequestId.trim()) {
-    return headerRequestId.trim();
+  if (typeof headerRequestId === 'string') {
+    return getSafeRequestId(headerRequestId.trim());
   }
 
   return uuidv4();
 }
 
 function getMissingStartupConfigKeys() {
-  const missing = [];
-
-  if (!isTest) {
-    if (!process.env.GOOGLE_CLIENT_ID) missing.push('GOOGLE_CLIENT_ID');
-    if (!process.env.GOOGLE_CLIENT_SECRET) missing.push('GOOGLE_CLIENT_SECRET');
-  }
-
-  if (isProduction) {
-    if (!process.env.SESSION_SECRET) missing.push('SESSION_SECRET');
-    if (!process.env.SQLITE_PATH) missing.push('SQLITE_PATH');
-  }
-
-  return missing;
+  return getRequiredStartupConfigKeys().filter((key) => isMissingConfigValue(key));
 }
 
 function validateStartupConfig() {
@@ -222,7 +245,7 @@ app.use((req, res, next) => {
       status: 'COMPLETE',
       details: {
         method: req.method,
-        path: req.originalUrl,
+        path: req.path,
         statusCode: res.statusCode,
         durationMs: Number(durationMs.toFixed(2)),
         userId: req.user?.id || null,
@@ -624,7 +647,7 @@ app.use(async (error, req, res, next) => {
   const requestId = resolveRequestId(req);
   await log(requestId, 'UNHANDLED_ERROR', 'ERROR', {
     method: req.method,
-    path: req.originalUrl,
+    path: req.path,
     reason: error.message,
     errorType: error.constructor?.name,
     stack: error.stack?.split('\n').slice(0, 3),

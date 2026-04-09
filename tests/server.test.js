@@ -91,6 +91,20 @@ describe('Observability behavior', () => {
     expect(res.body.requestId).toBe(requestId);
   });
 
+  it('sanitizes invalid x-request-id values before echoing response headers', async () => {
+    const invalidRequestId = 'x'.repeat(200);
+
+    const res = await request(app)
+      .get('/health')
+      .set('x-request-id', invalidRequestId);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['x-request-id']).not.toBe(invalidRequestId);
+    expect(res.headers['x-request-id']).toBe(res.body.requestId);
+    expect(res.headers['x-request-id'].length).toBeLessThanOrEqual(128);
+    expect(res.headers['x-request-id']).toMatch(/^[A-Za-z0-9._-]+$/);
+  });
+
   it('returns requestId in not-found responses', async () => {
     const res = await request(app).get('/route-that-does-not-exist');
 
