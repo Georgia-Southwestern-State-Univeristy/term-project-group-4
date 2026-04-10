@@ -174,7 +174,8 @@ Four critical regression tests have been added to strengthen trust in the system
 
 ## Test Results
 
-### Latest CI Run
+### CI Run with passing tests
+[PR #135] (https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/135)
 
 
 
