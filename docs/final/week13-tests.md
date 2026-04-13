@@ -11,7 +11,7 @@ Four critical regression tests have been added to strengthen trust in the system
 ### Total New Tests Added: 3 and 1 improved existing regression test
 - **Issue #98:** [tests/e2e/auth-error.spec.js](tests/e2e/auth-error.spec.js#L5) - Auth failure error feedback
 - **Issue #121:** [tests/e2e/auth-error.spec.js](tests/e2e/auth-error.spec.js#L33) - Auth error access control
-- **Issue #126 (PR #130):** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L219) - Edit-mode state management - impreoved test
+- **Issue #126 (PR #130):** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L219) - Edit-mode state management - improved test
 - **Issue #122:** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L314) - Change detection
 - **Type:** E2E tests (Playwright)
 
