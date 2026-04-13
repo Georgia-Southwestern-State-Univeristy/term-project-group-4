@@ -236,4 +236,60 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await page.fill('#trip-name', `${tripName} Updated`);
     await expect(saveBtn).toBeEnabled();
   });
+
+  test('Issue 122 - Update trip name', async ({ page }) => {
+    // Create and save a trip
+    const timestamp = Date.now();
+    const tripName = `Change Test - ${timestamp}`;
+
+    await page.fill('#trip-name', tripName);
+    await page.selectOption('#destination-type', 'beach');
+    await page.fill('#duration', '5');
+
+    await page.click('button:has-text("Generate Checklist")');
+    await page.waitForSelector('#checklist-container', { timeout: 5000 });
+
+    const saveBtn = page.locator('#save-trip-btn');
+    await page.waitForFunction(() => {
+      const btn = document.querySelector('#save-trip-btn');
+      return btn && !btn.disabled;
+    });
+    await saveBtn.click();
+    const successToast = page.locator('#toast-container .toast--success');
+    await expect(successToast).toBeVisible({ timeout: 5000 });
+
+    // Find and click the Load button for our trip
+    const tripItems = page.locator('#saved-trips-list li');
+    let loadBtn = null;
+
+    for (let i = 0; i < await tripItems.count(); i++) {
+      const itemText = await tripItems.nth(i).textContent();
+      if (itemText.includes(tripName)) {
+        loadBtn = tripItems.nth(i).locator('button:has-text("Load")');
+        break;
+      }
+    }
+
+    await expect(loadBtn).toBeVisible({ timeout: 5000 });
+    await loadBtn.click();
+
+    // Verify editing context appears (showing we're in edit mode)
+    const editingContext = page.locator('#editing-context');
+    await expect(editingContext).toBeVisible({ timeout: 5000 });
+
+    // Change the trip name
+    const nameInput = page.locator('#trip-name');
+    await nameInput.clear();
+    await nameInput.fill('Modified Trip Name');
+
+    // Verify Update button is visible and click it
+    const updateBtn = page.locator('#save-trip-btn');
+    const buttonText = await updateBtn.textContent();
+    expect(buttonText).toContain('Update');
+
+    await updateBtn.click();
+
+    // Verify update succeeded with success toast
+    await expect(successToast).toBeVisible({ timeout: 5000 });
+  });
 });
