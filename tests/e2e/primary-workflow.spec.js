@@ -236,4 +236,62 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await page.fill('#trip-name', `${tripName} Updated`);
     await expect(saveBtn).toBeEnabled();
   });
+
+  test('Issue 122 - change detection', async ({ page }) => {
+    // Create and save a trip
+    const timestamp = Date.now();
+    const tripName = `Change Test - ${timestamp}`;
+
+    await page.fill('#trip-name', tripName);
+    await page.selectOption('#destination-type', 'beach');
+    await page.fill('#duration', '5');
+
+    await page.click('button:has-text("Generate Checklist")');
+    await page.waitForSelector('#checklist-container', { timeout: 5000 });
+
+    const saveBtn = page.locator('#save-trip-btn');
+    await page.waitForFunction(() => {
+      const btn = document.querySelector('#save-trip-btn');
+      return btn && !btn.disabled;
+    });
+    await saveBtn.click();
+    const successToast = page.locator('#toast-container .toast--success');
+    await expect(successToast).toBeVisible({ timeout: 5000 });
+
+    // Find and click the Load button for our trip
+    const tripItems = page.locator('#saved-trips-list li');
+    let loadBtn = null;
+
+    for (let i = 0; i < await tripItems.count(); i++) {
+      const itemText = await tripItems.nth(i).textContent();
+      if (itemText.includes(tripName)) {
+        loadBtn = tripItems.nth(i).locator('button:has-text("Load")');
+        break;
+      }
+    }
+
+    await expect(loadBtn).toBeVisible({ timeout: 5000 });
+    await loadBtn.click();
+
+    // Verify Update button is disabled immediately after loading a trip
+    const updateBtn = page.locator('#save-trip-btn');
+    await expect(updateBtn).toHaveText('Update Trip');
+    await expect(updateBtn).toBeDisabled();
+
+    // Change the trip name
+    const nameInput = page.locator('#trip-name');
+    const updatedName = `${tripName} Updated`;
+    await nameInput.clear();
+    await nameInput.fill(updatedName);
+
+    // Verify Update button becomes enabled after the field is changed
+    await expect(updateBtn).toBeEnabled();
+
+    // Revert the field back to original value
+    await nameInput.clear();
+    await nameInput.fill(tripName);
+
+    // Verify Update button becomes disabled again when field is reverted to original value
+    await expect(updateBtn).toBeDisabled();
+  });
 });
