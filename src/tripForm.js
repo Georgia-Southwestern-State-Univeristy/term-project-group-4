@@ -40,6 +40,22 @@ export function initTripForm({ onTripSaved } = {}) {
     generateChecklistBtn.textContent = isGeneratingChecklist ? 'Generating...' : 'Generate Checklist';
   }
 
+  function setSaveButtonForNewTrip() {
+    saveTripBtn.textContent = 'Save Trip';
+    saveTripBtn.disabled = true;
+  }
+
+  function setSaveButtonForEditing() {
+    saveTripBtn.textContent = 'Update Trip';
+    saveTripBtn.disabled = !hasChanges;
+  }
+
+  function hideEditingContext() {
+    if (!editingContext) return;
+    editingContext.textContent = '';
+    editingContext.hidden = true;
+  }
+
   function showEditingContext(tripName) {
     if (!editingContext) return;
     editingContext.textContent = `Editing: ${tripName}`;
@@ -56,6 +72,16 @@ export function initTripForm({ onTripSaved } = {}) {
       duration: form.elements['duration'].value || '',
       checklist: currentChecklist ? JSON.stringify(currentChecklist) : '',
     };
+  }
+
+  /**
+   * Update button disabled state based on whether there are changes
+   */
+  function updateButtonState() {
+    if (isEditingExistingTrip) {
+      saveTripBtn.disabled = !hasChanges;
+      return;
+    }
   }
 
   /**
@@ -76,15 +102,6 @@ export function initTripForm({ onTripSaved } = {}) {
     hasChanges = changed;
     updateButtonState();
     return changed;
-  }
-
-  /**
-   * Update button disabled state based on whether there are changes
-   */
-  function updateButtonState() {
-    if (isEditingExistingTrip) {
-      saveTripBtn.disabled = !hasChanges;
-    }
   }
 
   function debounce(fn, delay) {
@@ -115,23 +132,52 @@ export function initTripForm({ onTripSaved } = {}) {
     }, 400);
   }
 
-  function resetFormAfterCreateSave() {
+  function enterEditMode(trip) {
+    savedTripId = trip.id;
+    isEditingExistingTrip = true;
+    currentChecklist = structuredClone(trip.checklist || []);
+
+    form.elements['name'].value = trip.name || '';
+    form.elements['destinationType'].value = trip.destinationType || '';
+    form.elements['duration'].value = trip.duration || '';
+
+    checklistSection.hidden = currentChecklist.length === 0;
+
+    if (currentChecklist.length > 0) {
+      renderChecklist(currentChecklist);
+    } else if (checklistContainer) {
+      checklistContainer.innerHTML = '';
+    }
+
+    showEditingContext(trip.name);
+
+    originalFormState = captureFormState();
+    hasChanges = false;
+
+    setSaveButtonForEditing();
+    updateGenerateButtonState();
+  }
+
+  function exitEditModeAndResetForm() {
     form.reset();
     checklistSection.hidden = true;
+
     if (checklistContainer) checklistContainer.innerHTML = '';
     if (progressText) progressText.textContent = '';
 
+    currentChecklist = null;
+    savedTripId = null;
     isEditingExistingTrip = false;
     originalFormState = null;
     hasChanges = false;
-    currentChecklist = null;
-    savedTripId = null;
-    if (editingContext) {
-      editingContext.textContent = '';
-      editingContext.hidden = true;
-    }
-    saveTripBtn.disabled = true;
-    saveTripBtn.textContent = 'Save Trip';
+
+    hideEditingContext();
+    setSaveButtonForNewTrip();
+    updateGenerateButtonState();
+  }
+
+  function resetFormAfterCreateSave() {
+    exitEditModeAndResetForm();
   }
 
   const autoSaveChecklist = debounce(async (checklist) => {
@@ -139,8 +185,9 @@ export function initTripForm({ onTripSaved } = {}) {
 
     try {
       await updateTripOnServer(savedTripId, { checklist });
-      showToast('Checklist saved.', 'success');
+      // Silent auto-save - no success toast to avoid notification spam
     } catch (err) {
+      // Show error toasts immediately as they need user attention
       showToast(`Failed to sync checklist: ${err.message}`, 'error');
       console.error('Failed to sync checklist:', err);
     }
@@ -151,7 +198,6 @@ export function initTripForm({ onTripSaved } = {}) {
     if (savedTripId) {
       autoSaveChecklist(checklist);
     }
-    // Check for changes whenever checklist is modified
     checkForChanges();
   });
 
@@ -160,32 +206,7 @@ export function initTripForm({ onTripSaved } = {}) {
    * @param {{ id: string, name: string, destinationType: string, duration: number, checklist: Array }} trip
    */
   function loadTrip(trip) {
-    form.elements['name'].value = trip.name || '';
-    form.elements['destinationType'].value = trip.destinationType || '';
-    form.elements['duration'].value = trip.duration || '';
-
-    savedTripId = trip.id;
-    isEditingExistingTrip = true;
-    currentChecklist = trip.checklist || [];
-
-    // Capture the initial state for change detection
-    originalFormState = captureFormState();
-    hasChanges = false;
-
-    showEditingContext(trip.name);
-
-    if (currentChecklist.length > 0) {
-      checklistSection.hidden = false;
-      renderChecklist(currentChecklist);
-      updateButtonState();
-    } else {
-      checklistSection.hidden = true;
-      saveTripBtn.disabled = true;
-    }
-
-    saveTripBtn.textContent = 'Update Trip';
-    updateButtonState();
-    updateGenerateButtonState();
+    enterEditMode(trip);
   }
 
   ['input', 'change'].forEach((eventName) => {
@@ -213,8 +234,6 @@ export function initTripForm({ onTripSaved } = {}) {
       flashChecklistUpdated();
 
       if (isEditingExistingTrip) {
-        saveTripBtn.textContent = 'Update Trip';
-        // Let checkForChanges() detect if the checklist actually changed
         checkForChanges();
       } else {
         saveTripBtn.textContent = 'Save Trip';
@@ -229,6 +248,8 @@ export function initTripForm({ onTripSaved } = {}) {
   form.addEventListener('input', checkForChanges);
 
   updateGenerateButtonState();
+  setSaveButtonForNewTrip();
+  hideEditingContext();
 
   saveTripBtn.addEventListener('click', async () => {
     const formData = new FormData(form);
@@ -246,12 +267,11 @@ export function initTripForm({ onTripSaved } = {}) {
     try {
       if (savedTripId) {
         await updateTripOnServer(savedTripId, tripData);
-        saveTripBtn.textContent = 'Trip Updated ✓';
         showToast('Trip updated successfully.', 'success');
-        // Reset change tracking after successful update
+
         originalFormState = captureFormState();
         hasChanges = false;
-        updateButtonState();
+        setSaveButtonForEditing();
       } else {
         const saved = await saveTripToServer(tripData);
         const savedId = saved.id;
