@@ -8,10 +8,10 @@ Four critical regression tests have been added to strengthen trust in the system
 
 ## Test Inventory: Week 13 Additions
 
-### Total New Tests Added: 4
+### Total New Tests Added: 3 and 1 improved existing regression test
 - **Issue #98:** [tests/e2e/auth-error.spec.js](tests/e2e/auth-error.spec.js#L5) - Auth failure error feedback
 - **Issue #121:** [tests/e2e/auth-error.spec.js](tests/e2e/auth-error.spec.js#L33) - Auth error access control
-- **Issue #126 (PR #130):** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L219) - Edit-mode state management
+- **Issue #126 (PR #130):** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L219) - Edit-mode state management - impreoved test
 - **Issue #122:** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L314) - Change detection
 - **Type:** E2E tests (Playwright)
 
@@ -114,7 +114,7 @@ Four critical regression tests have been added to strengthen trust in the system
 
 ### 4. Issue #122: Change Detection Tests - Form State Tracking
 
-**Test Name:** `Update trip name`
+**Test Name:** `Issue 122 - change detection`
 
 **File:** [tests/e2e/primary-workflow.spec.js](tests/e2e/primary-workflow.spec.js#L314)
 
@@ -134,8 +134,8 @@ Four critical regression tests have been added to strengthen trust in the system
 4. Load the saved trip (verifies data population)
 5. Modify trip name
 6. Verify Update button appears (change detection working)
-7. Click Update button
-8. Verify update succeeds with success toast
+7. Reset the trip name to Original
+8. Verify update button is disabled.
 
 **Recent Fix It Protects:**
 - **Issue:** Change detection gaps could cause data loss when editing trips

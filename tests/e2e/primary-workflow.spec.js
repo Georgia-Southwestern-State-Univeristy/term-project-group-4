@@ -237,7 +237,7 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await expect(saveBtn).toBeEnabled();
   });
 
-  test('Issue 122 - Update trip name', async ({ page }) => {
+  test('Issue 122 - change detection', async ({ page }) => {
     // Create and save a trip
     const timestamp = Date.now();
     const tripName = `Change Test - ${timestamp}`;
@@ -273,23 +273,25 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
     await expect(loadBtn).toBeVisible({ timeout: 5000 });
     await loadBtn.click();
 
-    // Verify editing context appears (showing we're in edit mode)
-    const editingContext = page.locator('#editing-context');
-    await expect(editingContext).toBeVisible({ timeout: 5000 });
+    // Verify Update button is disabled immediately after loading a trip
+    const updateBtn = page.locator('#save-trip-btn');
+    await expect(updateBtn).toHaveText('Update Trip');
+    await expect(updateBtn).toBeDisabled();
 
     // Change the trip name
     const nameInput = page.locator('#trip-name');
+    const updatedName = `${tripName} Updated`;
     await nameInput.clear();
-    await nameInput.fill('Modified Trip Name');
+    await nameInput.fill(updatedName);
 
-    // Verify Update button is visible and click it
-    const updateBtn = page.locator('#save-trip-btn');
-    const buttonText = await updateBtn.textContent();
-    expect(buttonText).toContain('Update');
+    // Verify Update button becomes enabled after the field is changed
+    await expect(updateBtn).toBeEnabled();
 
-    await updateBtn.click();
+    // Revert the field back to original value
+    await nameInput.clear();
+    await nameInput.fill(tripName);
 
-    // Verify update succeeded with success toast
-    await expect(successToast).toBeVisible({ timeout: 5000 });
+    // Verify Update button becomes disabled again when field is reverted to original value
+    await expect(updateBtn).toBeDisabled();
   });
 });
