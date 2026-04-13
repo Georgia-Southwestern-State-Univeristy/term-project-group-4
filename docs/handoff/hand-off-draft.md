@@ -11,24 +11,32 @@ The Smart Packing Checklist Generator is a full-stack web application that allow
 
 ### Core Features
 
-- Google OAuth authentication (user-scoped data)  
+- Google OAuth authentication (user-scoped data)
 - Create trips with:
-  - trip name  
-  - destination type  
-  - duration  
-- Generate packing checklists dynamically based on trip inputs  
-- Save, load, update, and delete trips  
-- Track packed/unpacked checklist items  
-- Auto-save checklist changes for saved trips  
+  - trip name
+  - destination type
+  - duration
+- Generate packing checklists dynamically based on trip inputs
+- Save, load, update, and delete trips
+- Track packed/unpacked checklist items
+- Auto-save checklist changes for saved trips
+- Search/filter saved trips
+- Edit existing trips with change detection and controlled update flow
+
+---
 
 ### Current State
 
-The system is in a post-Beta stage, with full end-to-end functionality implemented and deployed. Current work is focused on:
+The system is in a post-Beta, pre-final state, with all core functionality implemented, deployed, and supported by automated testing.
 
-- maintainability  
-- technical debt reduction  
-- improved observability  
-- regression protection  
+Week 13 focused on improving:
+
+- maintainability (refactoring brittle UI logic)
+- observability (request correlation, structured logging, health diagnostics)
+- regression protection (Playwright + backend test coverage)
+- support readiness (error visibility and diagnostics)
+
+The system is now functionally stable, with improvements focused on clarity, reliability, and maintainability rather than feature expansion.
 
 ---
 
@@ -36,40 +44,71 @@ The system is in a post-Beta stage, with full end-to-end functionality implement
 
 ### Frontend
 
-- Vite  
-- Vanilla JavaScript (ES Modules)  
-- No framework (intentionally lightweight)  
-- DOM-driven UI with modular JS files  
+- Vite
+- Vanilla JavaScript (ES Modules)
+- No framework (intentionally lightweight)
+- DOM-driven UI with modular JS files
+
+---
 
 ### Backend
 
-- Node.js  
-- Express.js  
-- REST-style API  
+- Node.js
+- Express.js
+- REST-style API
+
+---
 
 ### Database
 
-- SQLite  
-- Knex.js for query building and migrations  
+- SQLite
+- Knex.js for query building and migrations
+
+---
 
 ### Authentication
 
-- Google OAuth (Passport.js)  
-- Session-based authentication using cookies (connect.sid)  
+- Google OAuth (Passport.js)
+- Session-based authentication using cookies (connect.sid)
+
+---
 
 ### Testing
 
-- Vitest  
-  - Unit and integration tests  
+- Vitest
+  - Unit and integration tests (backend + logic)
 
-- Playwright  
-  - End-to-end (E2E) testing  
-  - Uses test-mode auth via x-test-user-id header  
+- Playwright
+  - End-to-end (E2E) testing
+  - Uses test-mode auth via x-test-user-id header
+
+Covers:
+
+- auth error handling 
+- edit-mode UI behavior
+- change detection
+- core workflows
+
+---
+
+### Observability (Week 13 Additions)
+
+- Request correlation via x-request-id
+- Structured JSON logging (Winston)
+- /health endpoint with diagnostics:
+  - uptime
+  - config validity
+  - version
+- Centralized 404 and error handling with request IDs
+- Startup configuration validation (fail-fast for missing environment variables)
+
+---
 
 ### Deployment
 
-- AWS Elastic Beanstalk  
-- Environment-based configuration  
+- AWS Elastic Beanstalk (single-instance deployment)
+- SQLite database persisted via EBS volume
+- CI/CD via GitHub Actions
 
 ---
 
@@ -77,9 +116,9 @@ The system is in a post-Beta stage, with full end-to-end functionality implement
 
 ### Prerequisites
 
-- Node.js (LTS recommended)  
-- npm  
-- SQLite (local file-based, no external install required)  
+- Node.js (LTS recommended)
+- npm
+- SQLite (local file-based, no external install required)
 
 ---
 
@@ -87,7 +126,7 @@ The system is in a post-Beta stage, with full end-to-end functionality implement
 
 ```bash
 npm install
-```  
+```
 
 ---
 
@@ -95,23 +134,27 @@ npm install
 
 ```bash
 npm run dev
-```  
+```
 
-- Frontend served via Vite  
-- Backend runs on Express server  
-- App typically available at: http://localhost:3000  
+- Frontend served via Vite
+- Backend runs on Express server
+- App typically available at: http://localhost:3000
 
 ---
 
 ### Environment Variables
 
-Key environment variables may include:
+Key environment variables:
 
-- Google OAuth credentials  
-- session secrets  
-- database config (if modified)  
+- GOOGLE_CLIENT_ID
+- GOOGLE_CLIENT_SECRET
+- SESSION_SECRET
+- SQLITE_PATH (optional override)
 
-For local testing, authentication can be bypassed in test mode.
+In test mode:
+
+- authentication is bypassed via x-test-user-id header
+- used by Playwright and automated tests
 
 ---
 
@@ -121,18 +164,18 @@ Run all tests:
 
 ```bash
 npm test
-```  
+```
 
 Run E2E tests:
 
 ```bash
 npm run test:e2e
-```  
+```
 
 Run a specific Playwright test:
 
 ```bash
-npm exec playwright test --grep "test name"  
+npm exec playwright test --grep "test name"
 ```
 
 ---
@@ -142,137 +185,154 @@ npm exec playwright test --grep "test name"
 The following areas reflect known limitations or technical debt identified during development and Week 13 analysis.
 
 ### 1. Duplicated Backend Validation Logic
-Trip payload validation is currently duplicated across create and update routes.
 
-- Risk of inconsistent validation behavior over time
-- Makes validation harder to maintain and test
+- Trip payload validation is still duplicated across create and update routes
+- Risk of inconsistent validation behavior
+- Harder to maintain and test
 - Tracked in: #129
 
+---
+
 ### 2. Checklist Auto-Save and Change Detection Complexity
-Checklist updates trigger both auto-save behavior and change detection logic.
 
-- Checklist changes are debounced and sent to the backend automatically
-- Change detection depends on comparing serialized checklist state
-- This creates tight coupling between checklist rendering, persistence, and UI state
+Checklist behavior combines:
 
-This behavior works as intended but may be harder to reason about or extend, especially if additional checklist features are introduced.
+- UI rendering
+- debounced auto-save
+- change detection via serialized state comparison
 
-### 3. Inconsistent Error Handling and Messaging
-Error handling across the frontend and backend is not fully standardized.
+Risks:
 
-- Some errors are surfaced via UI toasts, others only logged to console
-- Lack of consistent structure for error responses
-- Tracked in: #101
+- tightly coupled logic
+- harder to extend safely
+- potential edge-case bugs with future features
 
-### 4. Gaps in Test Coverage for Edge Cases
-While core workflows are covered by E2E tests, some important scenarios lack coverage:
+---
 
-- authentication failure flows (#98)
-- OAuth error redirect handling (#121)
-- edit-mode change detection logic (#122)
+### 3. Backend Structure Centralization
 
-These gaps increase the risk of regressions in less frequently exercised paths.
+server.js currently handles:
 
-### 5. Backend Structure Could Be Further Modularized
-The backend currently centralizes multiple responsibilities in `server.js`.
+- routing
+- middleware
+- validation
+- configuration
+- observability logic
 
-- routing, validation, and configuration are not fully separated
-- this makes the file harder to evolve as complexity grows
+Risks:
 
-This has not yet caused major issues but may become a limitation as the system expands.
+- large file with mixed responsibilities
+- harder to scale or extend cleanly
+
+---
+
+### 4. Limited Backend Test Depth
+
+While test coverage exists:
+
+- strong E2E coverage
+- some backend tests for observability
+
+Remaining gaps:
+
+- deeper unit tests for business logic
+- validation edge cases
+- error path testing across all routes
+
+---
+
+### 5. Deployment Scalability Constraints
+
+Current architecture is intentionally simple:
+
+- SQLite (single-writer constraint)
+- single-instance Elastic Beanstalk deployment
+- in-memory session storage
+
+Risks:
+
+- no horizontal scaling
+- sessions lost on restart
+- potential write bottlenecks under load
 
 ---
 
 ## Recommended Next Steps for a Future Team
 
-The following recommendations are based directly on known technical debt and system limitations identified during Week 13.
-
 ### 1. Centralize Backend Validation Logic
 
-Address duplicated validation logic across create and update routes (#129).
-
-- Extract shared validation functions or middleware for trip payloads  
-- Ensure all routes use a single validation path  
-- Add unit tests specifically targeting validation behavior  
-
-This will improve consistency, reduce duplication, and make validation easier to maintain and extend.
+- Extract shared validation layer
+- Reuse across create/update routes
+- Add dedicated unit tests
 
 ---
 
-### 2. Simplify Checklist Auto-Save and Change Detection
+### 2. Simplify Checklist State Management
 
-The current checklist system tightly couples:
+Separate:
 
-- UI rendering  
-- auto-save behavior  
-- change detection logic  
+- change detection
+- persistence
+- UI rendering
 
-Future improvements should:
-
-- separate change detection from persistence logic  
-- avoid reliance on serialized checklist comparisons where possible  
-- make checklist state transitions more explicit  
-
-This will make the checklist system easier to reason about and safer to extend with new features.
+Replace serialized comparison with more explicit state tracking
 
 ---
 
-### 3. Standardize Error Handling and Improve Observability
+### 3. Modularize Backend Structure
 
-Address inconsistent error handling (#101).
+Break server.js into:
 
-- Define a consistent backend error response format  
-- Ensure frontend displays meaningful, user-friendly error messages  
-- Standardize logging across key operations (API calls, failures)  
+- routes
+- middleware
+- validation
+- config
 
-Optional improvements:
-
-- add a basic health check endpoint  
-- add startup validation for required configuration  
-
-These changes will make the system easier to debug and support.
+Do this incrementally to avoid regressions
 
 ---
 
-### 4. Expand Test Coverage for Edge Cases
+### 4. Expand Backend Test Coverage
 
-Address known gaps in automated testing:
+Add unit tests for:
 
-- add Playwright tests for authentication failure flows (#98)  
-- add regression test for OAuth error redirect handling (#121)  
-- add tests for edit-mode change detection behavior (#122)  
+- validation logic
+- storage layer
+- error handling paths
 
-Additionally:
-
-- increase backend unit test coverage for critical logic  
-- continue strengthening E2E tests for user workflows  
-
-This will improve confidence in the system and reduce regression risk.
+Keep E2E tests focused on user workflows
 
 ---
 
-### 5. Incrementally Modularize Backend Structure
+### 5. Improve Production Readiness
 
-The backend currently centralizes multiple responsibilities in `server.js`.
+- Move from SQLite to PostgreSQL for scaling
+- Add persistent session store (Redis or DB-backed)
+- Consider multi-instance deployment
 
-Recommended approach:
+---
 
-- gradually extract route logic into separate modules (e.g., `/routes/trips.js`)  
-- move validation logic into its own layer  
-- isolate middleware and configuration setup  
+### 6. Continue Observability Improvements
 
-This should be done incrementally to avoid destabilizing the system during final stages.
+- Add request tracing across services (if expanded)
+- Improve log aggregation and monitoring in production
+- Add alerting on failures
 
 ---
 
 ## Final Notes
 
-The system is functional and stable, with strong core workflows and end-to-end test coverage. Recent refactoring work (Week 13) has improved clarity and reduced brittleness in key areas, particularly in frontend state management.
+The system is functionally complete and stable, with strong improvements made in Week 13 around:
 
-Moving forward, the priority should be:
+- observability
+- reliability
+- regression protection
+- frontend state clarity
 
-- reducing technical debt in targeted areas  
-- improving consistency and maintainability  
-- strengthening regression protection and error visibility  
+At this stage, the priority is not adding features, but:
 
-With these improvements, the system will be well-positioned for continued development and maintenance by future teams.
+- reducing technical debt
+- improving maintainability
+- strengthening system reliability
+
+With continued incremental improvements, the system is well-positioned to be maintained and extended by future teams.
