@@ -9,35 +9,37 @@ jobs:
     name: Detect Changed Files
     runs-on: ubuntu-latest
     outputs:
-      docs_only: ${{ steps.filter.outputs.docs_only }}
+      code_changed: ${{ steps.filter.outputs.code_changed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Detect docs-only change set
+      - name: Detect code changes
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            docs_only:
-              - 'docs/**'
-              - '**/*.md'
-              - '!**/*.js'
-              - '!**/*.mjs'
-              - '!**/*.cjs'
-              - '!**/*.ts'
-              - '!**/*.tsx'
-              - '!**/*.jsx'
-              - '!package.json'
-              - '!package-lock.json'
-              - '!pnpm-lock.yaml'
-              - '!yarn.lock'
-              - '!vite.config.*'
-              - '!vitest.config.*'
-              - '!eslint.config.*'
-              - '!server.js'
-              - '!src/**'
-              - '!.github/workflows/**'
+            code_changed:
+              - 'src/**'
+              - 'server/**'
+              - 'server.js'
+              - '**/*.js'
+              - '**/*.mjs'
+              - '**/*.cjs'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.jsx'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'pnpm-lock.yaml'
+              - 'yarn.lock'
+              - 'vite.config.*'
+              - 'vitest.config.*'
+              - 'eslint.config.*'
+              - 'playwright.config.*'
+              - '.github/workflows/**'
+              - 'migrations/**'
+              - 'seeds/**'
 
   lint:
     name: Code Linting
@@ -45,26 +47,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Skip lint for docs-only PR
-        if: needs.changes.outputs.docs_only == 'true'
-        run: echo "Docs-only PR detected. Skipping lint run."
+        if: needs.changes.outputs.code_changed == 'false'
+        run: echo "No code changes detected. Skipping lint run."
 
       - name: Checkout code
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm ci
 
       - name: Run ESLint
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm run eslint
 
   test:
@@ -73,26 +75,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Skip tests for docs-only PR
-        if: needs.changes.outputs.docs_only == 'true'
-        run: echo "Docs-only PR detected. Skipping unit tests."
+        if: needs.changes.outputs.code_changed == 'false'
+        run: echo "No code changes detected. Skipping unit tests."
 
       - name: Checkout code
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm ci
 
       - name: Run Unit Tests
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm run test
 
   e2e-tests:
@@ -101,34 +103,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Skip E2E for docs-only PR
-        if: needs.changes.outputs.docs_only == 'true'
-        run: echo "Docs-only PR detected. Skipping E2E tests."
+        if: needs.changes.outputs.code_changed == 'false'
+        run: echo "No code changes detected. Skipping E2E tests."
 
       - name: Checkout code
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm ci
 
       - name: Install Playwright browsers
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npx playwright install --with-deps
 
       - name: Build application
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: npm run build
 
       - name: Create .env file for tests
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         run: |
           cat > .env << EOF
           NODE_ENV=test
@@ -140,7 +142,7 @@ jobs:
           EOF
 
       - name: Run E2E Tests
-        if: needs.changes.outputs.docs_only != 'true'
+        if: needs.changes.outputs.code_changed == 'true'
         env:
           NODE_ENV: test
           CI: true
@@ -151,7 +153,7 @@ jobs:
         run: npm run test:e2e
 
       - name: Upload test results
-        if: always() && needs.changes.outputs.docs_only != 'true'
+        if: always() && needs.changes.outputs.code_changed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
