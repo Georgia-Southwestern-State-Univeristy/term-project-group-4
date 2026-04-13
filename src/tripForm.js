@@ -185,8 +185,9 @@ export function initTripForm({ onTripSaved } = {}) {
 
     try {
       await updateTripOnServer(savedTripId, { checklist });
-      showToast('Checklist saved.', 'success');
+      // Silent auto-save - no success toast to avoid notification spam
     } catch (err) {
+      // Show error toasts immediately as they need user attention
       showToast(`Failed to sync checklist: ${err.message}`, 'error');
       console.error('Failed to sync checklist:', err);
     }
