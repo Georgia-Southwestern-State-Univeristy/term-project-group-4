@@ -79,8 +79,11 @@ All items below are quality-focused, reliability-focused, or supportability-focu
 **GitHub Issue:** [#122](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/122)
 
 - Make sure user able to load saved trip
+- Verify 'Update' button is disabled
 - Update the trip name
-- Verify success toast message
+- Verify 'Update' button is enabled
+- Reset the trip name to original name
+- Verify 'Update' button is disabled
 
 ---
 
@@ -88,9 +91,9 @@ All items below are quality-focused, reliability-focused, or supportability-focu
 **Owner:** Naren  
 **GitHub Issue:** [#98](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/98)
 
-- Ensures that when OAuth fails, the app properly redirects with error parameters
-- Verifies that error toasts are displayed to users (user feedback)
+- Verifies that error toasts are displayed when OAuth fails
 - Validates that error parameters are cleaned from the URL after display (prevents replay)
+- Tests: Error message shown, URL parameter removed
 
 ---
 
@@ -98,8 +101,10 @@ All items below are quality-focused, reliability-focused, or supportability-focu
 **Owner:** Naren  
 **GitHub Issue:** [#121](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/121)
 
-- Ensures form is not available upon authenticaiton failure
-- Ensure login button still available for a retry
+- Ensures trip form is hidden when user is not authenticated after auth failure
+- Ensures login section remains visible so user can retry authentication
+- Validates that error toasts are displayed to users
+- Tests: Form hidden, login button available, error message shown, URL cleaned
 
 ---
 
