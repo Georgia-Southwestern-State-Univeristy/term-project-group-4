@@ -116,16 +116,7 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
     loadBtn.textContent = 'Load';
     loadBtn.type = 'button';
     loadBtn.addEventListener('click', () => {
-      const editingContext = document.getElementById('editing-context');
-      const saveTripBtn = document.getElementById('save-trip-btn');
-      if (editingContext) {
-        editingContext.textContent = `Editing: ${trip.name}`;
-        editingContext.hidden = false;
-      }
       loadTrip(trip);
-      if (saveTripBtn) {
-        saveTripBtn.textContent = 'Update Trip';
-      }
     });
 
     const deleteBtn = document.createElement('button');

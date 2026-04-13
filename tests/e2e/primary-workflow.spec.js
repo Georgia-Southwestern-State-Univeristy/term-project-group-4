@@ -208,30 +208,32 @@ test.describe('Primary Workflow: Create and Save Trip', () => {
       return btn && !btn.disabled;
     });
 
-    // Button should show "Save Trip" for new trip
     await expect(saveBtn).toHaveText('Save Trip');
-
     await saveBtn.click();
 
     // Verify trip appears in saved list
     const tripRow = page.locator('#saved-trips-list li').filter({ hasText: tripName });
     await expect(tripRow).toHaveCount(1, { timeout: 10000 });
 
-    // Load the trip to verify button state changes
+    // Load the trip to verify edit-mode state
     const loadBtn = tripRow.first().locator('button:has-text("Load")');
     await loadBtn.click();
 
-    // Ensure load action has populated form values before checking context UI.
+    // Ensure load action has populated form values before checking context UI
     await expect(page.locator('#trip-name')).toHaveValue(tripName);
     await expect(page.locator('#destination-type')).toHaveValue('beach');
     await expect(page.locator('#duration')).toHaveValue('4');
 
-    // Verify editing context is displayed
     const editingContext = page.locator('#editing-context');
     await expect(editingContext).toHaveText(`Editing: ${tripName}`);
     await expect(editingContext).not.toHaveAttribute('hidden', '');
 
-    // Button should show "Update Trip" when editing
+    // Loaded edit mode should show Update Trip but remain disabled until a change is made
     await expect(saveBtn).toHaveText('Update Trip');
+    await expect(saveBtn).toBeDisabled();
+
+    // Make a real edit and confirm change detection enables update
+    await page.fill('#trip-name', `${tripName} Updated`);
+    await expect(saveBtn).toBeEnabled();
   });
 });
