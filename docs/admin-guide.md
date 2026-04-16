@@ -17,6 +17,22 @@ This is a full-stack web application with:
 
 ---
 
+## Production Environment
+
+The application is deployed and accessible at:
+
+https://spcg.zentrofi.com
+
+This URL represents the production instance hosted on AWS Elastic Beanstalk.
+
+Use this endpoint to:
+- verify deployments
+- reproduce production issues
+- validate fixes after changes
+- confirm that CI/CD deployments completed successfully
+
+---
+
 ## Setup and Deployment
 
 ### Prerequisites
@@ -38,11 +54,12 @@ npm install
 ### Run Locally
 
 ```bash
-npm run dev
+npm run dev:full
 ```
 
 - Starts both frontend and backend
-- App typically runs at: http://localhost:3000
+- Frontend UI typically runs at: http://localhost:5173
+- Backend API typically runs at: http://localhost:3000
 
 ---
 
@@ -54,9 +71,11 @@ npm run dev
 - GOOGLE_CLIENT_SECRET
 - SESSION_SECRET
 
-### Optional
+### Common / Deployment Variables
 
-- SQLITE_PATH (custom database location)
+- FRONTEND_URL
+- SQLITE_PATH (required in production; optional override locally)
+  - defaults to `data/trips.db` in development
 
 ---
 
@@ -76,15 +95,30 @@ This is used by Playwright tests and should not be enabled in production.
 Run migrations:
 
 ```bash
-npx knex migrate:latest
+npm run db:migrate
 ```
-
 ---
 
-### Reset Database (Local Development)
+### Seed Demo Data
 
-- Delete the SQLite file (for example: /data/trips.db or local path)
-- Re-run migrations
+```bash
+npm run db:seed
+```
+---
+
+### Reset / Reseed Database
+
+Run:
+
+```bash
+npm run db:reset
+```
+
+This command:
+
+- rolls back all migrations
+- recreates the schema
+- reseeds the database
 
 ---
 
@@ -99,10 +133,11 @@ npx knex migrate:latest
 
 ### Local
 
-Stop and restart:
+- Stop the running process (Ctrl + C)
+- Restart with:
 
 ```bash
-npm run dev
+npm run dev:full
 ```
 
 ---
@@ -141,8 +176,7 @@ Use this ID to trace issues across logs.
 
 - Logs are output to console
 - Available via:
-  - AWS Elastic Beanstalk logs
-  - CloudWatch (if configured)
+  - AWS Elastic Beanstalk logs (via console or EB CLI)
 
 ---
 
@@ -152,10 +186,13 @@ GET /health
 
 Returns:
 
-- system status
-- uptime
-- config validity
+- status
+- environment
+- version
 - requestId
+- uptimeSeconds
+- database details
+- configuration validity
 
 Use this to verify system health.
 
@@ -163,20 +200,29 @@ Use this to verify system health.
 
 ## Error Handling
 
-### Standard Behavior
+### Standard API Error Behavior
 
-All errors return JSON:
+For unknown routes and unhandled server errors, the backend returns JSON including:
 
-- error message
+- error
 - requestId
 
 ---
 
 ### 404 Behavior
 
-Returns:
+Unknown routes return JSON:
 
 - error: Not found
+- requestId
+
+---
+
+### Unhandled Server Errors
+
+Unhandled server failures return JSON:
+
+- error: Internal server error
 - requestId
 
 ---
@@ -224,7 +270,7 @@ GitHub Actions runs:
 - unit tests
 - E2E tests
 
-Deploys on merge to main (if configured).
+A separate GitHub Actions workflow deploys to Elastic Beanstalk on pushes to `main` (excluding markdown-only changes).
 
 ---
 
@@ -232,9 +278,7 @@ Deploys on merge to main (if configured).
 
 ### Reset Application State
 
-- Delete database file
-- Run migrations
-- Restart server
+Use the database reset procedure described in the **Database Management** section (`npm run db:reset`), then restart the server if it is running.
 
 ---
 

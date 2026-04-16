@@ -32,7 +32,15 @@ Users can:
 
 ## Getting Started
 
-### 1. Log In
+### Accessing the Application
+
+The live application is available at:
+
+https://spcg.zentrofi.com
+
+No installation is required. Simply open the link and log in with Google.
+
+### Log In
 
 - Open the application in your browser
 - Click the **Login with Google** button
@@ -57,8 +65,6 @@ Once logged in, the main application will be visible.
 
 You will see a confirmation message when the trip is saved.
 
----
-
 ### Load and Edit a Trip
 
 1. Locate your trip in the **Saved Trips** list
@@ -75,8 +81,6 @@ You will see a confirmation message when the trip is saved.
 
 > Note: The **Update Trip** button is only enabled after you make changes.
 
----
-
 ### Track Packing Progress
 
 - Check or uncheck items in the checklist
@@ -84,15 +88,12 @@ You will see a confirmation message when the trip is saved.
 
 > Auto-save happens silently (no notification spam)
 
----
 
 ### Search for a Trip
 
 - Use the search bar above the saved trips list
 - Type part of the trip name
 - The list will filter in real time
-
----
 
 ### Delete a Trip
 
