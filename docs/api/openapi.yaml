@@ -1,13 +1,20 @@
 openapi: 3.0.3
 info:
   title: Smart Packing Checklist Generator API
-  version: 1.0.0
+  version: 1.1.0
   description: |
-    REST API for authenticated users to create, read, update, and delete their own trips
-    and packing checklist items.
+    REST API for the Smart Packing Checklist Generator. Covers authentication
+    (Google OAuth), health monitoring, and CRUD operations on user-owned trips
+    and packing checklists.
+
+    **Authentication flow:** Browser navigates to `/auth/google` → Google consent
+    → callback sets `connect.sid` session cookie → all `/api/*` requests use that cookie.
 
 servers:
   - url: http://localhost:3000
+    description: Local development
+  - url: https://spcg.zentrofi.com
+    description: Production (AWS Elastic Beanstalk)
 
 components:
   securitySchemes:
@@ -70,6 +77,98 @@ components:
           format: date-time
           example: 2026-02-22T12:34:56.789Z
 
+    User:
+      type: object
+      required:
+        - id
+        - google_id
+        - email
+        - name
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+        google_id:
+          type: string
+          example: "117234567890123456789"
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: Jane Doe
+        picture:
+          type: string
+          nullable: true
+          format: uri
+          example: https://lh3.googleusercontent.com/a/photo
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-03-01T10:00:00.000Z
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - environment
+        - version
+        - requestId
+        - uptimeSeconds
+        - database
+        - config
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+          example: ok
+        environment:
+          type: string
+          example: production
+        version:
+          type: string
+          example: 1.0.0
+        requestId:
+          type: string
+          example: req-abc123
+        uptimeSeconds:
+          type: integer
+          example: 3600
+        database:
+          type: object
+          required:
+            - writable
+          properties:
+            writable:
+              type: boolean
+              example: true
+            path:
+              type: string
+              description: Included in non-production environments only.
+            target:
+              type: string
+              description: Included in non-production environments only.
+            error:
+              type: string
+              nullable: true
+              description: Included in non-production environments only.
+        config:
+          type: object
+          required:
+            - valid
+          properties:
+            valid:
+              type: boolean
+              example: true
+            missing:
+              type: array
+              items:
+                type: string
+              description: Included in non-production environments only.
+
     CreateTripRequest:
       type: object
       required:
@@ -116,15 +215,161 @@ components:
         error:
           type: string
           example: Trip not found
+        requestId:
+          type: string
+          description: Included in 404 catch-all and 500 error responses.
+          example: req-abc123
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid checklist payload
+        message:
+          type: string
+          description: Detailed validation failure reason.
+          example: Each checklist item must have an "id" string field
+
+    LogoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
 
 security:
   - SessionAuth: []
 
+tags:
+  - name: Health
+    description: System health and readiness
+  - name: Auth
+    description: Google OAuth authentication flow
+  - name: Trips
+    description: Trip and checklist CRUD operations
+
 paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: |
+        Returns system health status including database writability and configuration
+        validity. In production, internal paths and error details are omitted.
+        Returns 200 when healthy, 503 when degraded.
+      security: []
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: System is degraded (database not writable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /auth/google:
+    get:
+      tags: [Auth]
+      summary: Initiate Google OAuth login
+      description: |
+        Redirects the browser to the Google OAuth consent screen.
+        Not available when `NODE_ENV=test`.
+      security: []
+      responses:
+        '302':
+          description: Redirect to Google OAuth consent screen
+
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      summary: Google OAuth callback
+      description: |
+        Handles the OAuth callback from Google. On success, establishes a session
+        and redirects to `FRONTEND_URL`. On failure, redirects to `/auth/login-error`.
+        Not available when `NODE_ENV=test`.
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code from Google
+      responses:
+        '302':
+          description: Redirect to frontend (success) or login-error (failure)
+
+  /auth/login-error:
+    get:
+      tags: [Auth]
+      summary: OAuth login failure redirect
+      description: |
+        Redirects to `FRONTEND_URL?authError=google_login_failed`.
+        Not available when `NODE_ENV=test`.
+      security: []
+      responses:
+        '302':
+          description: Redirect to frontend with authError query parameter
+
+  /auth/logout:
+    get:
+      tags: [Auth]
+      summary: Log out the current user
+      description: |
+        Destroys the server session, clears the `connect.sid` cookie,
+        and returns a success response.
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '500':
+          description: Internal server error during session destruction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      summary: Get the current authenticated user
+      description: |
+        Returns the user profile for the current session. Returns 401
+        if no valid session exists.
+      responses:
+        '200':
+          description: Authenticated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/trips:
     get:
+      tags: [Trips]
       summary: List trips for the authenticated user
-      description: Returns only the trips owned by the logged-in user.
+      description: Returns only the trips owned by the logged-in user, ordered by creation date (newest first).
       responses:
         '200':
           description: Array of trips
@@ -140,11 +385,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/saveTrip:
     post:
+      tags: [Trips]
       summary: Create a new trip
-      description: Creates a trip owned by the authenticated user.
+      description: |
+        Creates a trip owned by the authenticated user. The `name` and
+        `destinationType` fields are trimmed; blank values after trimming are
+        rejected. If a `checklist` array is provided, each item is validated
+        for required fields (`id`, `name`, `category`, `packed`).
       requestBody:
         required: true
         content:
@@ -159,13 +415,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Trip'
         '400':
-          description: Validation error
+          description: |
+            Validation error. Returns `ErrorResponse` for missing/invalid fields,
+            or `ValidationErrorResponse` for invalid checklist items.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -173,6 +439,7 @@ paths:
 
   /api/trips/{tripId}:
     get:
+      tags: [Trips]
       summary: Get one trip
       description: Returns the trip if it exists and belongs to the authenticated user.
       parameters:
@@ -200,10 +467,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
+      tags: [Trips]
       summary: Update a trip
-      description: Partially updates a trip if it belongs to the authenticated user.
+      description: |
+        Partially updates a trip if it belongs to the authenticated user.
+        Only provided fields are updated. The `name` and `destinationType`
+        fields are trimmed; blank values after trimming are rejected.
+        If a `checklist` array is provided, each item is validated.
       parameters:
         - name: tripId
           in: path
@@ -224,11 +502,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Trip'
         '400':
-          description: Validation error
+          description: |
+            Validation error. Returns `ErrorResponse` for blank or invalid fields,
+            or `ValidationErrorResponse` for invalid checklist items.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Unauthorized
           content:
@@ -241,8 +523,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
+      tags: [Trips]
       summary: Delete a trip
       description: Deletes a trip and its checklist items if it belongs to the authenticated user.
       parameters:
@@ -262,6 +551,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
