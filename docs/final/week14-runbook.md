@@ -212,4 +212,4 @@ The predeploy hooks (`.platform/hooks/predeploy/`) handle EBS mount and migratio
 
 | Date | Tester | Deployed Version | Evidence Links |
 |------|--------|------------------|-----------------|
-| 2026-04-18 | Naren | main @ abc1234 | [Environment](http://smart-checklist-test-naren-env.eba-ievuxvxp.us-east-2.elasticbeanstalk.com), [EB Dashboard](https://us-east-2.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-2#/environment/dashboard?environmentId=e-4qap4mrbcw&tab=deployments) |
+| 2026-04-18 | Naren | main @ 8a365fe| [Environment](http://smart-checklist-test-naren-env.eba-ievuxvxp.us-east-2.elasticbeanstalk.com), [EB Dashboard](https://us-east-2.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-2#/environment/dashboard?environmentId=e-4qap4mrbcw&tab=deployments) |
