@@ -237,6 +237,10 @@ components:
         success:
           type: boolean
           example: true
+        testMode:
+          type: boolean
+          description: Present only when the request is made in test mode (NODE_ENV=test with the x-test-user-id header).
+          example: true
 
 security:
   - SessionAuth: []
@@ -323,7 +327,9 @@ paths:
       summary: Log out the current user
       description: |
         Destroys the server session, clears the `connect.sid` cookie,
-        and returns a success response.
+        and returns a success response. This route does not require an
+        active session and will return 200 even if the caller is not logged in.
+      security: []
       responses:
         '200':
           description: Logout successful

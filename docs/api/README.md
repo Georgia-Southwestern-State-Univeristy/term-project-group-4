@@ -35,7 +35,7 @@ To log out: `GET /auth/logout` — destroys the session and clears the cookie.
 | GET | `/auth/google` | No | Initiate Google OAuth login (302 redirect) |
 | GET | `/auth/google/callback` | No | OAuth callback (302 redirect) |
 | GET | `/auth/login-error` | No | OAuth failure redirect |
-| GET | `/auth/logout` | Session | Log out, destroy session |
+| GET | `/auth/logout` | No | Log out, destroy session (no-op if not logged in) |
 | GET | `/auth/user` | Session | Get current authenticated user |
 | GET | `/api/trips` | Session | List all trips for the user |
 | POST | `/api/saveTrip` | Session | Create a new trip |
@@ -135,9 +135,9 @@ For unauthenticated routes (`/health`, `/auth/*`), steps 2 and 5's `requireAuth`
 
 | Integration | Purpose | Configuration |
 |-------------|---------|---------------|
-| **Google OAuth 2.0 API** | User authentication. The server exchanges authorization codes for user profiles via Passport.js `GoogleStrategy`. | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`. OAuth consent screen and redirect URIs must be configured in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials). |
+| **Google OAuth 2.0 API** | User authentication. The server exchanges authorization codes for user profiles via Passport.js `GoogleStrategy`. | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. The OAuth consent screen and the authorized redirect URI (`/auth/google/callback`) must be configured in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials). |
 | **SQLite via better-sqlite3** | Persistent storage for users, trips, and checklist items. Accessed through Knex.js query builder with migration support. | `SQLITE_PATH` (production). In development, defaults to `./data/trips.db`. In production, the database file lives on a mounted EBS volume at `/data/trips.db`. |
-| **Winston file transport** | Structured JSON logging to `logs/app.log`. Each log entry includes the `requestId` for request tracing. Console transport is added in non-production environments. | No external configuration. Log directory is created automatically. |
+| **Winston logging** | Structured logging with environment-specific transports. In production, logs are emitted as JSON to the console only. In non-production, logs are written to `logs/app.log` and also printed to the console with pretty formatting. Each log entry includes the `requestId` for request tracing. | No external configuration. In non-production, the log directory is created automatically for the file transport. |
 
 ## Internal services
 
@@ -174,7 +174,7 @@ In test mode, `resolveAuthenticatedUser` auto-creates a test user from the `x-te
 
 Structured logging via [Winston](https://github.com/winstonjs/winston). Every request is assigned a `requestId` (from the `X-Request-Id` header or auto-generated) that propagates through all log entries for that request.
 
-Log output: `logs/app.log` (file) + stdout (console in development).
+Log output: non-production writes to `logs/app.log` and stdout (pretty-formatted). Production writes JSON to stdout only.
 
 ### Checklist generator — `src/checklistGenerator.js`
 
@@ -186,8 +186,7 @@ Client-side module that generates packing checklist items based on destination t
 |----------|----------|---------|-------------|
 | `GOOGLE_CLIENT_ID` | Production, development | — | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Production, development | — | Google OAuth client secret |
-| `GOOGLE_CALLBACK_URL` | Production | `http://localhost:3000/auth/google/callback` | OAuth redirect URI |
-| `SESSION_SECRET` | Production | `default-dev-secret-...` | Express session signing secret |
+| `SESSION_SECRET` | Production | `default-dev-secret-change-in-production` (development only) | Express session signing secret. Startup throws in production if unset. |
 | `FRONTEND_URL` | Optional | `http://localhost:5173` | Post-login redirect target |
 | `SQLITE_PATH` | Production | — | Absolute path to SQLite database file |
 | `NODE_ENV` | Optional | `development` | `development`, `production`, or `test` |
