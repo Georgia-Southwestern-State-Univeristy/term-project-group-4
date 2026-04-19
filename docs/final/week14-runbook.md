@@ -4,9 +4,17 @@
 
 This document provides the deployment verification path for the Week 14 release candidate. The deployment process is **fully automated via GitHub Actions and Elastic Beanstalk hooks** — manual steps shown below are for understanding and verification only.
 
+### Issues Found During Verification
+
+During Week 14 release candidate verification, the following gaps in the beta deployment process were identified and addressed:
+
+1. **Missing EBS volume setup**: The `beta-deploy.md` did not include persistent storage configuration. EBS volumes are required for SQLite database persistence across instance restarts. This runbook adds Step 1 with complete volume setup and tagging.
+2. **Database migration hooks not documented**: Predeploy scripts for running database migrations were missing from beta procedures. These are now explicitly called out in the automated deployment flow (Step 4).
+3. **Manual EB deployment steps unclear**: Steps for reference/troubleshooting manual deployment have been clarified with both EB CLI and console approaches.
+
 ### Important Notes
 
-**Deployment Verification**: The deployment test environment (`http://smart-checklist-test-naren-env.eba-ievuxvxp.us-east-2.elasticbeanstalk.com`) was verified manually following the steps in `beta-deploy.md`. Due to infrastructure constraints, did not make deployment test environment as https.
+**Deployment Verification**: The deployment test environment was verified manually following the steps in `beta-deploy.md`. Due to infrastructure constraints, test EB environments use HTTP instead of HTTPS. Production and staging use HTTPS with custom domain (spcg.zentrofi.com).
 
 **Automated Deployment**: The release candidate uses GitHub Actions workflows to automatically:
 - Build the application (`npm run build`)
@@ -29,7 +37,7 @@ For manual deployment reference, follow these steps. This builds on `beta-deploy
 - AWS account with billing enabled
 - AWS CLI v2 configured with credentials
 - EB CLI (optional: `pip install awsebcli`)
-- Node.js v24 LTS
+- Node.js version matching the EB solution stack (e.g., 24.x LTS or as specified in `.ebextensions`)
 - Git
 
 ---
@@ -45,7 +53,7 @@ EBS provides persistent storage for the SQLite database.
 3. Set:
    - **Type**: `gp3`
    - **Size**: `20 GiB`
-   - **AZ**: Same AZ as your EB instance (e.g., `us-east-1a`)
+   - **AZ**: Same AZ as your EB instance (e.g., `<YOUR_AZ>`)
    - **Encryption**: Enable
 4. **Record the Volume ID** (e.g., `vol-xxx`)
 
@@ -55,9 +63,9 @@ EBS provides persistent storage for the SQLite database.
 aws ec2 create-volume \
   --size 20 \
   --volume-type gp3 \
-  --availability-zone us-east-1a \
+  --availability-zone <YOUR_AZ> \
   --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=spcg-database-volume}]' \
-  --region us-east-1
+  --region <YOUR_REGION>
 ```
 
 ---
@@ -82,7 +90,7 @@ Once environment is Green, click **Configuration** > **Software** and add these 
 |----------|-------|
 | `NODE_ENV` | `production` |
 | `PORT` | `8080` |
-| `FRONTEND_URL` | `https://spcg.zentrofi.com` |
+| `FRONTEND_URL` | `https://<YOUR_DOMAIN>` (e.g., `spcg.zentrofi.com` for production) |
 | `SQLITE_PATH` | `/data/trips.db` |
 | `EBS_VOLUME_ID` | `vol-xxxx` (from Step 1) |
 | `GOOGLE_CLIENT_ID` | [from Google Cloud Console] |
@@ -124,7 +132,7 @@ Then deploy with EB CLI:
 
 ```bash
 eb init -p "Node.js 24 running on 64bit Amazon Linux 2023" \
-  --region us-east-1 \
+  --region <YOUR_REGION> \
   smart-packing-checklist
 
 eb deploy
@@ -148,8 +156,10 @@ Then in EB console: **Upload and deploy** > Select zip > **Deploy**
 ### Check health endpoint
 
 ```bash
-curl https://spcg.zentrofi.com/health
-# Expected: {"status":"ok","version":"1.0.0"}
+curl https://<YOUR_DOMAIN>/health
+# Replace <YOUR_DOMAIN> with your environment URL (e.g., smart-checklist-test-naren-env.eba-ievuxvxp.us-east-2.elasticbeanstalk.com for test, or spcg.zentrofi.com for production)
+# Expected response:
+# {"status":"ok","version":"1.0.0","environment":"production","requestId":"...","uptimeSeconds":...,"database":"connected","config":"loaded"}
 ```
 
 ### SSH to instance and verify EBS mount
@@ -169,7 +179,7 @@ sqlite3 /data/trips.db ".tables"
 
 ## Step 6: Run Smoke Test
 
-1. Open `https://spcg.zentrofi.com`
+1. Open `https://<YOUR_DOMAIN>` (use your EB environment URL or custom domain)
 2. Click **Login with Google** and authenticate
 3. Create trip: name="Test", destination="Beach", duration="3 days"
 4. Click **Generate Checklist** → **Save Trip**
