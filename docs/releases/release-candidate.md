@@ -2,7 +2,7 @@
 
 ## Release Information
 
-- **Release Candidate Tag:** TBD
+- **Release Candidate Tag:** `rc-v0.9`
 - **Release Candiate Date:** `April 19, 2026`
 - **Release Candidate Status:** Ready for final testing and validation
 - **Target Final Release:** `Week 15–16 (Late April / Early May 2026)`
@@ -129,8 +129,8 @@ The RC is **stable and production-ready**, but the following known risks and arc
 
 | Risk | Severity | Mitigation Plan | Target Week |
 |------|----------|-----------------|-------------|
-| **Input validation gaps** | Medium | Add input length limits for trip name (max 100 chars) and destination (max 50 chars). Issue #81. | Week 15 |
-| **XSS audit incomplete** | High | Verify all DOM writes use `.textContent` (safe) not `.innerHTML` (unsafe). Issue #82. Likely affects `main.js` and `checklistRenderer.js`. | Week 15 |
+| **XSS audit incomplete** | Critical | Verify all DOM writes use `.textContent` (safe) not `.innerHTML` (unsafe). Issue #82. Likely affects `main.js` and `checklistRenderer.js`. | Week 15 |
+| **Input validation gaps** | Critical | Add input length limits for trip name (max 100 chars) and destination (max 50 chars). Issue #81. | Week 15 |
 
 ### Medium-Priority Risks (Can Address Post-Release)
 
@@ -147,7 +147,7 @@ The RC is **stable and production-ready**, but the following known risks and arc
 To move from RC to final release (v1.0), the following work is committed:
 
 ### 1. **Security Hardening (Issue #82)**
-- **Owner:** TBD
+- **Owner:** Jason (preliminary) — see `docs/final/week14-triage.md` for team confirmation
 - **Task:** Audit all DOM rendering for XSS vulnerabilities
   - Review `src/main.js`, `src/checklistRenderer.js` for `.innerHTML` usage
   - Replace unsafe `.innerHTML` with `.textContent` or safe templating
@@ -156,7 +156,7 @@ To move from RC to final release (v1.0), the following work is committed:
 - **Target:** Complete by Week 15
 
 ### 2. **Input Validation (Issue #81)**
-- **Owner:** TBD
+- **Owner:** Jason (preliminary) — see `docs/final/week14-triage.md` for team confirmation
 - **Task:** Enforce input length limits on trip fields
   - Frontend: Add `maxlength` attribute to trip name and destination inputs
   - Backend: Add validation in `server.js` (POST and PUT routes) for name ≤ 100 chars, destination ≤ 50 chars
@@ -178,7 +178,7 @@ To move from RC to final release (v1.0), the following work is committed:
 
 **GitHub Release Link:** `https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/releases`
 
-- **Release Tag:** Will be created as `rc-v0.9` (pending confirmation)
+- **Release Tag:** `rc-v0.9`
 - **Artifacts:** 
   - Built frontend assets in `dist/` directory
   - Source code tagged in Git
