@@ -15,6 +15,11 @@ This application helps users quickly generate and manage packing checklists base
 - Edit, reload, and manage saved trips seamlessly
 - Provide a testable, production-aligned workflow with CI validation
 
+### If you're new to the project:
+1. Start with this README
+2. Run the app locally
+3. Then review the User Guide and Admin Guide for deeper details
+
 ---
 
 ## Live Deployment
@@ -23,7 +28,7 @@ Primary hosted application:
 
 - https://spcg.zentrofi.com
 
-This environment reflects the current Beta build and is the recommended path for reviewer validation.
+This environment reflects the current release candidate build and is the recommended path for reviewer validation.
 
 ---
 
@@ -39,7 +44,7 @@ https://nodejs.org/
 
 This application uses Google OAuth for user authentication. To set it up:
 
-1. Go to the Google Cloud Console
+1. Go to Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs
 2. Create a new project or select an existing one
 3. Configure the OAuth consent screen
 4. Create OAuth 2.0 credentials (Client ID and Client Secret)
@@ -52,6 +57,7 @@ Create a `.env` file with:
 ```env
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 SESSION_SECRET=your-random-session-secret
 FRONTEND_URL=http://localhost:5173
 ```
@@ -123,7 +129,7 @@ Starts the UI at `http://localhost:5173` with hot reloading. API requests are au
 
 ---
 
-## Current Feature Summary (Beta)
+## Current Feature Summary
 
 ### Core Functionality
 
@@ -138,7 +144,7 @@ Starts the UI at `http://localhost:5173` with hot reloading. API requests are au
 
 ---
 
-### UI / UX Behavior (Updated for Beta)
+### UI / UX Behavior
 
 #### Required Field Enforcement
 
@@ -171,7 +177,8 @@ After creating a new trip:
 
 ## API Endpoints
 
-All endpoints require authentication.
+Most API endpoints require authentication.
+Public endpoints include /health and authentication routes under /auth/*.
 
 - `GET /api/trips` - List all saved trips for the authenticated user
 - `GET /api/trips/{tripId}` - Retrieve a single trip by ID (user-specific)
@@ -181,7 +188,7 @@ All endpoints require authentication.
 
 Trip data is persisted through Knex using SQLite for local development. Each user sees only their own trips.
 
-Swagger docs:
+Swagger docs (local):
 http://localhost:3000/docs
 
 ---
@@ -249,7 +256,9 @@ npx playwright show-report
 
 ## CI Behavior
 
-- Playwright E2E runs in CI (currently non-blocking)
+- Lint, unit tests, and E2E tests run in GitHub Actions
+- Deployments are triggered on pushes to `main`
+- E2E tests use test-mode authentication (no real OAuth in CI)
 - Deployment includes:
   - EB environment update wait
   - /health smoke test validation
@@ -268,19 +277,16 @@ npx knex seed:run
 
 ---
 
-## Beta Scope
+## Known Issues / Technical Debt
 
-The following items are intentionally incomplete and tracked for post-Beta work:
+The following items represent remaining known issues and technical debt heading into the final release:
 
 - XSS audit and DOM sanitization validation (#82)
 - Input length validation limits (#81)
-- Reliability hardening for network/server failures (#101)
-- Authentication failure and error-path testing (#98)
-- authError redirect regression test coverage (#121)
-- Change detection unit/integration testing gaps (#122)
-- Edit-mode UI state inconsistency after loading trips (#126)
-
-See: Week 12 Known Issues & Technical Debt document
+- Duplicated backend validation logic (#129)
+- Type guards before `.trim()` in POST/PUT handlers
+- Production migration strategy (`migrateLatest` gating)
+- Final verification of reliability/error handling improvements (#101)
 
 ---
 
@@ -292,3 +298,15 @@ npm install
 ```
 
 ---
+
+## Documentation
+
+For more details, see:
+
+- User Guide: `/docs/user-guide.md`
+- Admin / Maintenance Guide: `/docs/admin-guide.md`
+- API Documentation: `/docs/api/README.md`
+- Deployment Runbook: `/docs/final/week14-runbook.md`
+- Release Notes: `/docs/releases/release-candidate.md`
+- Architecture Overview: `/docs/final/week13-architecture.md`
+- Handoff Document: `/docs/handoff/hand-off-draft.md`
