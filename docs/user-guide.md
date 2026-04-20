@@ -60,7 +60,6 @@ Note: Access may be limited to approved Google accounts if the OAuth application
    - Trip Name
    - Destination Type (e.g., beach, camping)
    - Duration (number of days)
-
 2. Click **Generate Checklist**
 3. Review the generated checklist
 4. Click **Save Trip**
