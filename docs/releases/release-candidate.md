@@ -1,9 +1,9 @@
-# Release Candidate: Smart Packing Checklist Generator v0.9
+# Release Candidate: Smart Packing Checklist Generator
 
 ## Release Information
 
-- **Release Candidate Tag:** `rc-v0.9`
-- **Release Date:** `April 18, 2026`
+- **Release Candidate Tag:** TBD
+- **Release Candiate Date:** `April 19, 2026`
 - **Release Candidate Status:** Ready for final testing and validation
 - **Target Final Release:** `Week 15–16 (Late April / Early May 2026)`
 - **GitHub Release Page:** `https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/releases` (pending tag creation)
@@ -12,14 +12,13 @@
 
 ## Executive Summary
 
-This release candidate represents a significant step forward from Beta (v0.1, released April 6, 2026). Over the past two weeks (Week 13–14), the engineering team has focused entirely on **operational hardening and reliability** — not new features. The result is a production-ready system with:
+This release candidate represents a significant step forward from Beta (v0.1, released April 6, 2026). Over the past two weeks (Week 13–14), the team has focused entirely on **operational hardening and reliability** — not new features. The result is a production-ready system with:
 
-- **35 commits** of focused improvements since Beta
-- **4 new regression tests** protecting critical bug fixes
 - **Enhanced observability** with request correlation and structured logging
 - **Improved error handling** with user-facing feedback and security hardening
 - **Complete test coverage** for authentication failure paths and state management
 - **Documented architecture** aligned with actual deployed system
+- **4 new regression tests** protecting critical bug fixes
 
 The application remains **functionally identical to Beta** (all existing workflows preserved), but the system is now more **reliable, maintainable, and supportable** for production operation.
 
@@ -38,7 +37,6 @@ All workflows from Beta remain fully functional and are now reinforced with regr
 ### 2. **Trip Creation and Checklist Generation**
 - Users can enter trip details (name, destination type, duration)
 - Checklist generation based on destination type and packing duration
-- "Generate Checklist" button validation and gating
 - **Tests:** Covered in `tests/e2e/primary-workflow.spec.js`
 
 ### 3. **Trip Management (Save, Load, Update, Delete)**
@@ -132,18 +130,15 @@ The RC is **stable and production-ready**, but the following known risks and arc
 | Risk | Severity | Mitigation Plan | Target Week |
 |------|----------|-----------------|-------------|
 | **Input validation gaps** | Medium | Add input length limits for trip name (max 100 chars) and destination (max 50 chars). Issue #81. | Week 15 |
-| **XSS audit incomplete** | High (Security) | Verify all DOM writes use `.textContent` (safe) not `.innerHTML` (unsafe). Issue #82. Likely affects `main.js` and `checklistRenderer.js`. | Week 15 |
+| **XSS audit incomplete** | High | Verify all DOM writes use `.textContent` (safe) not `.innerHTML` (unsafe). Issue #82. Likely affects `main.js` and `checklistRenderer.js`. | Week 15 |
 
 ### Medium-Priority Risks (Can Address Post-Release)
 
 | Risk | Impact | Mitigation Path |
 |------|--------|-----------------|
 | **SQLite write concurrency** | Under high concurrent load, single-writer lock could bottleneck | Migrate to PostgreSQL (Knex makes this straightforward) |
-| **In-memory session store** | Server restart logs out all users | Add persistent session store (e.g., connect-sqlite3 or Redis) |
-| **Single EB instance** | Deployment or instance failure causes downtime; no auto-scaling | Multi-instance EB with PostgreSQL and external session store |
 | **Frontend-only checklist logic** | Generation rules unverifiable server-side; modified client could inject items | Move generation to server endpoint or validate server-side |
 | **No rate limiting** | API endpoints unprotected against abuse | Add express-rate-limit middleware |
-| **EBS single-AZ** | EBS failure = database loss | Automated snapshots or migrate to RDS |
 
 ---
 
@@ -171,87 +166,11 @@ To move from RC to final release (v1.0), the following work is committed:
 - **Tests:** Unit tests in `app.test.js`; E2E test for form behavior
 - **Target:** Complete by Week 15
 
-### 3. **Final Integration Testing**
-- **Task:** Full end-to-end regression test run on hosted environment
-  - Run `npm run test:all` (unit + E2E tests)
-  - Validate health endpoint responses
-  - Smoke test core workflows (auth, create trip, save, load, edit, delete)
-- **Target:** Week 16 before final tag
-
-### 4. **Documentation Updates**
+### 3. **Documentation Updates**
 - **Task:** Finalize handoff documentation and known issues list
-  - Update `docs/beta/week12-known-issues.md` to reflect fixes in RC
   - Add observability and error-handling changes to architecture doc
   - Finalize `docs/handoff/hand-off-draft.md` with recommendations for next team
 - **Target:** Week 15
-
-### 5. **Release Tag and Artifact**
-- **Task:** Create final release (v1.0) with GitHub release page
-  - Tag: `v1.0` (or `v1.0.0`)
-  - Release notes summarizing Beta → RC → v1.0 journey
-  - GitHub release artifact link
-- **Target:** Week 16
-
----
-
-## Test Coverage and Stability Metrics
-
-### Test Suite Status (Week 14)
-
-| Test Type | Count | Status | Recent Changes |
-|-----------|-------|--------|-----------------|
-| **Unit Tests** | 5+ | ✅ Passing | API validation, checklist generation, storage |
-| **Integration Tests** | 4+ | ✅ Passing | Server routes, authentication, CRUD operations |
-| **E2E Tests (Playwright)** | 7+ | ✅ Passing | Primary workflow, auth errors, failure paths, edit mode |
-| **CI Pipeline** | ✅ Automated | All tests + lint before merge | GitHub Actions (ci.yaml) |
-
-### New Regression Tests (Week 13)
-
-All critical bugs now protected by tests:
-
-```
-tests/e2e/auth-error.spec.js
-  ✓ Issue 98 - auth failure page displays error message and cleans up URL
-  ✓ Issue 121 - user cannot access trip form after auth error
-
-tests/e2e/primary-workflow.spec.js
-  ✓ Issue 126 - edit-mode state management after loading saved trip (improved regression test)
-  ✓ Issue 122 - change detection (form dirty state)
-```
-
-**Test execution:** All E2E tests passing as of Week 14 (confirmed in terminal context)
-
----
-
-## Commits and Changes Since Beta (April 6 → April 18)
-
-**Total commits since Beta tag:** 35 commits over 12 days
-
-**Key commit themes:**
-
-1. **Week 13 Observability & Error Handling** (9 commits)
-   - Request correlation IDs and sanitization (commits: 2787613, e0b9c21, 25b9a6a)
-   - Health endpoint enhancement (commits: b45c97e)
-   - Logging and diagnostics (commit: 2787613)
-
-2. **Week 13 Regression Tests & Bug Fixes** (6 commits)
-   - Edit-mode UI fix and test (commits: 30e2034, PR #130)
-   - Auth error handling tests (commits: PR #128)
-   - Change detection test (commits: PR #127)
-
-3. **Week 13 Refactoring & Architecture** (8 commits)
-   - Architecture snapshot update (commits: b1aafec, PR #137)
-   - Handoff documentation draft (commit: 25b9a6a, PR #132)
-   - Code refactoring for maintainability (PR #135)
-
-4. **Week 14 Documentation and Runbook** (4 commits)
-   - Week 14 runbook (commits: 5c9132e, 49cb102)
-   - Various documentation updates
-
-**Full commit history:**
-```
-git log beta-v0.1..HEAD --oneline | head -35
-```
 
 ---
 
@@ -263,60 +182,11 @@ git log beta-v0.1..HEAD --oneline | head -35
 - **Artifacts:** 
   - Built frontend assets in `dist/` directory
   - Source code tagged in Git
-  - Deployment instructions in `docs/deployment/beta-deploy.md` and `Procfile`
+  - Deployment instructions in `docs/deployment/beta-deploy.md` and `docs/final/week14-runbook.md`
 
 **Deployment Status:**
-- Current production deployment: `https://spcg.zentrofi.com` (Beta v0.1)
+- Current production deployment: `https://spcg.zentrofi.com`
 - RC deployment ready: Same EB environment can be updated via CI/CD pipeline merge to main
 - Health endpoint available: `https://spcg.zentrofi.com/health`
 
 ---
-
-## Sign-Off and Next Steps
-
-### Release Candidate Readiness Checklist
-
-- ✅ All Beta features verified functional
-- ✅ 35 commits of hardening and testing completed
-- ✅ 4 new regression tests added and passing
-- ✅ Observability enhancements in place
-- ✅ Error handling improved with user feedback
-- ✅ Architecture documentation updated
-- ✅ Known issues tracked and prioritized
-- ⏳ XSS audit (Issue #82) — Target Week 15
-- ⏳ Input validation (Issue #81) — Target Week 15
-- ⏳ Final integration testing — Target Week 16
-- ⏳ v1.0 tag and release notes — Target Week 16
-
-### Recommended Actions for Week 15–16
-
-1. **Complete security and validation hardening** (Issues #81, #82)
-2. **Run full regression test suite** on hosted environment
-3. **Update known issues documentation** with fixes
-4. **Finalize handoff documentation** for next team
-5. **Create v1.0 final release tag** with release notes
-6. **Deploy v1.0 to production** via CI/CD pipeline
-
-### For Next Development Team
-
-This RC represents a stable, well-tested, and well-documented foundation. The remaining work (Issues #81, #82) is clearly scoped and prioritized. The architecture is sound, and the codebase is maintainable. See `docs/handoff/hand-off-draft.md` for full handoff guidance.
-
----
-
-## Appendix: Key Documentation References
-
-- **Architecture:** [docs/architecture/architecture-snapshot.md](../../architecture/architecture-snapshot.md)
-- **Beta Release:** [docs/releases/beta-release.md](beta-release.md)
-- **Week 13 Sprint:** [docs/final/week13-sprint.md](../../final/week13-sprint.md)
-- **Week 13 Tests:** [docs/final/week13-tests.md](../../final/week13-tests.md)
-- **Week 13 Architecture Update:** [docs/final/week13-architecture.md](../../final/week13-architecture.md)
-- **Observability Plan:** [docs/final/week13-observability.md](../../final/week13-observability.md)
-- **Known Issues (Beta):** [docs/beta/week12-known-issues.md](../../beta/week12-known-issues.md)
-- **API Documentation:** [docs/api/openapi.yaml](../../api/openapi.yaml)
-- **Deployment:** [docs/deployment/beta-deploy.md](../../deployment/beta-deploy.md)
-- **Handoff Draft:** [docs/handoff/hand-off-draft.md](../../handoff/hand-off-draft.md)
-
----
-
-**Release Candidate created:** April 18, 2026  
-**Ready for final validation and testing**
