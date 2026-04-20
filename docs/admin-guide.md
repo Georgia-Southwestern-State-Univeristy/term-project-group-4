@@ -213,20 +213,20 @@ Use this to verify system health.
 
 ## Error Handling
 
-All backend errors return JSON including:
+Backend error responses include an `error` field.
 
-- error
-- requestId
+For centralized 404 and unhandled 500 responses, the body also includes `requestId`.
+The `x-request-id` response header is available on all requests and should be used to trace failures in logs.
 
 Examples:
 
 - Unknown routes:
   - error: Not found
+  - requestId
 
 - Unhandled server errors:
   - error: Internal server error
-
-Use the `requestId` to trace issues in logs.
+  - requestId
 
 ---
 
@@ -238,7 +238,7 @@ Use the `requestId` to trace issues in logs.
 - Ensure redirect URIs are correct
 - Verify Google OAuth configuration in Google Cloud Console:
   - Navigate to: APIs & Services → Credentials → OAuth 2.0 Client IDs
-  - Ensure the Authorized Redirect URI matches `GOOGLE_CALLBACK_URL`
+  - Ensure the Authorized Redirect URI matches: /auth/google/callback
 
 ---
 
