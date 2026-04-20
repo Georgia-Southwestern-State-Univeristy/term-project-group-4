@@ -57,10 +57,15 @@ Create a `.env` file with:
 ```env
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 SESSION_SECRET=your-random-session-secret
 FRONTEND_URL=http://localhost:5173
 ```
+
+The OAuth callback route is fixed in the application:
+
+/auth/google/callback
+
+This must be configured as an **Authorized Redirect URI** in the Google Cloud Console.
 
 Note: In production, SESSION_SECRET must be set or the server will refuse to start.
 

@@ -27,7 +27,6 @@ The README was updated to serve as the main onboarding point for the project.
 Key updates:
 
 - Added a **“Where to start”** section for new reviewers
-- Updated environment variables (added `GOOGLE_CALLBACK_URL`)
 - Clarified authentication behavior (public vs protected routes)
 - Replaced outdated **Beta** terminology with **Release Candidate**
 - Added a **Documentation section** linking to all major artifacts
