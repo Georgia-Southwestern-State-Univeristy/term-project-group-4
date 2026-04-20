@@ -17,6 +17,15 @@ This is a full-stack web application with:
 
 ---
 
+## API Documentation
+
+For API details and endpoints, see:
+
+- `docs/api/README.md`
+- OpenAPI specification: `docs/api/openapi.yaml`
+
+---
+
 ## Production Environment
 
 The application is deployed and accessible at:
@@ -69,20 +78,24 @@ npm run dev:full
 
 - GOOGLE_CLIENT_ID
 - GOOGLE_CLIENT_SECRET
+- GOOGLE_CALLBACK_URL
 - SESSION_SECRET
 
 ### Common / Deployment Variables
 
-- FRONTEND_URL
+- PORT (defaults to 3000 if not set)
+- FRONTEND_URL (defaults to http://localhost:5173/ in development)
 - SQLITE_PATH (required in production; optional override locally)
+  - must point to a writable directory (e.g., `/data/trips.db` on Elastic Beanstalk)
+  - the application will fail to start if the path is not writable
   - defaults to `data/trips.db` in development
 
 ---
 
 ## Test Mode (Important for CI and E2E)
 
-- Uses NODE_ENV=test
-- Authentication is bypassed using header: x-test-user-id
+- Uses `NODE_ENV=test`
+- Authentication is bypassed using header: `x-test-user-id`
 
 This is used by Playwright tests and should not be enabled in production.
 
@@ -191,8 +204,8 @@ Returns:
 - version
 - requestId
 - uptimeSeconds
-- database details
-- configuration validity
+- database information
+- configuration status
 
 Use this to verify system health.
 
@@ -200,30 +213,20 @@ Use this to verify system health.
 
 ## Error Handling
 
-### Standard API Error Behavior
-
-For unknown routes and unhandled server errors, the backend returns JSON including:
+All backend errors return JSON including:
 
 - error
 - requestId
 
----
+Examples:
 
-### 404 Behavior
+- Unknown routes:
+  - error: Not found
 
-Unknown routes return JSON:
+- Unhandled server errors:
+  - error: Internal server error
 
-- error: Not found
-- requestId
-
----
-
-### Unhandled Server Errors
-
-Unhandled server failures return JSON:
-
-- error: Internal server error
-- requestId
+Use the `requestId` to trace issues in logs.
 
 ---
 
@@ -233,6 +236,9 @@ Unhandled server failures return JSON:
 
 - Check Google OAuth credentials
 - Ensure redirect URIs are correct
+- Verify Google OAuth configuration in Google Cloud Console:
+  - Navigate to: APIs & Services → Credentials → OAuth 2.0 Client IDs
+  - Ensure the Authorized Redirect URI matches `GOOGLE_CALLBACK_URL`
 
 ---
 

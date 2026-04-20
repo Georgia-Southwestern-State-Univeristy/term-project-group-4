@@ -48,6 +48,8 @@ No installation is required. Simply open the link and log in with Google.
 
 Once logged in, the main application will be visible.
 
+Note: Access may be limited to approved Google accounts if the OAuth application is in testing mode.
+
 ---
 
 ## Core Workflows
