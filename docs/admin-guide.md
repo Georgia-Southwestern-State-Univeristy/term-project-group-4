@@ -78,6 +78,7 @@ npm run dev:full
 
 - GOOGLE_CLIENT_ID
 - GOOGLE_CLIENT_SECRET
+- GOOGLE_CALLBACK_URL
 - SESSION_SECRET
 
 ### Common / Deployment Variables
@@ -237,8 +238,7 @@ Examples:
 - Ensure redirect URIs are correct
 - Verify Google OAuth configuration in Google Cloud Console:
   - Navigate to: APIs & Services → Credentials → OAuth 2.0 Client IDs
-  - Ensure the Authorized Redirect URI matches:
-      /auth/google/callback
+  - Ensure the Authorized Redirect URI matches: /auth/google/callback
 
 ---
 
