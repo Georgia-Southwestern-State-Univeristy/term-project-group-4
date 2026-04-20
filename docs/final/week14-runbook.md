@@ -108,12 +108,13 @@ Click **Apply** (2-3 min wait).
 ### Automated CI/CD Flow (Default)
 
 When you push to `main`, GitHub Actions automatically:
-1. Installs dependencies (`npm install`)
-2. Builds the frontend (`npm run build`)
-3. Runs all tests (`npm run test:all`)
-4. On success, deploys to Elastic Beanstalk
-5. EB runs predeploy hooks (EBS mount + migrations)
-6. Application starts and becomes available
+1. Installs dependencies (`npm ci`)
+2. Runs linter (`npm run eslint`)
+3. Runs Vitest unit tests (`npm run test`)
+4. Builds the frontend (`npm run build`)
+5. On success, deploys to Elastic Beanstalk
+6. EB runs predeploy hooks (EBS mount + migrations)
+7. Application starts and becomes available
 
 **No manual action required.**
 
@@ -158,8 +159,8 @@ Then in EB console: **Upload and deploy** > Select zip > **Deploy**
 ```bash
 curl https://<YOUR_DOMAIN>/health
 # Replace <YOUR_DOMAIN> with your environment URL (e.g., smart-checklist-test-naren-env.eba-ievuxvxp.us-east-2.elasticbeanstalk.com for test, or spcg.zentrofi.com for production)
-# Expected response:
-# {"status":"ok","version":"1.0.0","environment":"production","requestId":"...","uptimeSeconds":...,"database":"connected","config":"loaded"}
+# Expected response (production):
+# {"status":"ok","environment":"production","version":"1.0.0","requestId":"abc123","uptimeSeconds":1234,"database":{"writable":true},"config":{"valid":true}}
 ```
 
 ### SSH to instance and verify EBS mount
@@ -183,7 +184,7 @@ sqlite3 /data/trips.db ".tables"
 2. Click **Login with Google** and authenticate
 3. Create trip: name="Test", destination="Beach", duration="3 days"
 4. Click **Generate Checklist** → **Save Trip**
-5. Verify toast shows "Saved! (ID: ...)"
+5. Verify toast shows "Trip saved successfully."
 6. Toggle one checklist item as packed
 7. **Reload page** (Cmd+R / Ctrl+R)
 8. Click **Load** on the saved trip
@@ -204,7 +205,7 @@ sqlite3 /data/trips.db ".tables"
 | EB environment is Red | **Logs** > Check for missing env vars |
 | App won't start | Verify `SQLITE_PATH=/data/trips.db` is set |
 | Save/Load fails | SSH in and check `df -h \| grep /data` — volume must be mounted |
-| Login redirects wrong | Verify `FRONTEND_URL` in EB env matches OAuth redirect URI in Google Console |
+| Login fails or redirects wrong | Verify `FRONTEND_URL` in EB env is set correctly. In Google Console OAuth credentials, set authorized redirect URIs to `https://<YOUR_DOMAIN>/auth/google/callback` (not `FRONTEND_URL`) |
 
 ---
 
