@@ -25,7 +25,7 @@ Each team member confirms completion of the peer evaluation survey below:
 |-------------------------|-----------|--------------  |
 | Heather Hawn            |    Yes    |   04/20/2026   |
 | Jason Parrish           |    Yes    |  [MM/DD/YYYY]  |
-| Nareenchowdary Rayapati |    Yes    |  [MM/DD/YYYY]  |
+| Nareenchowdary Rayapati |    Yes    |   04/25/2026   |
 
 ---
 
