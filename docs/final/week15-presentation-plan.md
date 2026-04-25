@@ -91,7 +91,7 @@ The demo will follow the exact rehearsed QA path:
 - Confirm application loads successfully in production
 - Reinforce that the system is live on AWS Elastic Beanstalk
 
-### 4. Reliability, Testing, and QA (2 minutes)
+### 4. Reliability, Testing, and QA (3 minutes)
 **Speaker: Naren**
 
 - E2E testing with Playwright (test-mode auth)
@@ -102,6 +102,17 @@ The demo will follow the exact rehearsed QA path:
   - structured logging
   - `/health` endpoint
 - QA checklist + demo rehearsal validation
+
+**Talking points:**
+
+- Shift left policy + Test Pyramid
+- Unit tests: Vi tests
+- Playwright: rationale for choosing
+- Test Auth mode for tests and why?
+- Show tests for regression defects
+- Error handling: Show error from Swagger
+- Show structured logs in the local environment 
+
 
 ---
 
