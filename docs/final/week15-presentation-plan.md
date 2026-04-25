@@ -35,26 +35,56 @@ The presentation is designed to:
 
 ---
 
-### 2. System Architecture Overview (2 minutes)
+### 2. System Architecture Overview (3 minutes)
 **Speaker: Jason**
+ 
+- High-level system architecture:
+  - Frontend: Vite + Vanilla JavaScript
+  - Backend: Node.js + Express
+  - Database: SQLite via Knex
+  - Authentication: Google OAuth (Passport.js)
+  - Deployment: AWS Elastic Beanstalk
 
-- Frontend: Vite + Vanilla JS
-- Backend: Node.js + Express
-- Database: SQLite via Knex
-- Authentication: Google OAuth (Passport.js)
-- Deployment: AWS Elastic Beanstalk
+- Show how to run the system locally:
+  - Run: `npm run dev:full`
+  - Frontend served at http://localhost:5173
+  - Backend API running at http://localhost:3000
 
 Key points:
 - Request flow (client → server → database)
-- Authentication + user-scoped data
-- Why SQLite + single-instance was chosen
+- Why SQLite + single-instance deployment was chosen (simplicity, scope alignment)
+
+---
+
+### 5. API & System Interfaces (1 minutes)
+**Speaker: Jason**
+
+- REST API supports all trip operations:
+  - `GET /api/trips`
+  - `POST /api/saveTrip`
+  - `PUT /api/trips/:id`
+  - `DELETE /api/trips/:id`
+
+- Enforces user-scoped access via session-based authentication
+
+- Clearly defined request/response contracts
+  - input validation
+  - structured error responses
+
+- Fully documented with OpenAPI:
+  - `/docs/api/openapi.yaml`
 
 ---
 
 ### 3. Demo (Core Workflows) (6 minutes)
 **Speaker: Heather**  
 
-The demo will follow the exact rehearsed QA path:
+The demo will be performed on the live deployed application:
+
+#### Phase 0: Open Deployed Application
+
+- https://spcg.zentrofi.com
+- Confirm application loads successfully
 
 #### Phase 1: Authentication
 - Show unauthenticated state
@@ -84,14 +114,8 @@ The demo will follow the exact rehearsed QA path:
 
 ---
 
-### 5: Show Deployed Version (30-45 seconds)
-**Speaker: Naren**
 
-- Show deployed application: https://spcg.zentrofi.com
-- Confirm application loads successfully in production
-- Reinforce that the system is live on AWS Elastic Beanstalk
-
-### 4. Reliability, Testing, and QA (2 minutes)
+### 4. Reliability and Testing (2 minutes)
 **Speaker: Naren**
 
 - E2E testing with Playwright (test-mode auth)
@@ -101,44 +125,43 @@ The demo will follow the exact rehearsed QA path:
   - request IDs
   - structured logging
   - `/health` endpoint
-- QA checklist + demo rehearsal validation
 
 ---
 
-### 5. Future Improvements & Known Constraints (1 minutes)
-**Speaker: Jason**
+### 6. Future Improvements & Known Constraints (1 minutes)
+**Speaker: Naren**
 
 - Future improvements:
   - Refactor duplicated validation logic across routes
   - Move database migrations to a deploy-time step
   - Expand server-side validation for checklist data
+  - Extend API to support mobile clients or external integrations
 
 - Known constraints:
   - SQLite with single-instance deployment (no horizontal scaling)
   - In-memory session store (sessions reset on restart)
 
-- Handoff perspective:
-  - The system is stable and production-ready for its current scope
-  - Future work would focus on scalability, persistence, and backend modularization
+- System is stable for its current scope; future work focuses on scalability
 
 ---
 
-### 6. Closing & Q&A (1 minute)
+### 7. Closing & Q&A (1 minute)
 **Speaker: Naren**
 
 - Recap key strengths:
   - full-stack system
   - secure authentication
-  - persistent user data
-  - production deployment
+  - reliable data persistence across sessions
+  - live deployed application
+
 - Invite questions
 
 ---
 
 ## Demo Ownership
 
-- **Primary Demo Driver:** Jason
-- **Backup Demo Driver:** Heather  
+- **Primary Demo Driver:** Heather
+- **Backup Demo Driver:** Naren 
 
 ---
 
@@ -146,24 +169,17 @@ The demo will follow the exact rehearsed QA path:
 
 If the live demo partially fails, the team will:
 
-### 1. Use Hosted Environment
-- Switch to: https://spcg.zentrofi.com
+### 1. Use Local Environment
+- Switch to: `npm run dev:full`
 
 ### 2. Use Pre-Authenticated Session
 - Keep a logged-in session ready to skip OAuth delays
 
-### 3. Use Pre-Recorded Screenshots (Last Resort)
+### 3. Use Pre-Recorded Screenshots/Video (Last Resort)
 - Show:
   - checklist generation
   - save/load flow
   - edit workflow
-
-### 4. Narrate Expected Behavior
-- Clearly explain:
-  - what should happen
-  - what was validated during QA rehearsal
-
-**Key principle:** Even if the demo fails, the team demonstrates understanding and system correctness.
 
 ---
 
