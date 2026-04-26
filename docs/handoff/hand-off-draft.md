@@ -1,4 +1,4 @@
-# Smart Packing Checklist Generator — Hand-Off Document
+ex# Smart Packing Checklist Generator — Hand-Off Document
 
 This document provides an overview of the system, its architecture, stack rationale, deployment, and guidance for future maintainers. It is intended to help a new team quickly understand how the project works, how to run it, what was accepted as a trade-off, and where to focus future improvements.
 
@@ -46,39 +46,9 @@ The application is a Vite-built vanilla-JS SPA served by an Express backend. Use
 
 ### Component Diagram
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                      AWS Elastic Beanstalk                     │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                 Express Server (server.js)               │  │
-│  │                                                          │  │
-│  │  ┌────────────┐ ┌────────────┐ ┌──────────┐ ┌────────┐   │  │
-│  │  │ Request ID │ │  Passport  │ │   API    │ │ Static │   │  │
-│  │  │ Middleware │→│   OAuth    │→│  Routes  │ │ Assets │   │  │
-│  │  │            │ │ + Session  │ │  /api/*  │ │ dist/  │   │  │
-│  │  └────────────┘ └────────────┘ └────┬─────┘ └────────┘   │  │
-│  │                                     │                    │  │
-│  │  ┌────────────┐ ┌──────────────────────────────────────┐ │  │
-│  │  │  Winston   │ │  Data Layer (server/storage.js)      │ │  │
-│  │  │  Logger    │ │  Knex.js + better-sqlite3            │ │  │
-│  │  └────────────┘ └─────────────────┬────────────────────┘ │  │
-│  └───────────────────────────────────┼──────────────────────┘  │
-│                                      │                         │
-│  ┌───────────────────────────────────▼──────────────────────┐  │
-│  │            SQLite Database (/data/trips.db)              │  │
-│  │            on persistent EBS Volume                      │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────┘
-         ▲                                        │
-         │ HTTPS (spcg.zentrofi.com)              │ Deploy
-         │                                        │
-┌────────┴───────┐                  ┌─────────────▼─────────────┐
-│ Browser (SPA)  │                  │   GitHub Actions CI/CD    │
-│ Vite-built     │                  │   ci.yaml + deploy.yaml   │
-│ Vanilla JS     │                  └───────────────────────────┘
-└────────────────┘
-```
+![Architecture Diagram](../architecture/diagrams/architecture-snapshot-3.drawio.svg)
+
+*Source diagram:* [`architecture-snapshot-3.drawio`](../architecture/diagrams/architecture-snapshot-3.drawio)
 
 ### Request Flow
 
