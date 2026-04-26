@@ -52,7 +52,8 @@ The presentation is designed to:
 
 Key points:
 - Request flow (client → server → database)
-- Why SQLite + single-instance deployment was chosen (simplicity, scope alignment)
+- Authentication and user-scoped data
+- Key architectural decisions (SQLite, single-instance deployment, vanilla JS)
 
 ---
 
@@ -185,10 +186,8 @@ If the live demo partially fails, the team will:
 
 ## Slide Deck / Notes
 
-- Slide deck: *(Insert link here if available)*
-- Presentation notes based on this document:
-  - `/docs/final/week15-qa.md`
-  - `/docs/releases/release-candidate.md`
+- Slide deck: https://canes.sharepoint.com/:p:/r/sites/AdvSoftwareEngineeringGroup-4/_layouts/15/Doc.aspx?sourcedoc=%7B89DBC21F-BF79-4998-AC25-C74D5C010664%7D&file=Week%2015%20Slide%20Deck.pptx&action=edit&mobileredirect=true
+- Presentation notes: https://canes.sharepoint.com/:w:/r/sites/AdvSoftwareEngineeringGroup-4/_layouts/15/Doc2.aspx?action=edit&sourcedoc=%7B8afaf8d2-42dd-43a1-b802-836907fe5939%7D&wdExp=TEAMS-TREATMENT&web=1
 
 ---
 
