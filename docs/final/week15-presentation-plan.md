@@ -56,26 +56,6 @@ Key points:
 
 ---
 
-### 5. API & System Interfaces (1 minutes)
-**Speaker: Jason**
-
-- REST API supports all trip operations:
-  - `GET /api/trips`
-  - `POST /api/saveTrip`
-  - `PUT /api/trips/:id`
-  - `DELETE /api/trips/:id`
-
-- Enforces user-scoped access via session-based authentication
-
-- Clearly defined request/response contracts
-  - input validation
-  - structured error responses
-
-- Fully documented with OpenAPI:
-  - `/docs/api/openapi.yaml`
-
----
-
 ### 3. Demo (Core Workflows) (6 minutes)
 **Speaker: Heather**  
 
@@ -128,8 +108,28 @@ The demo will be performed on the live deployed application:
 
 ---
 
-### 6. Future Improvements & Known Constraints (1 minutes)
+### 5. API & System Interfaces (1 minutes)
 **Speaker: Naren**
+
+- REST API supports all trip operations:
+  - `GET /api/trips`
+  - `POST /api/saveTrip`
+  - `PUT /api/trips/:id`
+  - `DELETE /api/trips/:id`
+
+- Enforces user-scoped access via session-based authentication
+
+- Clearly defined request/response contracts
+  - input validation
+  - structured error responses
+
+- Fully documented with OpenAPI:
+  - `/docs/api/openapi.yaml`
+
+---
+
+### 6. Future Improvements & Known Constraints (1 minutes)
+**Speaker: Jason**
 
 - Future improvements:
   - Refactor duplicated validation logic across routes
