@@ -1,6 +1,8 @@
-# Week 15: Final Sprint - Final QA, Presentation Prep, and Peer Evaluation
+# A) Final Sprint Goal + Closing Backlog
 
-**Sprint Goal:** Enter the final demo as a release-ready team — critical security and validation debt closed, the demo path rehearsed end-to-end, and hand-off and presentation materials finalized for Week 16.
+## Sprint Goal
+
+Enter the final demo as a release-ready team — critical security and validation debt closed, the demo path rehearsed end-to-end, and hand-off and presentation materials finalized for Week 16.
 
 ---
 
