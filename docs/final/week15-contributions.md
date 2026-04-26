@@ -20,23 +20,81 @@ This document is intended to provide clear, evidence-based accountability for in
 ## Heather Hawn
 
 **Role on Team:**  
-(e.g., PM, frontend, documentation, QA, etc.)
+Project Manager / Scrum Master, Documentation Lead, QA / DevOps Support, Frontend Development.
 
-**Major Contributions since Beta:**  
-- 
-- 
-- 
+**Major Contributions since Beta:**
 
-**Relevant PRs / Commits / Docs / Reviews:**  
-- PR #___ –  
-- PR #___ –  
-- Docs:  
-- Reviews:  
+- **Frontend correctness, state management, and UX reliability:**  
+  Resolved key UI and state inconsistencies across core workflows. Fixed the flaky edit-mode behavior (#126) by centralizing UI state ownership and eliminating race conditions and inconsistent state updates, improving reliability of checklist generation, save/reset flows, and edit/update transitions.
+- **System integration, validation, and code health ownership:**  
+  Validated end-to-end system behavior across frontend, backend, and persistence layers, ensuring consistent runtime behavior between frontend UI state and backend authentication (`/auth/user`). Identified and resolved mismatches affecting core workflows (authentication, checklist generation, save/load/edit), and ensured implemented behavior, UI state, and documentation remained aligned before final evaluation.
+- **E2E testing and CI reliability (Playwright):**  
+  Diagnosed instability caused by reliance on real Google OAuth in CI. Implemented the shift to test-mode authentication (`NODE_ENV=test` + `x-test-user-id`), enabling stable, repeatable E2E tests that validate real application state via `/auth/user` rather than brittle external OAuth flows. Aligned Playwright configuration and CI setup to enable stable, repeatable execution across environments.
+- **Documentation ownership and release alignment:**  
+  Led creation and alignment of major documentation (README, user/admin guides, release notes, repo polish). Ensured documentation reflects the deployed system and matches deliverable requirements, improving clarity for reviewers and future maintainers.
 
-**Final Presentation Focus:**  
-- 
-- 
-- 
+**Relevant PRs / Commits / Docs / Reviews:**
+
+**PRs:**
+- Week 15:
+  - PR #147 – Presentation plan and speaking roles
+- Week 14:
+  - PR #143 – Documentation alignment and repository polish
+  - PR #138 – User Guide and Admin / Maintenance Guide
+- Week 13:
+  - PR #132 – Hand-off document draft
+  - PR #131 – Refactoring and code health documentation
+  - PR #130 – Fix for flaky edit-mode UI behavior (#126)
+- Week 12:
+  - PR #107 – Core system stabilization: authentication/test-mode alignment (including `/auth/user`), Playwright reliability, and CI/deployment verification fixes
+  - PR #108 – Smoke test correction
+  - PR #114 – Checklist loading UX simplification
+  - PR #116 – Checklist update visual feedback improvements
+  - PR #117 – Auth failure redirect and user messaging
+  - PR #127 – Known issues updates
+  - PR #128 – README updates and Beta-state documentation alignment
+
+**PR Reviews:**
+- Week 14:
+  - PR #142 – Release candidate notes 
+  - PR #141 – Final bug triage
+  - PR #140 – Deployment runbook  
+  - PR #139 – API documentation
+- Week 13:
+  - PR #137 – Architecture snapshot update
+  - PR #136 – Sprint goals documentation
+  - PR #135 – UI behavior (toast message handling)  
+  - PR #134 – E2E test additions and updates  
+  - PR #133 – Observability and support visibility improvements (#101)
+- Week 12:
+  - PR #125 – Known issues file  
+  - PR #124 – Required-field validation improvements (#63)
+  - PR #123 – Trip form reset behavior (#61)
+  - PR #120 – Vitest configuration updates (#60)
+  - PR #119 – Save button state issue on loading saved trip  
+  - PR #112 – Retrospective and sprint planning  
+  - PR #111 – Deployment and reproduction path documentation
+  - PR #110 – Added new E2E tests  
+
+**Docs (Authored / Updated):**
+- `README.md`  
+- `docs/user-guide.md`  
+- `docs/admin-guide.md`  
+- `docs/final/week13-refactoring.md`  
+- `docs/handoff/hand-off-draft.md`  
+- `docs/final/week14-repo-polish.md`  
+- `docs/final/week15-presentation-plan.md`  
+- `docs/releases/beta-release.md`
+- `data/aws-hosting-plan.md`  
+- `data/aws-hosting-implementation.md`  
+- `docs/adr/ADR-003.md`  
+
+---
+
+**Final Presentation Focus:**
+
+- **Demo (Core Workflows):**
+  - Lead live demo of authentication, checklist generation, persistence, and edit workflows
 
 ---
 
