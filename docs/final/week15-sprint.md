@@ -29,8 +29,8 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 **Owner:** Jason
 **GitHub Issues:** [#82](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/82), [#81](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/81)
 
-- All DOM writes in `src/main.js` and `src/checklistRenderer.js` use `textContent` (no `innerHTML` for user-supplied strings)
-- `maxlength` attributes on `#trip-name` (≤100) and `#destination-type` (≤50), matched by server validation returning 400 on over-length input
+- All DOM writes in `src/main.js` and `src/checklistRenderer.js` use `textContent` (no `innerHTML` for user-supplied strings); inline code comment documents the requirement at the safe-write site
+- `maxlength` attributes on `#trip-name` (≤100) and `#destination-type` (≤50), matched by server validation that returns 400 with a clear error message on over-length input
 - Test coverage added for over-length and script-payload inputs
 
 ---
@@ -67,7 +67,7 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 
 ### 5. Final QA Checklist and Demo-Path Rehearsal
 **Owner:** Naren
-**Document:** [docs/final/week15-qa.md](week15-qa.md)
+**Document:** `docs/final/week15-qa.md` *(in flight: PR #146)*
 
 - Final QA checklist with ≥10 checks (startup, auth, core workflow, error handling, UI sanity) executed against the deployed release candidate
 - Exact demo path documented, rehearsed end-to-end, and any breakage or confusion captured with a disposition (fixed / risk-accepted)
@@ -77,7 +77,7 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 
 ### 6. Presentation Plan and Speaking Roles
 **Owner:** Heather
-**Document:** [docs/final/week15-presentation-plan.md](week15-presentation-plan.md)
+**Document:** `docs/final/week15-presentation-plan.md` *(in flight: PR #147)*
 
 - 12–15 minute presentation structured section-by-section with each section's speaker named
 - Demo driver identified and a backup plan documented for partial live-demo failure
@@ -87,7 +87,7 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 
 ### 7. Finalize Hand-Off Package
 **Owner:** Jason
-**Documents:** [docs/handoff/hand-off-draft.md](../handoff/hand-off-draft.md), [docs/final/week15-handoff-status.md](week15-handoff-status.md)
+**Documents:** [docs/handoff/hand-off-draft.md](../handoff/hand-off-draft.md), `docs/final/week15-handoff-status.md` *(in flight: PR #149)*
 
 - Hand-off draft updated to near-final form covering system overview, architecture snapshot, stack rationale, deploy/setup summary, known issues and constraints, recommended next steps, and references to user/admin guides
 - `week15-handoff-status.md` lists any remaining minor cleanup for Week 16 submission
@@ -97,7 +97,7 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 
 ### 8. Individual Contribution Snapshot and Peer Evaluation
 **Owner:** All team members
-**Documents:** [docs/final/week15-contributions.md](week15-contributions.md), [docs/final/week15-peer-eval-confirmation.md](week15-peer-eval-confirmation.md)
+**Documents:** `docs/final/week15-contributions.md` *(in flight: PR #145)*, `docs/final/week15-peer-eval-confirmation.md` *(in flight: PR #144)*
 
 - Each member completes their own section of `week15-contributions.md` with role, contributions since Beta, concrete PR / commit / doc / review evidence, and final-presentation speaking focus
 - Each member completes the instructor's peer-evaluation survey and marks their row in `week15-peer-eval-confirmation.md` with completion date
@@ -120,5 +120,5 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 ## Notes
 
 - Items 1 and 5 are the highest risk to the final demo. If either slips past mid-week, raise it to the team immediately so presentation content can be adjusted.
-- Items 2, 3, and 4 are important but not demo-blocking. If sprint capacity tightens, they may move to Week 16.
+- Items 2, 3, and 4 are committed for Week 15 closure; flag any blockers early so the team can rebalance, not de-commit.
 - Deliverables E and F (item 8) are individual accountability — each member's completion is independent and unblocked by the other work.
