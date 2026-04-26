@@ -121,9 +121,7 @@ npm run db:migrate
 
 #### Production
 
-In production, `migrateLatest()` **does not** run automatically on application startup.
-
-Instead, migrations **must be run explicitly during the deploy-time setup step** before the application starts.
+In production, `migrateLatest()` does not run automatically during application startup. Instead, migrations are applied during deployment by the Elastic Beanstalk predeploy hook at `.platform/hooks/predeploy/02_migrate.sh`, after the EBS volume is mounted.
 
 **Deployment workflow:**
 
