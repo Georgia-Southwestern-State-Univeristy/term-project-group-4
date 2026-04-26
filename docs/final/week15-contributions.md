@@ -167,32 +167,59 @@ Reviews:
 ## Nareenchowdary Rayapati
 
 **Role on Team:**  
-DevOps / QA Lead, Backup Developer.
+DevOps / QA Lead, Backend Developer.
 
-**Major Contributions since Beta (Weeks 13–15):**  
+**Major Contributions since Beta:**
 
-- **E2E Regression Test Suite:**  
-Added three new regression tests and imporved one existing test. (Issues #98, #121, #122, #126)
-- **Deployment & Release Runbook:** 
-Verified all the deployment steps on a brand new account and documented gaps (`docs/final/week14-runbook.md`).
-- **Improved UI Experience**
-Addressed mutiple toast messages stacking on the UI issue.
-- **Docs:**
-Documented Sprint goals release notes.
+- **Comprehensive E2E Regression Test Suite:**  
+  Designed and implemented critical Playwright tests covering authentication failure paths, error redirect handling, and toast message display. Added 3 new regression tests (issues #98, #121, #122) and improved a test #126, protecting core workflows from UI state regressions during rapid iteration. Tests validate user-facing error recovery behavior and prevent regression of auth and navigation flows.
 
-**Relevant PRs / Commits / Docs / Reviews:**  
+- **Deployment & Release Runbook Verification:**  
+  End-to-end verification of the entire Elastic Beanstalk deployment process on a fresh AWS account. Identified and documented deployment gaps, EBS volume mount behavior, predeploy hook sequencing, and environment configuration steps. Created comprehensive runbook (`docs/final/week14-runbook.md`) with step-by-step recovery procedures and troubleshooting guidance.
 
-- **E2E Regression Test Suite:** 
-PR #134 - https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/134
-- **Deployment & Release Runbook:**
-PR #140 - https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/140
-- **Improved UI Experience**
-PR #135 - https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/135
-- **Docs:**
-PR #136 - https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/136
-PR #142 - https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/142
+- **UI Reliability: Toast Message Stacking Fix:**  
+  Diagnosed and resolved toast notification overlap issue affecting error message visibility. Implemented state management improvements to prevent multiple overlapping toasts, improving user experience and error visibility during failure scenarios (issue #122).
+
+- **Sprint Planning & Documentation:**  
+  Contributed to sprint planning documents, release notes alignment, and quality assurance documentation. Ensured test coverage roadmap and QA strategies were documented for handoff to future maintainers.
+
+**Relevant PRs / Commits / Docs / Reviews:**
+
+**PRs (Authored / Opened):**
+- Week 15:
+  - PR #156 - Gate migrateLatest() out of production startup
+  - PR #146 - Documented demo path along with quality checks.
+- Week 14:
+  - PR #140 – Week 14 Deliverable B: deployment runbook verification and documentation
+  - PR #142 – Week 14 Deliverable E: release-candidate notes alignment
+- Week 13:
+  - PR #134 – Week 13 Deliverable E: E2E regression test suite (issues #98, #121, #122)
+  - PR #135 – Week 13: Toast message stacking fix and UI reliability improvements
+  - PR #136 – Week 13 Deliverable A: sprint goals documentation
+- Week 12:
+  - PR #110 – Week 12: Added two new e2e tests
+  - PR #119 - Week 12: Addressed 'Save' button state issue upon loading a saved trip
+  - PR #125 – Week 12: added known issues file
+
+**PR Reviews:**
+- Week 14:
+  - PR #141 – Final bug triage (QA perspective)
+  - PR #139 – API documentation (backend validation review)
+  - PR #143 – Repository polish and documentation alignment
+- Week 13:
+  - PR #137 – Architecture snapshot update (deployment/infrastructure review)
+  - PR #133 – Observability improvements (#101)
+- Week 12:
+  - PR #131 – Refactoring and code health
+  - PR #130 – Edit-mode UI fix (#126)
+
+**Docs (Authored / Substantially Updated):**
+- `docs/final/week14-runbook.md` (deployment verification & troubleshooting)
+- `docs/final/week13-tests.md` (regression test coverage summary)
+- `docs/releases/release-candidate.md` (QA perspective on known issues)
+- Sprint planning contributions to `docs/final/week13-sprint.md` and `docs/final/week14-triage.md`
 
 **Final Presentation Focus:**  
 - Quality, Reliability and Observability
-- Future Improvements & Known Constraints (Either Jason or I)
-- CLosing
+- API & System Interfaces
+- Closing
