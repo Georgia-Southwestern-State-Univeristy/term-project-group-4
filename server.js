@@ -673,7 +673,11 @@ if (isDirectRun) {
     ensureProductionStorageReady();
   }
 
-  await migrateLatest();
+  // Only run migrations automatically in development and test modes.
+  // In production, migrations must be run explicitly as part of the deploy-time setup step.
+  if (process.env.NODE_ENV !== 'production') {
+    await migrateLatest();
+  }
 
   app.listen(PORT, () => {
     logger.info({
