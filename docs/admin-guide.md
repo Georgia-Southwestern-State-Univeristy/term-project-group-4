@@ -105,11 +105,36 @@ This is used by Playwright tests and should not be enabled in production.
 
 ### Migrations
 
-Run migrations:
+#### Development
+
+In local development, migrations are **automatically applied on server startup** when you run:
+
+```bash
+npm run dev:full
+```
+
+To manually run migrations without starting the server:
 
 ```bash
 npm run db:migrate
 ```
+
+#### Production
+
+In production, `migrateLatest()` does not run automatically during application startup. Instead, migrations are applied during deployment by the Elastic Beanstalk predeploy hook at `.platform/hooks/predeploy/02_migrate.sh`, after the EBS volume is mounted.
+
+**Deployment workflow:**
+
+1. Predeploy hook (or manual step): Run `npm run db:migrate`
+2. Application starts (migrations already applied)
+3. Server listens for requests
+
+This follows the [12-factor app](https://12factor.net/) principle of separating the Build, Release, and Run stages. Running DDL automatically on every instance boot can lead to:
+
+- Unintended schema changes during auto-scaling events
+- Permission issues if the app DB user has unexpected DDL privileges
+- Race conditions during rolling deployments
+
 ---
 
 ### Seed Demo Data
