@@ -108,6 +108,8 @@ function renderSavedTrips(trips, loadTrip, deleteTrip) {
     const li = document.createElement('li');
 
     const info = document.createElement('span');
+    // trip.name and trip.destinationType are user-supplied. Always render via
+    // textContent — never innerHTML — to prevent XSS.
     info.textContent = `${trip.name} — ${trip.destinationType}, ${trip.duration} day${trip.duration === 1 ? '' : 's'}`;
 
     const actions = document.createElement('div');
