@@ -30,4 +30,15 @@ export default [
       'no-undef': 'error',
     },
   },
+  // DOM-using tests run under Vitest's jsdom environment (set per-file via
+  // `// @vitest-environment jsdom`). Add browser globals so ESLint recognizes
+  // `document`, `window`, etc. at static-analysis time.
+  {
+    files: ['tests/checklistRenderer.test.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
 ];
