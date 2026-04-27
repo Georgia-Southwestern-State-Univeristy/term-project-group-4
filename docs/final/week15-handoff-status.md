@@ -1,14 +1,15 @@
 # Week 15: Hand-Off Document Status
 
-**Date:** 2026-04-22
+**Date:** 2026-04-22 *(resolution recorded 2026-04-27)*
 **Document tracked:** [docs/handoff/hand-off-draft.md](../handoff/hand-off-draft.md)
-**Purpose:** Track remaining minor cleanup on the hand-off document before Week 16 submission. This is a punch-list, not a rewrite plan. The hand-off draft is substantively complete and usable as-is; items below are polish, not gaps that block a reader from understanding the system.
+**Status:** All six punch-list items resolved in [PR #152](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/152) (merged 2026-04-27, commit `b7d77b8`).
+**Purpose:** Documents the hand-off polish punch-list identified during Week 15, and confirms each item's resolution.
 
 ---
 
 ## Current State
 
-The hand-off draft (merged via PR #132 in Week 13) already covers:
+The hand-off draft (originally merged via PR #132 in Week 13) covered:
 
 - System overview — purpose, core features
 - Stack and tool choices — frontend, backend, database, auth, testing, observability, deployment
@@ -17,11 +18,11 @@ The hand-off draft (merged via PR #132 in Week 13) already covers:
 - Recommended next steps — 6 future-work items
 - Final notes — closing framing on system readiness
 
-This content is accurate and reflects the post-Week-13 state of the system.
+This content was accurate but missing several rubric requirements (architecture snapshot, stack rationale, user/admin guide cross-references, accepted-vs-debt framing, supporting-doc links, and a non-draft title). The polish items below addressed those gaps.
 
 ---
 
-## Remaining Cleanup for Week 16
+## Hand-Off Polish Items (Resolved in PR #152)
 
 ### 1. Add architecture snapshot section or cross-reference
 
@@ -30,6 +31,8 @@ Why: The rubric expects an architecture snapshot in the hand-off document. The c
 Action: Either inline a condensed snapshot (client → Express → Knex → SQLite, with auth, observability, and deploy annotations) or link to [docs/architecture/architecture-snapshot.md](../architecture/architecture-snapshot.md) and [docs/final/week13-architecture.md](week13-architecture.md) with a one-paragraph summary.
 
 Effort: Small (30–60 minutes).
+
+Resolved: New `## Architecture Snapshot` section added with overview paragraph, SVG component diagram ([docs/architecture/diagrams/architecture-snapshot-3.drawio.svg](../architecture/diagrams/architecture-snapshot-3.drawio.svg)), numbered request-flow steps, and cross-references to the existing architecture docs.
 
 ---
 
@@ -41,6 +44,8 @@ Action: Add a short "why" line under each stack entry, or a consolidated "Stack 
 
 Effort: Small (30 minutes).
 
+Resolved: One-line **Why:** rationale added under each stack subsection (Frontend, Backend, Database, Authentication, Deployment) with links to the relevant ADRs.
+
 ---
 
 ### 3. Link user and admin guides
@@ -50,6 +55,8 @@ Why: The rubric requires *user/admin guidance references*. Both [docs/user-guide
 Action: Add a "User and Admin Guidance" section near the end of the hand-off with links and a one-line summary of each.
 
 Effort: Very small (15 minutes).
+
+Resolved: New `## User and Admin Guidance` section near the end of the hand-off with links and one-line summaries of [docs/user-guide.md](../user-guide.md) and [docs/admin-guide.md](../admin-guide.md).
 
 ---
 
@@ -67,6 +74,8 @@ Action: Split the "Known Weaknesses" section into two subsections — *Accepted 
 
 Effort: Small (30 minutes).
 
+Resolved: "Known Weaknesses / Technical Debt" replaced with two distinct sections — `## Accepted Known Constraints` (SQLite + single-instance EB, in-memory session store, each with explicit "Why accepted" rationale and migration paths) and `## Technical Debt` (the four real cleanup items). "Recommended Next Steps" item 5 also reframed as "Lift the Accepted Constraints When Scale Demands It" so it inherits from the new Accepted section rather than contradicting it.
+
 ---
 
 ### 5. Add references to new supporting documents
@@ -82,6 +91,8 @@ Action: Add a "Related Documentation" section near the end with these links, gro
 
 Effort: Very small (15 minutes).
 
+Resolved: New `## Related Documentation` section grouped by purpose (Architecture & Design, API, Deployment & Operations, Observability, Release & Status) with all four supporting docs linked, plus the three ADRs and the Week 14 triage.
+
 ---
 
 ### 6. Rename "Draft" in document title
@@ -92,19 +103,21 @@ Action: Rename the heading and consider moving the file from `docs/handoff/hand-
 
 Effort: Trivial, but sequenced last to avoid link churn during polish.
 
+Resolved: Title heading updated to `# Smart Packing Checklist Generator — Hand-Off Document`. Filename kept as `hand-off-draft.md` per team direction (the deliverable spec names that path explicitly, and the existing cross-references from this status doc and the Week 13 sprint doc continue to resolve).
+
 ---
 
 ## Summary
 
-| # | Item | Owner | Effort | Priority |
-|---|------|-------|--------|----------|
-| 1 | Architecture snapshot section or cross-reference | Jason | 30–60 min | Must |
-| 2 | Stack rationale (not just stack list) | Jason | 30 min | Must |
-| 3 | Link user and admin guides | Jason | 15 min | Must |
-| 4 | Reframe accepted constraints vs. technical debt | Jason | 30 min | Should |
-| 5 | Add references to new supporting documents | Jason | 15 min | Should |
-| 6 | Rename "Draft" in title | Jason | trivial | Last |
+| # | Item | Owner | Effort | Priority | Status |
+|---|------|-------|--------|----------|--------|
+| 1 | Architecture snapshot section or cross-reference | Jason | 30–60 min | Must | Resolved (PR #152) |
+| 2 | Stack rationale (not just stack list) | Jason | 30 min | Must | Resolved (PR #152) |
+| 3 | Link user and admin guides | Jason | 15 min | Must | Resolved (PR #152) |
+| 4 | Reframe accepted constraints vs. technical debt | Jason | 30 min | Should | Resolved (PR #152) |
+| 5 | Add references to new supporting documents | Jason | 15 min | Should | Resolved (PR #152) |
+| 6 | Rename "Draft" in title | Jason | trivial | Last | Resolved (PR #152) |
 
-**Total estimated effort:** 2–2.5 hours, all Week 16.
-
-**Blocking risk:** None. Every item above is additive or reframing — no structural rewrite required. The hand-off is already substantively usable by a future team; these changes bring it to rubric-complete and professional-final form.
+**Original estimated effort:** 2–2.5 hours, all Week 16.
+**Actual outcome:** All six items completed in PR #152 (merged 2026-04-27), within Week 15. No follow-up cleanup required for Week 16.
+**Blocking risk:** Closed. The hand-off document is rubric-complete and ready for final submission.
