@@ -441,6 +441,22 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
+    if (trimmedName.length > 100) {
+      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
+        reason: 'Trip name exceeds maximum length',
+        received: { nameLength: trimmedName.length, max: 100 },
+      });
+      return res.status(400).json({ error: 'Trip name must be 100 characters or fewer' });
+    }
+
+    if (trimmedType.length > 50) {
+      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
+        reason: 'Destination type exceeds maximum length',
+        received: { destinationTypeLength: trimmedType.length, max: 50 },
+      });
+      return res.status(400).json({ error: 'Destination type must be 50 characters or fewer' });
+    }
+
     if (!Number.isInteger(duration) || duration < 1) {
       await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
         reason: 'Invalid duration value',
@@ -531,8 +547,14 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
     if (name !== undefined && !name.trim()) {
       return res.status(400).json({ error: 'name must not be blank' });
     }
+    if (name !== undefined && name.trim().length > 100) {
+      return res.status(400).json({ error: 'Trip name must be 100 characters or fewer' });
+    }
     if (destinationType !== undefined && !destinationType.trim()) {
       return res.status(400).json({ error: 'destinationType must not be blank' });
+    }
+    if (destinationType !== undefined && destinationType.trim().length > 50) {
+      return res.status(400).json({ error: 'Destination type must be 50 characters or fewer' });
     }
 
     if (checklist && Array.isArray(checklist)) {
