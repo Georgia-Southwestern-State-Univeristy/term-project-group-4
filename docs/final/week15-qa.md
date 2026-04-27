@@ -246,7 +246,7 @@ All checks must pass **before** the final presentation. Run through this checkli
 
 ---
 
-## What Broke During Rehearsal and Was Fixed
+## What Broke During Rehearsal
 
 ### ❌ **Issue #150: 'Update Trip' Button Enabled When User Interacts with Checklist**
 
@@ -280,4 +280,12 @@ Both issues were identified during rehearsal and entered into the backlog. No co
 ---
 
 ## High-Priority PRs for Final Release
+
+| PR | Status | Title | Link |
+|---:|:------:|:------|:-----|
+| #153 | Delivered (merged) | Added a condition to DB migration | [#153](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/153) |
+| #154 | Draft | WIP: Audit and eliminate XSS in trip rendering (#82) | [#154](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/154) |
+| #155 | Draft | WIP: Add input length limits on trip fields (#81) | [#155](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/155) |
+
+
 
