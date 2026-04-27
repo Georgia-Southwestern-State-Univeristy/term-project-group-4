@@ -22,7 +22,7 @@ This document confirms that all team members have completed the required peer ev
 Each team member confirms completion of the peer evaluation survey below:
 
 | Team Member             | Completed | Date Completed |
-|-------------------------|-----------|--------------  |
+|-------------------------|-----------|----------------|
 | Heather Hawn            |    Yes    |   04/20/2026   |
 | Jason Parrish           |    Yes    |   04/26/2026   |
 | Nareenchowdary Rayapati |    Yes    |   04/25/2026   |
