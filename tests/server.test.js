@@ -277,7 +277,7 @@ describe('POST /api/saveTrip', () => {
     });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Trip name must be 100 characters or fewer');
+    expect(res.body.error).toBe('name must be 100 characters or fewer');
   });
 
   it('returns 400 when destinationType exceeds 50 characters', async () => {
@@ -289,7 +289,7 @@ describe('POST /api/saveTrip', () => {
     });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Destination type must be 50 characters or fewer');
+    expect(res.body.error).toBe('destinationType must be 50 characters or fewer');
   });
 });
 
@@ -502,7 +502,7 @@ describe('PUT /api/trips/:tripId', () => {
       .send({ name: 'a'.repeat(101) });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Trip name must be 100 characters or fewer');
+    expect(res.body.error).toBe('name must be 100 characters or fewer');
   });
 
   it('returns 400 when destinationType update exceeds 50 characters', async () => {
@@ -517,7 +517,7 @@ describe('PUT /api/trips/:tripId', () => {
       .send({ destinationType: 'b'.repeat(51) });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Destination type must be 50 characters or fewer');
+    expect(res.body.error).toBe('destinationType must be 50 characters or fewer');
   });
 });
 
