@@ -293,9 +293,7 @@ export function initTripForm({ onTripSaved } = {}) {
       }
 
       if (onTripSaved) await onTripSaved();
-
-      // Keep disabled after new-trip reset; re-enable only for loaded/edit trips.
-      saveTripBtn.disabled = !savedTripId;
+      
     } catch (err) {
       showToast(`Failed to save trip: ${err.message}`, 'error');
       console.error('Failed to save trip:', err);
