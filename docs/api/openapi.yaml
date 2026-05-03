@@ -178,9 +178,11 @@ components:
       properties:
         name:
           type: string
+          maxLength: 100
           example: My Beach Trip
         destinationType:
           type: string
+          maxLength: 50
           example: beach
         duration:
           type: integer
@@ -196,9 +198,11 @@ components:
       properties:
         name:
           type: string
+          maxLength: 100
           example: Updated Beach Trip
         destinationType:
           type: string
+          maxLength: 50
           example: beach
         duration:
           type: integer

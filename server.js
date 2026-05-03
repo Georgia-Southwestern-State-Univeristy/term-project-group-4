@@ -37,6 +37,8 @@ const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filen
 
 const MAX_REQUEST_ID_LENGTH = 128;
 const REQUEST_ID_HEADER_VALUE_PATTERN = /^[A-Za-z0-9._-]+$/;
+const MAX_TRIP_NAME_LENGTH = 100;
+const MAX_DESTINATION_TYPE_LENGTH = 50;
 
 function isMissingConfigValue(key) {
   const value = process.env[key];
@@ -441,6 +443,22 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
+    if (trimmedName.length > MAX_TRIP_NAME_LENGTH) {
+      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
+        reason: 'Trip name exceeds maximum length',
+        received: { nameLength: trimmedName.length, max: MAX_TRIP_NAME_LENGTH },
+      });
+      return res.status(400).json({ error: `name must be ${MAX_TRIP_NAME_LENGTH} characters or fewer` });
+    }
+
+    if (trimmedType.length > MAX_DESTINATION_TYPE_LENGTH) {
+      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
+        reason: 'Destination type exceeds maximum length',
+        received: { destinationTypeLength: trimmedType.length, max: MAX_DESTINATION_TYPE_LENGTH },
+      });
+      return res.status(400).json({ error: `destinationType must be ${MAX_DESTINATION_TYPE_LENGTH} characters or fewer` });
+    }
+
     if (!Number.isInteger(duration) || duration < 1) {
       await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
         reason: 'Invalid duration value',
@@ -531,8 +549,14 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
     if (name !== undefined && !name.trim()) {
       return res.status(400).json({ error: 'name must not be blank' });
     }
+    if (name !== undefined && name.trim().length > MAX_TRIP_NAME_LENGTH) {
+      return res.status(400).json({ error: `name must be ${MAX_TRIP_NAME_LENGTH} characters or fewer` });
+    }
     if (destinationType !== undefined && !destinationType.trim()) {
       return res.status(400).json({ error: 'destinationType must not be blank' });
+    }
+    if (destinationType !== undefined && destinationType.trim().length > MAX_DESTINATION_TYPE_LENGTH) {
+      return res.status(400).json({ error: `destinationType must be ${MAX_DESTINATION_TYPE_LENGTH} characters or fewer` });
     }
 
     if (checklist && Array.isArray(checklist)) {
