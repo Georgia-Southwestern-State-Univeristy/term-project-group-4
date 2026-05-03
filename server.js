@@ -12,6 +12,14 @@ import {
   migrateLatest,
 } from './server/storage.js';
 import { requireAuth, resolveAuthenticatedUser, isTestModeRequest } from './server/auth.js';
+import {
+  ValidationError,
+  findMissingRequiredFields,
+  validateAndNormalizeTripName,
+  validateAndNormalizeDestinationType,
+  validateDuration,
+  validateChecklistShape,
+} from './server/tripValidators.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import { log, logger } from './server/logger.js';
@@ -37,8 +45,6 @@ const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filen
 
 const MAX_REQUEST_ID_LENGTH = 128;
 const REQUEST_ID_HEADER_VALUE_PATTERN = /^[A-Za-z0-9._-]+$/;
-const MAX_TRIP_NAME_LENGTH = 100;
-const MAX_DESTINATION_TYPE_LENGTH = 50;
 
 function isMissingConfigValue(key) {
   const value = process.env[key];
@@ -415,8 +421,6 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
 
   try {
     const { name, destinationType, duration, checklist } = req.body;
-    const trimmedName = name?.trim();
-    const trimmedType = destinationType?.trim();
 
     await log(requestId, 'CREATE_TRIP', 'START', {
       name,
@@ -424,77 +428,38 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       duration,
     });
 
-    if (!trimmedName || !trimmedType || duration === undefined || duration === null) {
-      const missingFields = [];
-      if (!trimmedName) missingFields.push('name');
-      if (!trimmedType) missingFields.push('destinationType');
-      if (duration === undefined || duration === null) missingFields.push('duration');
-
+    const missingFields = findMissingRequiredFields(req.body);
+    if (missingFields.length > 0) {
       await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
         reason: 'Missing required fields',
         missing: missingFields,
-        received: {
-          name: !!trimmedName,
-          destinationType: !!trimmedType,
-          duration: !(duration === undefined || duration === null),
-        },
       });
-
       return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
 
-    if (trimmedName.length > MAX_TRIP_NAME_LENGTH) {
-      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
-        reason: 'Trip name exceeds maximum length',
-        received: { nameLength: trimmedName.length, max: MAX_TRIP_NAME_LENGTH },
-      });
-      return res.status(400).json({ error: `name must be ${MAX_TRIP_NAME_LENGTH} characters or fewer` });
-    }
-
-    if (trimmedType.length > MAX_DESTINATION_TYPE_LENGTH) {
-      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
-        reason: 'Destination type exceeds maximum length',
-        received: { destinationTypeLength: trimmedType.length, max: MAX_DESTINATION_TYPE_LENGTH },
-      });
-      return res.status(400).json({ error: `destinationType must be ${MAX_DESTINATION_TYPE_LENGTH} characters or fewer` });
-    }
-
-    if (!Number.isInteger(duration) || duration < 1) {
-      await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
-        reason: 'Invalid duration value',
-        detail: 'duration must be a positive integer',
-        received: duration,
-      });
-      return res.status(400).json({ error: 'duration must be a positive integer' });
-    }
-
-    if (checklist && Array.isArray(checklist)) {
-      for (const item of checklist) {
-        if (!Object.prototype.hasOwnProperty.call(item, 'id') || typeof item.id !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have an "id" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'name') || typeof item.name !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "name" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'category') || typeof item.category !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "category" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'packed') || typeof item.packed !== 'boolean') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "packed" boolean field',
-          });
-        }
+    let trimmedName;
+    let trimmedType;
+    try {
+      trimmedName = validateAndNormalizeTripName(name);
+      trimmedType = validateAndNormalizeDestinationType(destinationType);
+      validateDuration(duration);
+      if (checklist && Array.isArray(checklist)) {
+        validateChecklistShape(checklist);
       }
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
+          reason: err.message,
+        });
+        if (err.kind === 'checklist') {
+          return res.status(400).json({
+            error: 'Invalid checklist payload',
+            message: err.message,
+          });
+        }
+        return res.status(400).json({ error: err.message });
+      }
+      throw err;
     }
 
     const trip = await createTrip({
@@ -536,62 +501,38 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
       updates: Object.keys(req.body),
     });
 
-    if (duration !== undefined && (!Number.isInteger(duration) || duration < 1)) {
-      await log(requestId, 'UPDATE_TRIP', 'VALIDATION_ERROR', {
-        tripId,
-        reason: 'Invalid duration value',
-        detail: 'duration must be a positive integer',
-        received: duration,
-      });
-      return res.status(400).json({ error: 'duration must be a positive integer' });
-    }
-
-    if (name !== undefined && !name.trim()) {
-      return res.status(400).json({ error: 'name must not be blank' });
-    }
-    if (name !== undefined && name.trim().length > MAX_TRIP_NAME_LENGTH) {
-      return res.status(400).json({ error: `name must be ${MAX_TRIP_NAME_LENGTH} characters or fewer` });
-    }
-    if (destinationType !== undefined && !destinationType.trim()) {
-      return res.status(400).json({ error: 'destinationType must not be blank' });
-    }
-    if (destinationType !== undefined && destinationType.trim().length > MAX_DESTINATION_TYPE_LENGTH) {
-      return res.status(400).json({ error: `destinationType must be ${MAX_DESTINATION_TYPE_LENGTH} characters or fewer` });
-    }
-
-    if (checklist && Array.isArray(checklist)) {
-      for (const item of checklist) {
-        if (!Object.prototype.hasOwnProperty.call(item, 'id') || typeof item.id !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have an "id" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'name') || typeof item.name !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "name" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'category') || typeof item.category !== 'string') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "category" string field',
-          });
-        }
-        if (!Object.prototype.hasOwnProperty.call(item, 'packed') || typeof item.packed !== 'boolean') {
-          return res.status(400).json({
-            error: 'Invalid checklist payload',
-            message: 'Each checklist item must have a "packed" boolean field',
-          });
-        }
-      }
-    }
-
     const updates = {};
-    if (name !== undefined) updates.name = name.trim();
-    if (destinationType !== undefined) updates.destinationType = destinationType.trim();
-    if (duration !== undefined) updates.duration = duration;
+    try {
+      if (duration !== undefined) {
+        validateDuration(duration);
+        updates.duration = duration;
+      }
+      if (name !== undefined) {
+        updates.name = validateAndNormalizeTripName(name);
+      }
+      if (destinationType !== undefined) {
+        updates.destinationType = validateAndNormalizeDestinationType(destinationType);
+      }
+      if (checklist && Array.isArray(checklist)) {
+        validateChecklistShape(checklist);
+      }
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        await log(requestId, 'UPDATE_TRIP', 'VALIDATION_ERROR', {
+          tripId,
+          reason: err.message,
+        });
+        if (err.kind === 'checklist') {
+          return res.status(400).json({
+            error: 'Invalid checklist payload',
+            message: err.message,
+          });
+        }
+        return res.status(400).json({ error: err.message });
+      }
+      throw err;
+    }
+
     if (checklist !== undefined) updates.checklist = checklist;
 
     const trip = await updateTrip(tripId, updates, req.user.id);
