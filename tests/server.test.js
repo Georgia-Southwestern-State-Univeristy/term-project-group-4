@@ -267,6 +267,30 @@ describe('POST /api/saveTrip', () => {
     expect(res.body.error).toBe('Invalid checklist payload');
     expect(res.body.message).toMatch(/category.*string/);
   });
+
+  it('returns 400 when name exceeds 100 characters', async () => {
+    const res = await authRequest('post', '/api/saveTrip').send({
+      name: 'a'.repeat(101),
+      destinationType: 'beach',
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('name must be 100 characters or fewer');
+  });
+
+  it('returns 400 when destinationType exceeds 50 characters', async () => {
+    const res = await authRequest('post', '/api/saveTrip').send({
+      name: 'Valid Name',
+      destinationType: 'b'.repeat(51),
+      duration: 3,
+      checklist: [],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('destinationType must be 50 characters or fewer');
+  });
 });
 
 describe('GET /api/trips', () => {
@@ -464,6 +488,36 @@ describe('PUT /api/trips/:tripId', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/destinationType must not be blank/);
+  });
+
+  it('returns 400 when name update exceeds 100 characters', async () => {
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
+      name: 'Length Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userAId)
+      .send({ name: 'a'.repeat(101) });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('name must be 100 characters or fewer');
+  });
+
+  it('returns 400 when destinationType update exceeds 50 characters', async () => {
+    const create = await authRequest('post', '/api/saveTrip', userAId).send({
+      name: 'Length Test',
+      destinationType: 'city',
+      duration: 3,
+      checklist: [],
+    });
+
+    const res = await authRequest('put', `/api/trips/${create.body.id}`, userAId)
+      .send({ destinationType: 'b'.repeat(51) });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('destinationType must be 50 characters or fewer');
   });
 });
 
