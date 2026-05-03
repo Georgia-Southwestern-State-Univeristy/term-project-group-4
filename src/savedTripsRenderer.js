@@ -1,8 +1,13 @@
 /**
  * Renders the saved-trips list with Load and Delete actions per trip.
  *
- * @param {Array<{ id: string, name: string, destinationType: string, duration: number }>} trips
- * @param {(trip: object) => void} loadTrip
+ * The renderer reads `id`, `name`, `destinationType`, and `duration` directly,
+ * but passes the entire trip object through to `loadTrip()`. Callers should
+ * supply full trip objects (including `checklist` and any other fields the
+ * load callback needs) — only the four fields above are used here.
+ *
+ * @param {Array<object>} trips — full trip objects; this renderer reads `id`, `name`, `destinationType`, and `duration`
+ * @param {(trip: object) => void} loadTrip — receives the entire trip object
  * @param {(tripId: string) => void} deleteTrip
  */
 export function renderSavedTrips(trips, loadTrip, deleteTrip) {
