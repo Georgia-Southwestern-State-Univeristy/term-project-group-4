@@ -158,7 +158,7 @@ The demo will be performed on the live deployed application:
 
 - Future improvements:
   - Deduplicate trip validation across POST and PUT routes
-  - Move database migrations fully to deploy-time workflow
+  - Continue hardening the deploy-time migration workflow
   - Expand server-side validation
   - Introduce PostgreSQL and a persistent session store
   - Modularize the backend into clearer route, middleware, and validation layers

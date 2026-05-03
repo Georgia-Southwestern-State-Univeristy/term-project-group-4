@@ -74,13 +74,14 @@ You will see a confirmation message when the trip is saved.
 4. The app will show:
    `Editing: <trip name>`
 
-5. Make changes:
-   - Update trip details
-   - Modify checklist items
+5. Edit trip details if needed:
+   - Trip Name
+   - Destination Type
+   - Duration
 
-6. Click **Update Trip** to save changes
+6. Click **Update Trip** to save trip-detail changes
 
-> Note: The **Update Trip** button is only enabled after you make changes.
+> Note: The **Update Trip** button is only enabled after you change trip details. Checklist item changes auto-save separately and do not require clicking **Update Trip**.
 
 ### Track Packing Progress
 
