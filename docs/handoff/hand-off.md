@@ -1,4 +1,4 @@
-ex# Smart Packing Checklist Generator — Hand-Off Document
+# Smart Packing Checklist Generator — Hand-Off Document
 
 This document provides an overview of the system, its architecture, stack rationale, deployment, and guidance for future maintainers. It is intended to help a new team quickly understand how the project works, how to run it, what was accepted as a trade-off, and where to focus future improvements.
 
@@ -329,6 +329,43 @@ The accepted constraints above (SQLite + single-instance, in-memory sessions) ar
 
 - **[docs/user-guide.md](../user-guide.md)** — End-user reference: how to log in, create and manage trips, generate and track checklists, and edit saved trips.
 - **[docs/admin-guide.md](../admin-guide.md)** — Operator reference: production environment, deployment overview, environment variables, common maintenance tasks, and references to API documentation.
+
+---
+
+## Maintenance Notes
+
+Operational guidance for keeping the deployed system healthy. The [admin guide](../admin-guide.md) covers environment setup and routine tasks in more depth; this section is the high-level pointer for someone new to the system.
+
+### Health monitoring
+
+- The `/health` endpoint reports environment, version, uptime, database writability, and configuration validity.
+- Returns `200` when healthy, `503` when degraded (typically a non-writable database path).
+- In production, internal filesystem paths and low-level error details are omitted from responses; non-production environments expose more detail for debugging.
+
+### Logs and request correlation
+
+- Structured JSON logs via Winston. Production logs to stdout/stderr (captured by Elastic Beanstalk and forwarded to CloudWatch); local development also writes to a file.
+- Every request is tagged with an `x-request-id` header. External IDs are sanitized (alphanumeric + `._-`, max 128 characters) before being echoed back; malformed values are replaced with a server-generated UUID.
+- Error responses include the request ID in the body, so a user-reported failure can be traced end-to-end via that ID. See [docs/final/week13-observability.md](../final/week13-observability.md) for the full observability design.
+
+### Deployments
+
+- Triggered automatically on every push to `main` via GitHub Actions ([`.github/workflows/deploy-eb.yaml`](../../.github/workflows/deploy-eb.yaml)).
+- Predeploy hooks run in order: EBS volume mount (`.platform/confighooks/predeploy/01_mount_ebs.sh`) → Knex migrations (`.platform/hooks/predeploy/02_migrate.sh`).
+- Verification path for releases is documented in [docs/final/week14-runbook.md](../final/week14-runbook.md). Rollback is "revert the merge to `main`"; CI redeploys automatically.
+
+### Database
+
+- SQLite at `/data/trips.db` on the attached EBS volume in production. Local development uses `data/trips.db`; tests use an in-memory database.
+- Migrations live under [`migrations/`](../../migrations/) and run automatically on deploy via the predeploy hook above. New migrations: `npx knex migrate:make <name>` from a development checkout.
+- **No automated backups.** Schema is fully recoverable from migrations, but trip data exists only on the EBS volume. If durability requirements increase, add scheduled EBS snapshots or migrate to RDS — see [ADR-003](../adr/ADR-003.md) for the constraint and migration path.
+
+### Common operational situations
+
+- **All users logged out after a deploy or restart:** expected. The session store is in-memory by design; this is documented in [Accepted Known Constraints](#accepted-known-constraints) and is not a regression.
+- **Health endpoint returning 503:** the database path is unwritable. Most often: EBS volume not mounted (check the predeploy hook ran) or filesystem permissions changed.
+- **Authentication suddenly failing:** check the Google OAuth credentials in the EB environment variables and the registered redirect URI in Google Cloud Console. `FRONTEND_URL` and the OAuth callback URI must stay in sync — see the FRONTEND_URL coordination note in [ADR-003](../adr/ADR-003.md).
+- **Need to roll back a release:** revert the merge commit on `main` and let CI redeploy. Migrations are forward-only; data shape changes need a forward migration, not a manual revert.
 
 ---
 
