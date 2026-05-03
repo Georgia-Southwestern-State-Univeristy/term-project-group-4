@@ -87,7 +87,7 @@ This is closure work. No new feature scope. Items 1–4 close the disposition pl
 
 ### 7. Finalize Hand-Off Package
 **Owner:** Jason
-**Documents:** [docs/handoff/hand-off-draft.md](../handoff/hand-off-draft.md), `docs/final/week15-handoff-status.md` *(in flight: PR #149)*
+**Documents:** [docs/handoff/hand-off.md](../handoff/hand-off.md), `docs/final/week15-handoff-status.md` *(in flight: PR #149)*
 
 - Hand-off draft updated to near-final form covering system overview, architecture snapshot, stack rationale, deploy/setup summary, known issues and constraints, recommended next steps, and references to user/admin guides
 - `week15-handoff-status.md` lists any remaining minor cleanup for Week 16 submission

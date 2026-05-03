@@ -1,7 +1,7 @@
 # Week 15: Hand-Off Document Status
 
 **Date:** 2026-04-22 *(resolution recorded 2026-04-27)*
-**Document tracked:** [docs/handoff/hand-off-draft.md](../handoff/hand-off-draft.md)
+**Document tracked:** [docs/handoff/hand-off.md](../handoff/hand-off.md) *(renamed from `hand-off-draft.md` during Week 16 D finalize)*
 **Status:** All six punch-list items resolved in [PR #152](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/pull/152) (merged 2026-04-27, commit `b7d77b8`).
 **Purpose:** Documents the hand-off polish punch-list identified during Week 15, and confirms each item's resolution.
 
