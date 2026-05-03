@@ -63,14 +63,15 @@ export function initTripForm({ onTripSaved } = {}) {
   }
 
   /**
-   * Capture the current form state for change detection
+   * Capture only the Create a Trip fields for edit-mode change detection.
+   * Checklist item packed/unpacked state is auto-saved separately and should
+   * not enable the Update Trip button.
    */
   function captureFormState() {
     return {
       name: form.elements['name'].value || '',
       destinationType: form.elements['destinationType'].value || '',
       duration: form.elements['duration'].value || '',
-      checklist: currentChecklist ? JSON.stringify(currentChecklist) : '',
     };
   }
 
@@ -85,7 +86,9 @@ export function initTripForm({ onTripSaved } = {}) {
   }
 
   /**
-   * Check if form has changed from the saved state
+   * Check if the Create a Trip fields have changed from the saved state.
+   * Checklist item changes are intentionally excluded because they auto-save
+   * independently and should not affect the Update Trip button.
    */
   function checkForChanges() {
     if (!isEditingExistingTrip || !originalFormState) {
@@ -96,8 +99,7 @@ export function initTripForm({ onTripSaved } = {}) {
     const changed =
       currentState.name !== originalFormState.name ||
       currentState.destinationType !== originalFormState.destinationType ||
-      currentState.duration !== originalFormState.duration ||
-      currentState.checklist !== originalFormState.checklist;
+      currentState.duration !== originalFormState.duration;
 
     hasChanges = changed;
     updateButtonState();
@@ -193,12 +195,12 @@ export function initTripForm({ onTripSaved } = {}) {
     }
   }, 600);
 
-  // When a checkbox changes and the trip has been saved, sync to server
+  // When a checkbox changes and the trip has been saved, sync checklist state
+  // to the server. This should not mark the trip details form as changed.
   setOnChecklistChange((checklist) => {
     if (savedTripId) {
       autoSaveChecklist(checklist);
     }
-    checkForChanges();
   });
 
   /**
@@ -244,8 +246,14 @@ export function initTripForm({ onTripSaved } = {}) {
     }
   });
 
-  // Add change detection to form inputs
-  form.addEventListener('input', checkForChanges);
+  // Only trip-detail fields should enable the Update Trip button in edit mode.
+  // Checklist checkbox changes are handled by auto-save and should not mark
+  // the trip details as dirty.
+  [nameInput, destinationInput, durationInput].forEach((field) => {
+    if (!field) return;
+    field.addEventListener('input', checkForChanges);
+    field.addEventListener('change', checkForChanges);
+  });
 
   updateGenerateButtonState();
   setSaveButtonForNewTrip();
@@ -285,9 +293,7 @@ export function initTripForm({ onTripSaved } = {}) {
       }
 
       if (onTripSaved) await onTripSaved();
-
-      // Keep disabled after new-trip reset; re-enable only for loaded/edit trips.
-      saveTripBtn.disabled = !savedTripId;
+      
     } catch (err) {
       showToast(`Failed to save trip: ${err.message}`, 'error');
       console.error('Failed to save trip:', err);
