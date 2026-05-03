@@ -1,12 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import {
   ValidationError,
+  MAX_TRIP_NAME_LENGTH,
+  MAX_DESTINATION_TYPE_LENGTH,
   findMissingRequiredFields,
   validateAndNormalizeTripName,
   validateAndNormalizeDestinationType,
   validateDuration,
   validateChecklistShape,
 } from '../server/tripValidators.js';
+
+describe('ValidationError', () => {
+  it('defaults kind to "field"', () => {
+    const err = new ValidationError('some field error');
+    expect(err.kind).toBe('field');
+  });
+
+  it('accepts a kind argument', () => {
+    const err = new ValidationError('checklist error', 'checklist');
+    expect(err.kind).toBe('checklist');
+  });
+});
 
 describe('findMissingRequiredFields', () => {
   it('returns empty when all required fields are present and non-blank', () => {
@@ -68,6 +82,18 @@ describe('validateAndNormalizeTripName', () => {
   it('throws ValidationError for blank string', () => {
     expect(() => validateAndNormalizeTripName('   ')).toThrowError('name must not be blank');
   });
+
+  it(`throws ValidationError when name exceeds ${MAX_TRIP_NAME_LENGTH} characters`, () => {
+    const tooLong = 'a'.repeat(MAX_TRIP_NAME_LENGTH + 1);
+    expect(() => validateAndNormalizeTripName(tooLong)).toThrow(
+      `name must be ${MAX_TRIP_NAME_LENGTH} characters or fewer`,
+    );
+  });
+
+  it(`accepts a name of exactly ${MAX_TRIP_NAME_LENGTH} characters`, () => {
+    const exactlyMax = 'a'.repeat(MAX_TRIP_NAME_LENGTH);
+    expect(validateAndNormalizeTripName(exactlyMax)).toBe(exactlyMax);
+  });
 });
 
 describe('validateAndNormalizeDestinationType', () => {
@@ -81,6 +107,13 @@ describe('validateAndNormalizeDestinationType', () => {
 
   it('throws ValidationError for blank string', () => {
     expect(() => validateAndNormalizeDestinationType('   ')).toThrow('destinationType must not be blank');
+  });
+
+  it(`throws ValidationError when destinationType exceeds ${MAX_DESTINATION_TYPE_LENGTH} characters`, () => {
+    const tooLong = 'b'.repeat(MAX_DESTINATION_TYPE_LENGTH + 1);
+    expect(() => validateAndNormalizeDestinationType(tooLong)).toThrow(
+      `destinationType must be ${MAX_DESTINATION_TYPE_LENGTH} characters or fewer`,
+    );
   });
 });
 
@@ -151,5 +184,58 @@ describe('validateChecklistShape', () => {
 
   it('throws when packed is not a boolean', () => {
     expect(() => validateChecklistShape([{ ...validItem, packed: 'yes' }])).toThrow(/packed.*boolean/);
+  });
+
+  it('throws ValidationError (not TypeError) when an item is null', () => {
+    expect(() => validateChecklistShape([null])).toThrowError(ValidationError);
+    expect(() => validateChecklistShape([null])).toThrow(/must be an object/);
+  });
+
+  it('throws ValidationError when an item is a primitive', () => {
+    expect(() => validateChecklistShape([42])).toThrowError(ValidationError);
+    expect(() => validateChecklistShape(['nope'])).toThrowError(ValidationError);
+  });
+
+  it('throws ValidationError when an item is an array', () => {
+    expect(() => validateChecklistShape([['nested']])).toThrowError(ValidationError);
+  });
+
+  it('tags checklist-shape errors with kind = "checklist"', () => {
+    try {
+      validateChecklistShape([{ ...validItem, packed: 'yes' }]);
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(ValidationError);
+      expect(err.kind).toBe('checklist');
+    }
+  });
+
+  it('also tags non-object item errors with kind = "checklist"', () => {
+    try {
+      validateChecklistShape([null]);
+      expect.unreachable();
+    } catch (err) {
+      expect(err.kind).toBe('checklist');
+    }
+  });
+});
+
+describe('field-level validators tag errors with kind = "field"', () => {
+  it('validateAndNormalizeTripName uses kind = "field"', () => {
+    try {
+      validateAndNormalizeTripName(null);
+      expect.unreachable();
+    } catch (err) {
+      expect(err.kind).toBe('field');
+    }
+  });
+
+  it('validateDuration uses kind = "field"', () => {
+    try {
+      validateDuration('nope');
+      expect.unreachable();
+    } catch (err) {
+      expect(err.kind).toBe('field');
+    }
   });
 });

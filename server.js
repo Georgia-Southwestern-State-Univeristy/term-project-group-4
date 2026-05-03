@@ -448,11 +448,10 @@ app.post('/api/saveTrip', requireAuth, async (req, res) => {
       }
     } catch (err) {
       if (err instanceof ValidationError) {
-        const isChecklistError = err.message.startsWith('Each checklist item');
         await log(requestId, 'CREATE_TRIP', 'VALIDATION_ERROR', {
           reason: err.message,
         });
-        if (isChecklistError) {
+        if (err.kind === 'checklist') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: err.message,
@@ -519,12 +518,11 @@ app.put('/api/trips/:tripId', requireAuth, async (req, res) => {
       }
     } catch (err) {
       if (err instanceof ValidationError) {
-        const isChecklistError = err.message.startsWith('Each checklist item');
         await log(requestId, 'UPDATE_TRIP', 'VALIDATION_ERROR', {
           tripId,
           reason: err.message,
         });
-        if (isChecklistError) {
+        if (err.kind === 'checklist') {
           return res.status(400).json({
             error: 'Invalid checklist payload',
             message: err.message,
