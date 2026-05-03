@@ -1,4 +1,4 @@
-ex# Smart Packing Checklist Generator — Hand-Off Document
+# Smart Packing Checklist Generator — Hand-Off Document
 
 This document provides an overview of the system, its architecture, stack rationale, deployment, and guidance for future maintainers. It is intended to help a new team quickly understand how the project works, how to run it, what was accepted as a trade-off, and where to focus future improvements.
 
@@ -28,12 +28,13 @@ The Smart Packing Checklist Generator is a full-stack web application that allow
 
 The system is functionally complete, deployed, and supported by automated unit, integration, and end-to-end testing.
 
-Weeks 13–14 focused on:
+Weeks 13–16 focused on:
 
-- maintainability (refactoring brittle UI logic)
+- maintainability (refactoring brittle UI logic; extracting a shared trip-payload validator)
 - observability (request correlation, structured logging, health diagnostics)
-- regression protection (Playwright + backend test coverage)
+- regression protection (Playwright + backend test coverage; XSS rendering tests)
 - support readiness (error visibility and diagnostics)
+- security and validation hardening (XSS audit, input length limits, type guards before string operations)
 - deployment hardening (release-candidate runbook and verification)
 
 The system is now functionally stable, with improvements focused on clarity, reliability, and maintainability rather than feature expansion.
@@ -220,15 +221,7 @@ These constraints are **deliberate trade-offs** for the current release scope, n
 
 These items are real cleanup work that the team would address with more time. Unlike the accepted constraints above, these are not intentional product decisions.
 
-### 1. Duplicated Backend Validation Logic
-
-- Trip payload validation is still duplicated across the create and update routes (~30 lines each)
-- Risk of inconsistent validation behavior between POST and PUT
-- Tracked in: [#129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129)
-
----
-
-### 2. Checklist Auto-Save and Change Detection Complexity
+### 1. Checklist Auto-Save and Change Detection Complexity
 
 Checklist behavior combines:
 
@@ -244,33 +237,25 @@ Risks:
 
 ---
 
-### 3. Backend Structure Centralization
+### 2. Backend Structure Centralization
 
-`server.js` currently handles routing, middleware, validation, configuration, and observability logic in a single file. Mixed responsibilities make the file harder to scale or extend cleanly.
+`server.js` currently handles routing, middleware, configuration, and observability logic in a single file. (Trip-payload validation has been extracted to `server/tripValidators.js`, but routing and middleware are still inline.) Mixed responsibilities make the file harder to scale or extend cleanly.
 
 ---
 
-### 4. Limited Backend Test Depth
+### 3. Limited Backend Test Depth Outside the Validator
 
-E2E coverage is strong; backend coverage is lighter. Remaining gaps:
+Validator coverage is solid (`server/tripValidators.js` is unit-tested). The remaining gaps are:
 
-- deeper unit tests for business logic
-- validation edge cases
+- storage-layer edge cases (`server/storage.js`)
 - error path testing across all routes
+- deeper unit tests for non-validator business logic
 
 ---
 
 ## Recommended Next Steps for a Future Team
 
-### 1. Centralize Backend Validation Logic
-
-- Extract shared validation layer
-- Reuse across create/update routes
-- Add dedicated unit tests
-
----
-
-### 2. Simplify Checklist State Management
+### 1. Simplify Checklist State Management
 
 Separate:
 
@@ -282,32 +267,31 @@ Replace serialized comparison with more explicit state tracking.
 
 ---
 
-### 3. Modularize Backend Structure
+### 2. Modularize Backend Structure
 
 Break `server.js` into:
 
 - routes
 - middleware
-- validation
 - config
 
-Do this incrementally to avoid regressions.
+(Validation is already extracted to `server/tripValidators.js`.) Do this incrementally to avoid regressions.
 
 ---
 
-### 4. Expand Backend Test Coverage
+### 3. Expand Backend Test Coverage
 
 Add unit tests for:
 
-- validation logic
-- storage layer
-- error handling paths
+- storage layer (`server/storage.js`)
+- error handling paths in each route
+- non-validator business logic
 
 Keep E2E tests focused on user workflows.
 
 ---
 
-### 5. Lift the Accepted Constraints When Scale Demands It
+### 4. Lift the Accepted Constraints When Scale Demands It
 
 The accepted constraints above (SQLite + single-instance, in-memory sessions) are not permanent. When scale or availability requirements change, the migration paths are:
 
@@ -317,7 +301,7 @@ The accepted constraints above (SQLite + single-instance, in-memory sessions) ar
 
 ---
 
-### 6. Continue Observability Improvements
+### 5. Continue Observability Improvements
 
 - Add request tracing across services (if expanded)
 - Improve log aggregation and monitoring in production
@@ -329,6 +313,43 @@ The accepted constraints above (SQLite + single-instance, in-memory sessions) ar
 
 - **[docs/user-guide.md](../user-guide.md)** — End-user reference: how to log in, create and manage trips, generate and track checklists, and edit saved trips.
 - **[docs/admin-guide.md](../admin-guide.md)** — Operator reference: production environment, deployment overview, environment variables, common maintenance tasks, and references to API documentation.
+
+---
+
+## Maintenance Notes
+
+Operational guidance for keeping the deployed system healthy. The [admin guide](../admin-guide.md) covers environment setup and routine tasks in more depth; this section is the high-level pointer for someone new to the system.
+
+### Health monitoring
+
+- The `/health` endpoint reports environment, version, uptime, database writability, and configuration validity.
+- Returns `200` when healthy, `503` when degraded (typically a non-writable database path).
+- In production, internal filesystem paths and low-level error details are omitted from responses; non-production environments expose more detail for debugging.
+
+### Logs and request correlation
+
+- Structured JSON logs via Winston. Production logs to stdout/stderr (captured by Elastic Beanstalk and forwarded to CloudWatch); local development also writes to a file.
+- Every request is tagged with an `x-request-id` header. External IDs are sanitized (alphanumeric + `._-`, max 128 characters) before being echoed back; malformed values are replaced with a server-generated UUID.
+- Error responses include the request ID in the body, so a user-reported failure can be traced end-to-end via that ID. See [docs/final/week13-observability.md](../final/week13-observability.md) for the full observability design.
+
+### Deployments
+
+- Triggered automatically on every push to `main` via GitHub Actions ([`.github/workflows/deploy-eb.yaml`](../../.github/workflows/deploy-eb.yaml)).
+- Predeploy hooks run in order: EBS volume mount (`.platform/confighooks/predeploy/01_mount_ebs.sh`) → Knex migrations (`.platform/hooks/predeploy/02_migrate.sh`).
+- Verification path for releases is documented in [docs/final/week14-runbook.md](../final/week14-runbook.md). Rollback is "revert the merge to `main`"; CI redeploys automatically.
+
+### Database
+
+- SQLite at `/data/trips.db` on the attached EBS volume in production. Local development uses `data/trips.db`; tests use an in-memory database.
+- Migrations live under [`migrations/`](../../migrations/) and run automatically on deploy via the predeploy hook above. New migrations: `npx knex migrate:make <name>` from a development checkout.
+- **No automated backups.** Schema is fully recoverable from migrations, but trip data exists only on the EBS volume. If durability requirements increase, add scheduled EBS snapshots or migrate to RDS — see [ADR-003](../adr/ADR-003.md) for the constraint and migration path.
+
+### Common operational situations
+
+- **All users logged out after a deploy or restart:** expected. The session store is in-memory by design; this is documented in [Accepted Known Constraints](#accepted-known-constraints) and is not a regression.
+- **Health endpoint returning 503:** the database path is unwritable. Most often: EBS volume not mounted (check the predeploy hook ran) or filesystem permissions changed.
+- **Authentication suddenly failing:** check the Google OAuth credentials in the EB environment variables and the registered redirect URI in Google Cloud Console. `FRONTEND_URL` and the OAuth callback URI must stay in sync — see the FRONTEND_URL coordination note in [ADR-003](../adr/ADR-003.md).
+- **Need to roll back a release:** revert the merge commit on `main` and let CI redeploy. Migrations are forward-only; data shape changes need a forward migration, not a manual revert.
 
 ---
 

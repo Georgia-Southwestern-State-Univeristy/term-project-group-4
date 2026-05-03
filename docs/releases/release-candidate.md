@@ -169,7 +169,7 @@ To move from RC to final release (v1.0), the following work is committed:
 ### 3. **Documentation Updates**
 - **Task:** Finalize handoff documentation and known issues list
   - Add observability and error-handling changes to architecture doc
-  - Finalize `docs/handoff/hand-off-draft.md` with recommendations for next team
+  - Finalize `docs/handoff/hand-off.md` with recommendations for next team
 - **Target:** Week 15
 
 ---

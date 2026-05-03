@@ -314,4 +314,4 @@ For more details, see:
 - Deployment Runbook: `/docs/final/week14-runbook.md`
 - Release Notes: `/docs/releases/release-candidate.md`
 - Architecture Overview: `/docs/final/week13-architecture.md`
-- Handoff Document: `/docs/handoff/hand-off-draft.md`
+- Handoff Document: `/docs/handoff/hand-off.md`
