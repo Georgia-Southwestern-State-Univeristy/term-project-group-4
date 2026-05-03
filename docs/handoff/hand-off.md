@@ -28,12 +28,13 @@ The Smart Packing Checklist Generator is a full-stack web application that allow
 
 The system is functionally complete, deployed, and supported by automated unit, integration, and end-to-end testing.
 
-Weeks 13–14 focused on:
+Weeks 13–16 focused on:
 
-- maintainability (refactoring brittle UI logic)
+- maintainability (refactoring brittle UI logic; extracting a shared trip-payload validator)
 - observability (request correlation, structured logging, health diagnostics)
-- regression protection (Playwright + backend test coverage)
+- regression protection (Playwright + backend test coverage; XSS rendering tests)
 - support readiness (error visibility and diagnostics)
+- security and validation hardening (XSS audit, input length limits, type guards before string operations)
 - deployment hardening (release-candidate runbook and verification)
 
 The system is now functionally stable, with improvements focused on clarity, reliability, and maintainability rather than feature expansion.
@@ -220,15 +221,7 @@ These constraints are **deliberate trade-offs** for the current release scope, n
 
 These items are real cleanup work that the team would address with more time. Unlike the accepted constraints above, these are not intentional product decisions.
 
-### 1. Duplicated Backend Validation Logic
-
-- Trip payload validation is still duplicated across the create and update routes (~30 lines each)
-- Risk of inconsistent validation behavior between POST and PUT
-- Tracked in: [#129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129)
-
----
-
-### 2. Checklist Auto-Save and Change Detection Complexity
+### 1. Checklist Auto-Save and Change Detection Complexity
 
 Checklist behavior combines:
 
@@ -244,33 +237,25 @@ Risks:
 
 ---
 
-### 3. Backend Structure Centralization
+### 2. Backend Structure Centralization
 
-`server.js` currently handles routing, middleware, validation, configuration, and observability logic in a single file. Mixed responsibilities make the file harder to scale or extend cleanly.
+`server.js` currently handles routing, middleware, configuration, and observability logic in a single file. (Trip-payload validation has been extracted to `server/tripValidators.js`, but routing and middleware are still inline.) Mixed responsibilities make the file harder to scale or extend cleanly.
 
 ---
 
-### 4. Limited Backend Test Depth
+### 3. Limited Backend Test Depth Outside the Validator
 
-E2E coverage is strong; backend coverage is lighter. Remaining gaps:
+Validator coverage is solid (`server/tripValidators.js` is unit-tested). The remaining gaps are:
 
-- deeper unit tests for business logic
-- validation edge cases
+- storage-layer edge cases (`server/storage.js`)
 - error path testing across all routes
+- deeper unit tests for non-validator business logic
 
 ---
 
 ## Recommended Next Steps for a Future Team
 
-### 1. Centralize Backend Validation Logic
-
-- Extract shared validation layer
-- Reuse across create/update routes
-- Add dedicated unit tests
-
----
-
-### 2. Simplify Checklist State Management
+### 1. Simplify Checklist State Management
 
 Separate:
 
@@ -282,32 +267,31 @@ Replace serialized comparison with more explicit state tracking.
 
 ---
 
-### 3. Modularize Backend Structure
+### 2. Modularize Backend Structure
 
 Break `server.js` into:
 
 - routes
 - middleware
-- validation
 - config
 
-Do this incrementally to avoid regressions.
+(Validation is already extracted to `server/tripValidators.js`.) Do this incrementally to avoid regressions.
 
 ---
 
-### 4. Expand Backend Test Coverage
+### 3. Expand Backend Test Coverage
 
 Add unit tests for:
 
-- validation logic
-- storage layer
-- error handling paths
+- storage layer (`server/storage.js`)
+- error handling paths in each route
+- non-validator business logic
 
 Keep E2E tests focused on user workflows.
 
 ---
 
-### 5. Lift the Accepted Constraints When Scale Demands It
+### 4. Lift the Accepted Constraints When Scale Demands It
 
 The accepted constraints above (SQLite + single-instance, in-memory sessions) are not permanent. When scale or availability requirements change, the migration paths are:
 
@@ -317,7 +301,7 @@ The accepted constraints above (SQLite + single-instance, in-memory sessions) ar
 
 ---
 
-### 6. Continue Observability Improvements
+### 5. Continue Observability Improvements
 
 - Add request tracing across services (if expanded)
 - Improve log aggregation and monitoring in production
