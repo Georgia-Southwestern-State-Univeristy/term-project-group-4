@@ -2,7 +2,7 @@
 ## Smart Packing Checklist Generator
 
 **Date:** May 3, 2026  
-**Project Duration:** 16 weeks (Weeks 0–15)  
+**Project Duration:** 17 weeks (Weeks 0–16)  
 **Team:** Jason, Heather and Naren
 
 ---
@@ -23,7 +23,6 @@ This retrospective captures what worked, what didn't, and what the team learned 
 - All production code went through at least one peer review before merge to `main`
 - The definition of done was enforced early and consistently, preventing cruft accumulation
 - PR descriptions were detailed enough that future developers (or the same team months later) could understand *why* changes were made, not just *what* changed
-- Zero instances of emergency hotfixes or late-stage broken builds reaching main
 
 **Impact:** This discipline prevented technical debt from accumulating silently. Defects that might have shipped in a less-rigorous process were caught during review (e.g., missing type guards on trim operations, XSS vulnerabilities in renderer functions). The team had confidence in merge reliability.
 
@@ -75,7 +74,7 @@ This retrospective captures what worked, what didn't, and what the team learned 
 
 ### 1.5 Separation of Concerns and Testable Architecture
 
-**What:** The frontend and backend were cleanly separated, each with narrow responsibilities and minimal coupling. The checklist generation logic is a pure function, the API layer is stateless (except for sessions), and the data layer is isolated in `server/storage.js`.
+**What:** The frontend and backend were cleanly separated at the layer boundary, each with narrow responsibilities and minimal coupling. The checklist generation logic is a pure function, the API layer is stateless (except for sessions), and the data layer is isolated in `server/storage.js`. Some internal cleanup remains within the backend (see Backend Structure Centralization in the [hand-off](../handoff/hand-off.md)).
 
 **Evidence:**
 - Frontend (`src/`): Handles UI, form state, client-side checklist generation. Does not manage backend communication beyond simple REST calls through `apiClient.js`.
@@ -115,31 +114,13 @@ This retrospective captures what worked, what didn't, and what the team learned 
 
 **Impact:** The sprint planning meetings reduced uncertainty and conflict. Developers knew what to work on and when to ask for help. Roadblocks were surfaced early (e.g., "database migration blocks auth work"). The team could make deliberate trade-offs ("length limits are lower priority than auth; skip length limits if auth slips") rather than discovering misalignment at the end of the week. This cadence meant the team could collaborate effectively across 3 distributed members without constant synchronous communication.
 
-**Team commitment signal:** The fact that all 16 sprint plans were completed and committed to (rather than wishful thinking or re-planned mid-sprint) indicates deep team ownership. Each member understood that sprint goals were not aspirational; they were promises to the team. This created accountability without blame culture; when something slipped, the team discussed why (e.g., "GitHub Actions CI was flaky; we lost a day to debugging") and adjusted next week.
-
 ---
 
 ## 2. What the Team Would Change Earlier Next Time
 
 ### 2.1 Plan for Multi-User Architecture from Week 1
 
-**What:** The team started with a single-user, localStorage-backed prototype and later migrated to a multi-user, server-persisted system. This rework was necessary and well-executed, but it consumed significant engineering effort in Week 9–11.
-
-**Evidence:**
-- **Week 0–8:** Prototype built on localStorage, no authentication, no server
-- **Week 9:** Authentication added (Google OAuth) with scope understanding that the system needed to become multi-user
-- **Week 10–11:** Database schema added, migrations introduced, API layer reworked, frontend logic reworked to use REST instead of localStorage
-- The beta release notes (April 6, 2026) explicitly call out: "This Beta release marks the transition from initial feature implementation to a stable, test-backed, and deployable system."
-
-**Why it matters:** The transition was successful, but it was a form of rework. The team had to rebuild the storage layer midway through the project. A earlier decision to build for multi-user from the start would have:
-- Reduced rework effort
-- Forced authentication and data isolation concerns to the surface earlier
-- Potentially caught schema or API design issues sooner
-
-**Better approach next time:**
-- During the proposal phase (Week 0), agree on a minimum viable *deployment architecture*, not just features
-- If the product must scale to multiple users, plan the authentication and database schema in Week 1, not Week 9
-- Prototype fast with a simple architecture, then graduate to production-grade architecture in Phase 2, not partway through Phase 1
+**What:** The team started with a single-user, localStorage-backed prototype and later migrated to a multi-user, server-persisted system in Week 9–11. See §4 for detailed cost analysis and mitigation strategies.
 
 ---
 
@@ -166,14 +147,14 @@ This retrospective captures what worked, what didn't, and what the team learned 
 
 ---
 
-### 2.3 Deduplicate Validation Earlier (Week 6, not Week 14)
+### 2.3 Deduplicate Validation Earlier (Week 6, not Week 16)
 
-**What:** Trip validation logic was duplicated across `POST /api/saveTrip` and `PUT /api/trips/:tripId` endpoints until Week 15, when [Issue #129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129) forced extraction into a shared validator.
+**What:** Trip validation logic was duplicated across `POST /api/saveTrip` and `PUT /api/trips/:tripId` endpoints until Week 16, when [Issue #129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129) was finally addressed via PR #160 (in review), forcing extraction into a shared validator.
 
 **Evidence:**
 - Week 10–11: Both POST and PUT routes had similar validation (check name, check destination, check duration, trim fields)
-- Week 15: Shared validator extracted to `server/validators/trip.js`
-- Code review feedback in PR #67 flagged the duplication but it was not addressed until Week 15 triage
+- Week 16: Shared validator extracted to `server/validators/trip.js` (PR #160 in review)
+- Duplication was tracked as Issue #129 separately; addressing it earlier would have prevented inconsistency risks
 
 **Why it matters:** Duplicated validation is a source of inconsistency bugs:
 - One endpoint might validate field X; the other might not
@@ -251,6 +232,8 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - **Testing is superficial:** E2E tests pass in CI, but manual testing of the full workflow doesn't happen until the next sprint, and by then bugs carry forward
 - **Burndown is misleading:** Sprint looks "on track" until Saturday, then everything completes at once; no visibility into bottlenecks until too late
 
+**Note:** This doesn't contradict §1.7's point about commitment — items were completed and backlog was cleared, just not paced evenly across the week. The issue is sprint rhythm and quality under crunch, not lack of follow-through.
+
 **Better approach next time:**
 - **Spread completion across the week:** Aim to complete ~14% of backlog each day (Monday–Sunday), not 80% on Saturday–Sunday
 - **Enforce daily standup check-ins:** "What did you finish today? What's blocking you?" makes uneven progress visible immediately
@@ -260,7 +243,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 
 ---
 
-## 3. Most Valuable Engineering Practice Adopted This Semester
+## 3. Most Valuable Engineering Practice
 
 ### Pull Request Review + Definition of Done
 
@@ -290,7 +273,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 
 ## 4. Most Costly Mistake or Rework Point
 
-### Starting with a Single-User Prototype and Later Scaling to Multi-User (Week 9 Pivot)
+### Starting with local storage single user Prototype and Later Scaling to SQlite Multi-User (Week 9 Pivot)
 
 **What:** The team built the first 8 weeks as a single-user, client-side (localStorage) application, then pivoted in Week 9 to a multi-user, server-persisted architecture.
 
@@ -393,7 +376,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - **Architecture:** [architecture-snapshot.md](../architecture/architecture-snapshot.md), [ADRs](../adr/) documenting decisions
 - **Deployment:** [runbook](./week14-runbook.md) for manual deployment, automated CI/CD for normal deployments
 - **QA:** [QA checklist](./week15-qa.md) for final release verification
-- **Handoff:** [hand-off package](../handoff/hand-off-draft.md) for maintainers
+- **Handoff:** [hand-off package](../handoff/hand-off.md) for maintainers
 - **Sprint notes:** [Weekly retrospectives](../final/) documenting what was built and why
 
 **Impact:** Future maintainers (or next semester's team) can understand the system without asking the current team. Deployment knowledge is captured, not tribal.
