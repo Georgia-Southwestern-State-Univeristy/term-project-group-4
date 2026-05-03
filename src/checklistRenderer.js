@@ -28,6 +28,9 @@ export function renderChecklist(checklist) {
     section.className = 'checklist-category';
 
     const heading = document.createElement('h3');
+    // Category strings originate from server-stored checklist items and may
+    // ultimately derive from user input. Always render via textContent — never
+    // innerHTML — to prevent XSS.
     heading.textContent = category;
     section.appendChild(heading);
 
@@ -49,6 +52,8 @@ export function renderChecklist(checklist) {
 
       const label = document.createElement('label');
       label.htmlFor = item.id;
+      // Item names are user-supplied (from trip-creation flow). Always render
+      // via textContent — never innerHTML — to prevent XSS.
       label.textContent = item.name;
 
       li.appendChild(checkbox);
