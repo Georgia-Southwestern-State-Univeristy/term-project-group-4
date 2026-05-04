@@ -2,7 +2,7 @@
 ## Smart Packing Checklist Generator
 
 **Date:** May 3, 2026  
-**Project Duration:** 17 weeks (Weeks 0–16)  
+**Project Duration:** 16 weeks (Weeks 1–16)  
 **Team:** Jason, Heather and Naren
 
 ---
