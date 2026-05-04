@@ -122,7 +122,7 @@ Run unit/integration tests:
 npm run test
 ```
 
-Run unit tests only, if available in the current script set:
+Run unit tests only:
 
 ```bash
 npm run test:unit
@@ -161,7 +161,7 @@ Relevant deployment files:
 | GitHub Actions CI | `.github/workflows/ci.yaml` |
 | Elastic Beanstalk deployment workflow | `.github/workflows/deploy-eb.yaml` |
 | Elastic Beanstalk environment config | `.ebextensions/00_environment.config` |
-| EBS mount hook | `.platform/hooks/predeploy/01_mount_ebs.sh` |
+| EBS mount hook | `.platform/confighooks/predeploy/01_mount_ebs.sh` |
 | Migration hook | `.platform/hooks/predeploy/02_migrate.sh` |
 | Deployment runbook | `docs/final/week14-runbook.md` |
 
@@ -243,28 +243,28 @@ The health endpoint provides evidence for:
 
 ---
 
-## Final Cleanup Completed This Week
+## Week 16 Release-Readiness Cleanup Summary
 
 The final repository cleanup focused on aligning the repo with the completed release state, closing remaining reliability/security cleanup items, and making the project easier for a reviewer or future team to navigate.
 
-Completed cleanup included:
+The following cleanup was completed across the team during Week 16:
 
 - Updated `README.md` to reflect the final release instead of release-candidate status
 - Updated README links to point to final release notes and final hand-off materials
-- Finalized the hand-off document at `docs/handoff/hand-off.md`
+- Finalized the hand-off document at `docs/handoff/hand-off.md` (#158)
 - Verified user/admin guidance reflects the final workflow and operational behavior
 - Updated user-facing documentation for edit-mode behavior:
   - checklist checkbox changes auto-save separately
   - `Update Trip` is tied to trip-detail changes
-- Completed XSS audit coverage for trip and checklist rendering:
+- Completed XSS audit coverage for trip and checklist rendering (#154):
   - verified user-supplied strings render with `textContent`
   - added regression coverage for checklist rendering
   - added regression coverage for saved-trip rendering
-- Added input length validation for trip fields:
+- Added input length validation for trip fields (#155):
   - trip name limited to 100 characters
   - destination type limited to 50 characters
   - server returns controlled validation errors for over-limit values
-- Extracted shared trip validation logic into `server/tripValidators.js`
+- Extracted shared trip validation logic into `server/tripValidators.js` (#160)
 - Added validator unit tests for:
   - missing required fields
   - blank and non-string field values
@@ -300,7 +300,7 @@ These constraints are documented in more detail in:
 
 ---
 
-## Reviewer Quick Validation Path
+## Reviewer Full Validation Path
 
 A reviewer can quickly validate the repository by following this path:
 
