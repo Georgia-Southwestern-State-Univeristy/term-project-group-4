@@ -3,7 +3,7 @@
 
 **Release Date:** May 3, 2026  
 **Release Tag:** `final-v1.0`  
-**Project Duration:** 16 weeks (Weeks 0–15)  
+**Project Duration:** 17 weeks (Weeks 0–16)  
 **Team:** Naren, Jason, Heather
 
 ---
@@ -71,7 +71,7 @@ The Smart Packing Checklist Generator is now production-ready and released as **
 - ✅ Structured JSON logging with timestamps, method, path, status, latency
 - ✅ Health endpoint with system diagnostics (`/health`)
 - ✅ Startup validation with clear error messages for misconfiguration
-- ✅ Database migrations with safety gates in production startup
+- ✅ Production startup does not run migrations automatically; migrations are handled through the Elastic Beanstalk predeploy hook.
 - ✅ Error handling with correlation IDs returned to clients
 
 #### 6. Testing
@@ -119,9 +119,9 @@ The RC (released April 19, 2026) introduced **operational hardening** with no fe
 | Area | Improvement | Issue |
 |------|-------------|-------|
 | **Input Validation** | Added server-side length limits for trip name (≤100) and destination (≤50); UI also enforces maxlength | [#81](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/81) |
-| **XSS Security** | Completed audit; all DOM writes use `.textContent`; code comments prevent future `.innerHTML` usage | [#82](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/82) |
+| **XSS Security** | Completed audit; all DOM writes use `.textContent`; code comments prevent future `.innerHTML` usage | [#82](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/82) (merged PR #154) |
 | **Migration Safety** | Gated `migrateLatest()` out of production startup; migrations run only in deploy hooks | Closed in Week 15 |
-| **Reliability** | Verified error handling, correlation IDs, and logging in all failure paths | [#101](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/101) |
+| **Validation Dedup** | Extracted and consolidated validator logic; improved maintainability | [#129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129) (merged PR #160) |
 | **Update Trip Logic** | Fixed state consistency when updating trips; edit-mode properly clears after update | PR #156 |
 | **Documentation** | Finalized retrospective, handoff package, sprint notes, and architecture snapshots | Weeks 14–15 |
 
@@ -149,10 +149,10 @@ The final release is production-ready but has the following known limitations. T
 
 | Constraint | Impact | Rationale | Future Path |
 |-----------|--------|-----------|------------|
-| **Single EB instance** | Deployment downtime; no horizontal scaling | Matches project scope (single-user in proposal, evolved to multi-user mid-project) | Add multi-instance EB + shared session store + RDS |
+| **Single EB instance** | Deployment downtime; no horizontal scaling | Matches project scope (local storage single user in proposal, evolved to SQLite storage with multi-user mid-project) | Add multi-instance EB + shared session store + RDS |
 | **SQLite database** | Limited write concurrency; bottleneck under high load | Sufficient for current usage; adequate for dev/test | Migrate to PostgreSQL (Knex abstracts this) |
 | **In-memory sessions** | Server restart logs out all users | Prototyping choice; simple for current scale | Add persistent session store (Redis, connect-sqlite3) |
-| **Frontend checklist generation** | Rules not visible to server; client-side code not auditable by backend | Design choice for client-side responsiveness | Move generation to server endpoint or dual-generate (client + server verify) |
+| **Frontend checklist generation** | Rules not visible to server; client-side code not auditable by backend | Design choice for client-side responsiveness and performance (rules execute instantly on client) | Move generation to server endpoint (1–2 days); or dual-generate (client + server verify) for audit trail |
 | **No rate limiting** | API endpoints unprotected against abuse | Not needed for current usage scale | Add express-rate-limit middleware |
 | **EBS volume single-AZ** | Single availability zone failure loses database | Cost/scope trade-off | Add automated snapshots or migrate to RDS |
 
@@ -162,7 +162,6 @@ The final release is production-ready but has the following known limitations. T
 |-------|----------|-----------|
 | In-memory session store requires server restart to log all users out | Low | Expected behavior; restart during maintenance window |
 | No automated EBS snapshots for disaster recovery | Medium | Manual snapshots recommended; document in runbook |
-| Checklist generation rules hard-coded in frontend | Low | Can be refactored to server endpoint in future |
 
 ---
 
@@ -172,9 +171,9 @@ The final release is production-ready but has the following known limitations. T
 
 | Test Type | Count | Status | Location |
 |-----------|-------|--------|----------|
-| Unit tests (Vitest) | 8+ | ✅ All passing | `tests/checklistGenerator.test.js`, `app.test.js` |
-| Integration tests | 15+ | ✅ All passing | `server.test.js` |
-| E2E tests (Playwright) | 8+ | ✅ All passing | `tests/e2e/` |
+| Unit tests (Vitest) | 51+ | ✅ All passing | `tests/checklistGenerator.test.js` (7), `tests/tripValidators.test.js` (43), `app.test.js` (1) |
+| Integration tests | 39+ | ✅ All passing | `server.test.js` |
+| **Total** | **90+** | ✅ All passing | Comprehensive coverage across validation, API, auth, observability |
 | Regression tests | 4 | ✅ All passing | `tests/e2e/auth-error.spec.js`, `primary-workflow.spec.js` |
 
 ### CI/CD Pipeline
@@ -214,41 +213,60 @@ See [docs/final/week14-runbook.md](../final/week14-runbook.md) for complete depl
 
 ## Recommended Future Improvements
 
-### High Priority (Before Next Major Release)
+> **Note:** These recommendations align with the [Recommended Next Steps for a Future Team](../handoff/hand-off.md#recommended-next-steps-for-a-future-team) in the hand-off document. See that section for additional context on technical debt and accepted constraints.
 
-1. **AI-Powered Dynamic Checklist Generation (LLM + NLG)**
+### High Priority (Maintenance & Operational Excellence)
+
+1. **Simplify Checklist State Management**
+   - Current: Checklist behavior combines UI rendering, debounced auto-save, and change detection via serialized state comparison
+   - Recommended: Separate concerns into explicit change detection, persistence layer, and UI rendering
+   - Effort: 2–3 days
+   - Benefit: Reduces bugs; improves testability; easier to extend (e.g., undo/redo, sync across tabs)
+   - Priority: Address first if expanding checklist features
+
+2. **Modularize Backend Structure**
+   - Current: `server.js` handles routing, middleware, configuration, and observability in a single file
+   - Recommended: Extract into separate modules for routes, middleware, and config
+   - Effort: 2–3 days
+   - Benefit: Easier to reason about; reduces merge conflicts; simpler to scale with new features
+   - Note: Validation is already extracted to `server/tripValidators.js`
+
+3. **Expand Backend Test Coverage**
+   - Current: Strong validator coverage (unit tests); gaps in storage layer and error-path testing
+   - Recommended: Add unit tests for `server/storage.js` edge cases and error handling across all routes
+   - Effort: 2–3 days
+   - Benefit: Catches bugs earlier; reduces incident response time; increases confidence in refactoring
+
+### Future Direction (Feature Expansion)
+
+4. **AI-Powered Dynamic Checklist Generation (LLM + NLG)**
    - Current: Hard-coded rule-based generation (e.g., "beach" → swimsuit, sunscreen, etc.)
-   - Recommended: Integrate LLM (OpenAI GPT, Anthropic Claude) to generate context-aware checklists
+   - Idea: Integrate LLM (OpenAI GPT, Anthropic Claude) to generate context-aware, personalized checklists
    - Approach:
      - Accept user inputs: destination, duration, activities, weather, special requirements
      - Send to LLM API with prompt: "Generate a packing checklist for [trip details]"
      - Parse LLM output into structured items (name, category, packed=false)
-     - Cache results to minimize API calls
+     - Cache results to minimize API calls and cost
    - Effort: 1–2 weeks (API integration, caching layer, cost management)
-   - Cost consideration: LLM API calls (~$0.001–0.01 per request); consider rate limits for cost control
-   - Benefit: Users get personalized, context-sensitive checklists; handles novel trip types without code changes
-   - Risk: External dependency (LLM provider availability); potential latency increase
-   - Alternative: Self-host smaller LLM (Llama 2) if cost/privacy is concern
+   - Cost consideration: LLM API calls (~$0.001–0.01 per request); rate limits needed for cost control
+   - Benefit: Personalized, context-sensitive checklists; handles novel trip types without code changes
+   - Risk: External dependency (LLM provider availability); potential latency increase; API costs
+   - Alternative: Self-host smaller LLM (Llama 2) if cost/privacy is a concern
 
-2. **Horizontal Scaling & PostgreSQL Migration**
+5. **Horizontal Scaling & PostgreSQL Migration**
    - Current: Single EB instance with SQLite
    - Recommended: Multi-instance EB with PostgreSQL and RDS
    - Effort: 1–2 weeks (Knex abstraction makes this straightforward)
-   - Benefit: Supports multiple concurrent users; handles deployment without downtime
+   - Benefit: Supports multiple concurrent users; enables deployment without downtime
+   - Priority: Defer unless scale demands it
 
-3. **Persistent Session Store**
+6. **Persistent Session Store**
    - Current: In-memory sessions (server restart logs everyone out)
    - Recommended: Redis or connect-sqlite3 for persistent sessions
    - Effort: 2–3 days
-   - Benefit: Better resilience to server restarts
+   - Benefit: Better resilience to server restarts; improved UX across deployments
 
-4. **Checklist Generation Validation**
-   - Current: Frontend-only generation; server accepts without validation
-   - Recommended: Move generation to server endpoint or add server-side verification
-   - Effort: 2–3 days
-   - Benefit: Ensures checklist integrity; prevents client-side manipulation
-
-5. **Rate Limiting**
+7. **Rate Limiting**
    - Current: No rate limiting on API endpoints
    - Recommended: Add express-rate-limit middleware
    - Effort: 1 day
