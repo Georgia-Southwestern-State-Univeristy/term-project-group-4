@@ -28,7 +28,7 @@ Primary hosted application:
 
 - https://spcg.zentrofi.com
 
-This environment reflects the current release candidate build and is the recommended path for reviewer validation.
+This environment reflects the final release build and is the recommended path for reviewer validation.
 
 ---
 
@@ -174,9 +174,11 @@ After creating a new trip:
 
 #### Edit vs Create Behavior
 
-- Loaded trips remain editable
-- Save button stays enabled for edits
-- Change detection updates button state dynamically
+- Loaded trips enter edit mode
+- Save Trip changes to Update Trip
+- Update Trip is disabled until Trip Name, Destination Type, or Duration changes
+- Checklist checkbox changes auto-save separately and do not enable Update Trip
+- After a successful update, Update Trip becomes disabled again until another trip-detail change is made
 
 ---
 
@@ -282,16 +284,15 @@ npx knex seed:run
 
 ---
 
-## Known Issues / Technical Debt
+## Known Constraints / Future Improvements
 
-The following items represent remaining known issues and technical debt heading into the final release:
+The final release is stable for the project scope. Remaining known constraints include:
 
-- XSS audit and DOM sanitization validation (#82)
-- Input length validation limits (#81)
-- Duplicated backend validation logic (#129)
-- Type guards before `.trim()` in POST/PUT handlers
-- Production migration strategy (`migrateLatest` gating)
-- Final verification of reliability/error handling improvements (#101)
+- SQLite with single-instance Elastic Beanstalk deployment does not support horizontal scaling.
+- In-memory session storage means users may be logged out after server restart.
+- Checklist auto-save and trip-detail change detection are functional but should be simplified in future frontend refactoring.
+- Backend route structure could be modularized further into routes, middleware, and configuration modules.
+- Backend test depth could be expanded for storage-layer and route-error-path coverage.
 
 ---
 
@@ -312,6 +313,6 @@ For more details, see:
 - Admin / Maintenance Guide: `/docs/admin-guide.md`
 - API Documentation: `/docs/api/README.md`
 - Deployment Runbook: `/docs/final/week14-runbook.md`
-- Release Notes: `/docs/releases/release-candidate.md`
+- Final Release Notes: `/docs/releases/final-release.md`
 - Architecture Overview: `/docs/final/week13-architecture.md`
 - Handoff Document: `/docs/handoff/hand-off.md`

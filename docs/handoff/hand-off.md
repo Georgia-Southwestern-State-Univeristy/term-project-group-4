@@ -152,12 +152,12 @@ npm install
 ### Run the Application Locally
 
 ```bash
-npm run dev
+npm run dev:full
 ```
 
-- Frontend served via Vite
-- Backend runs on Express server
-- App typically available at: http://localhost:3000
+- Frontend UI: http://localhost:5173
+- Backend API: http://localhost:3000
+- Swagger API docs: http://localhost:3000/docs
 
 ---
 
