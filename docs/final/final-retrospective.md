@@ -149,11 +149,11 @@ This retrospective captures what worked, what didn't, and what the team learned 
 
 ### 2.3 Deduplicate Validation Earlier (Week 6, not Week 16)
 
-**What:** Trip validation logic was duplicated across `POST /api/saveTrip` and `PUT /api/trips/:tripId` endpoints until Week 16, when [Issue #129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129) was finally addressed via PR #160 (in review), forcing extraction into a shared validator.
+**What:** Trip validation logic was duplicated across `POST /api/saveTrip` and `PUT /api/trips/:tripId` endpoints until Week 16, when [Issue #129](https://github.com/Georgia-Southwestern-State-Univeristy/term-project-group-4/issues/129) was finally addressed via PR #160 (merged), forcing extraction into a shared validator.
 
 **Evidence:**
 - Week 10–11: Both POST and PUT routes had similar validation (check name, check destination, check duration, trim fields)
-- Week 16: Shared validator extracted to `server/validators/trip.js` (PR #160 in review)
+- Week 16: Shared validator extracted to `server/tripValidators.js` (PR #160 merged)
 - Duplication was tracked as Issue #129 separately; addressing it earlier would have prevented inconsistency risks
 
 **Why it matters:** Duplicated validation is a source of inconsistency bugs:
@@ -301,7 +301,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 3. **Build infrastructure incrementally.** Add a backend in Week 2 (even if it's just a simple Express app storing JSON files), then add a database in Week 4, then add auth in Week 6. This spreads learning and risk.
 4. **Use the first sprint to establish the full-stack baseline,** not just the frontend. It's faster to add features to a working full-stack than to rework a single-user prototype.
 
-**Silver lining:** The team executed the pivot well. The rework was not sloppy; it was methodical and well-tested. By Week 15, the system was production-grade. If the team had planned it from the start, the final result would be similar but achieved with less schedule compression.
+**Silver lining:** The team executed the pivot well. The rework was not sloppy; it was methodical and well-tested. By Week 16, the system was production-grade. If the team had planned it from the start, the final result would be similar but achieved with less schedule compression.
 
 ---
 
@@ -315,7 +315,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - Rule-based checklist generation
 - No authentication, no server persistence, no deployment target
 
-**Final Release (Week 15):**
+**Final Release (Week 16):**
 - Multi-user, authenticated application
 - Full-stack: Express backend, SQLite database, Vite-built frontend SPA
 - Server-persisted trips with per-user isolation
@@ -336,7 +336,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - No testing strategy mentioned
 - Single-user prototype assumed no data-integrity concerns
 
-**Final Release (Week 15):**
+**Final Release (Week 16):**
 - Unit tests: Checklist generation logic tested with edge cases
 - Integration tests: API endpoints tested for auth, validation, CRUD, error handling
 - E2E tests: User workflows tested end-to-end with Playwright (primary workflow, auth failure, failure paths)
@@ -356,7 +356,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - Non-goal: "Automated physical inventory tracking," so no barcode scanning or scanning vulnerabilities
 - No mention of input validation or security concerns (prototype phase)
 
-**Final Release (Week 15):**
+**Final Release (Week 16):**
 - **Input validation:** Trip name ≤100 chars, destination type ≤50 chars, server rejects over-limit with 400 error
 - **XSS protection:** All DOM writes use `textContent`; no `innerHTML` for user-supplied strings
 - **Auth security:** Google OAuth 2.0, session-based, secure cookies, test-mode auth for E2E
@@ -370,7 +370,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 **Proposal (Week 0):**
 - Single document (the proposal itself)
 
-**Final Release (Week 15):**
+**Final Release (Week 16):**
 - **User Guide:** [user-guide.md](../user-guide.md) for end users
 - **Admin Guide:** [admin-guide.md](../admin-guide.md) for operators
 - **Architecture:** [architecture-snapshot.md](../architecture/architecture-snapshot.md), [ADRs](../adr/) documenting decisions
@@ -389,7 +389,7 @@ In this project, the duplication didn't cause a critical bug, but it increased t
 - No explicit process defined
 - Team assumed to coordinate informally
 
-**Final Release (Week 15):**
+**Final Release (Week 16):**
 - **Definition of Done:** Clear criteria for what "done" means (PR review, CI pass, tests, docs updated)
 - **Branching strategy:** Short-lived feature branches, descriptive names, no direct commits to main
 - **Review process:** At least one peer review before merge; requested changes addressed or explicitly discussed
